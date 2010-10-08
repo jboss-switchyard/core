@@ -31,6 +31,7 @@ import org.jboss.esb.cinco.Context;
 import org.jboss.esb.cinco.Direction;
 import org.jboss.esb.cinco.EsbException;
 import org.jboss.esb.cinco.Exchange;
+import org.jboss.esb.cinco.ExchangeEvent;
 import org.jboss.esb.cinco.ExchangePattern;
 import org.jboss.esb.cinco.HandlerChain;
 import org.jboss.esb.cinco.HandlerException;
@@ -96,6 +97,7 @@ public class ExchangeImpl implements Exchange {
 	@Override
 	public void send(Message message, String name) throws EsbException {
 		getContext(Scope.MESSAGE).setProperty(Context.MESSAGE_NAME, name);
+		_message = message;
 		
 		try {
 			_handlers.handle(Events.createEvent(this, Direction.SEND));
