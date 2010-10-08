@@ -37,6 +37,7 @@
 	
     <modules>
         <module>core</module>
+        <module>components-camel</module>
         <!-- TODO: update java in components-file to match design changes in core!
         <module>components-file</module>
         -->
