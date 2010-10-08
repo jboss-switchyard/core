@@ -23,7 +23,7 @@ import org.junit.Test;
  * Unit test for {@link CamelHandler}.
  * 
  * @author Daniel Bevenius
- *
+ * 
  */
 public class CamelHandlerTest extends CamelTestSupport
 {
@@ -32,11 +32,11 @@ public class CamelHandlerTest extends CamelTestSupport
     private CamelHandler camelHandler;
     @EndpointInject(uri = "mock:result")
     private MockEndpoint result;
-    
+
     @Before
     public void registerService()
     {
-		domain = ServiceDomains.getDomain();
+        domain = ServiceDomains.getDomain();
         camelHandler = new CamelHandler(context);
         domain.registerService(serviceName, camelHandler);
     }
@@ -44,21 +44,23 @@ public class CamelHandlerTest extends CamelTestSupport
     @Test
     public void routeOneWayToCamel() throws EsbException
     {
-		Exchange exchange = domain.createExchange(serviceName, ExchangePattern.IN_ONLY);
-		Message message = MessageBuilder.newInstance().buildMessage();
-		message.setContent("test string");
-		
-		exchange.sendIn(message);
-		assertThat(result.getReceivedCounter(), is(1));
-		String body = (String) result.getReceivedExchanges().get(0).getIn().getBody();
-		assertThat(body, is(equalTo("test string")));
+        Exchange exchange = domain.createExchange(serviceName, ExchangePattern.IN_ONLY);
+        Message message = MessageBuilder.newInstance().buildMessage();
+        message.setContent("test string");
+
+        exchange.sendIn(message);
+        assertThat(result.getReceivedCounter(), is(1));
+        String body = (String) result.getReceivedExchanges().get(0).getIn().getBody();
+        assertThat(body, is(equalTo("test string")));
     }
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception
     {
-        return new RouteBuilder() {
-            public void configure() {
+        return new RouteBuilder()
+        {
+            public void configure()
+            {
                 from("direct:to").to("mock:result");
             }
         };
