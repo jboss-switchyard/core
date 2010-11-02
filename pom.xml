@@ -155,7 +155,7 @@
 						<goals>
 							<goal>findbugs</goal>
 						</goals>
-						<phase>compile</phase>
+						<phase>verify</phase>
 					</execution>
 				</executions>
 			</plugin>
