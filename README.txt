@@ -13,6 +13,8 @@ Maven:
 - Tested version = 2.2.1
 - 'mvn clean install' to build
 - 'mvn install -DskipTests=true' to skip tests
+- 'mvn install -Dfindbugs.enable=true' to enable findbugs, or enable this
+  property within your settings.xml
 - 'mvn javadoc:aggregate' to just run javadoc (see target/site/apidocs/index.html)
 - 'mvn site' to generate site docs (see target/site/index.html)
 
