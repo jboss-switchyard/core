@@ -22,6 +22,7 @@
 
 package org.switchyard.internal;
 
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,19 +32,55 @@ import org.switchyard.spi.ServiceRegistry;
 
 public class ServiceDomains {
     public static final String ROOT_DOMAIN = "org.switchyard.domains.root";
+    public static final String ENDPOINT_PROVIDER_CLASS_NAME = "org.switchyard.endpoint.provider.class.name";
+    public static final String REGISTRY_CLASS_NAME = "org.switchyard.registry.class.name";
 
     private static ConcurrentHashMap<String, ServiceDomain> _domains = 
         new ConcurrentHashMap<String, ServiceDomain>();
     
-    // This is a temporary hack to provide a shared registry and endpoint
-    // provider for all domains.  Once we provide initialization properties
-    // for a domain, we can remove these and do this a bit more dynamically.
-    private static ServiceRegistry _registry = 
-        new DefaultServiceRegistry();
-    private static EndpointProvider _endpointProvider = 
-        new DefaultEndpointProvider();
+    private static ServiceRegistry _registry = null;
+    private static EndpointProvider _endpointProvider = null;
+
+    public static ServiceRegistry getRegistry(String registryClass) {
+        ServiceLoader<ServiceRegistry> registryServices = ServiceLoader.load(ServiceRegistry.class); 
+        for (ServiceRegistry registry : registryServices) {
+            if (registryClass.equals(registry.getClass().getName())) {
+                return registry;
+            }
+        }
+        return null;
+    }
     
-    public synchronized static ServiceDomain getDomain() {
+    public static EndpointProvider getEndpointProvider (String providerClass) {
+        ServiceLoader<EndpointProvider> providerServices = ServiceLoader.load(EndpointProvider.class);
+        for (EndpointProvider provider : providerServices) {
+            if (providerClass.equals(provider.getClass().getName())) {
+                return provider;
+            }
+        }
+        return null;
+    }
+    
+    public synchronized static void init() {
+    	String registryClassName = System.getProperty(REGISTRY_CLASS_NAME,
+    			DefaultServiceRegistry.class.getName());
+    	String endpointProviderClassName = System.getProperty(ENDPOINT_PROVIDER_CLASS_NAME,
+    			DefaultEndpointProvider.class.getName());
+
+    	Class registryClass, endpointProviderClass;
+    	try {
+			_registry = getRegistry(registryClassName);
+			_endpointProvider = getEndpointProvider(endpointProviderClassName);
+    	} catch (NullPointerException npe) {
+    	    throw new RuntimeException(npe);
+    	}    	
+    }
+    
+    public static boolean isInitialized() {
+    	return (_registry != null) && (_endpointProvider != null);
+    }
+    
+    public synchronized static ServiceDomain getDomain() {    	
         if (!_domains.containsKey(ROOT_DOMAIN)) {
             createDomain(ROOT_DOMAIN);
         }
@@ -52,7 +89,11 @@ public class ServiceDomains {
     }
     
     public synchronized static ServiceDomain createDomain(String name) {
-        if (_domains.containsKey(name)) {
+    	if (!isInitialized()) {
+    		init();
+    	}
+    	
+    	if (_domains.containsKey(name)) {
             throw new RuntimeException("Domain already exists: " + name);
         }
         
