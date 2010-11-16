@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.switchyard.ServiceDomain;
 import org.switchyard.spi.EndpointProvider;
 import org.switchyard.spi.ServiceRegistry;
+import org.switchyard.util.ClassUtil;
 
 public class ServiceDomains {
     public static final String ROOT_DOMAIN = "org.switchyard.domains.root";
@@ -35,15 +36,40 @@ public class ServiceDomains {
     private static ConcurrentHashMap<String, ServiceDomain> _domains = 
         new ConcurrentHashMap<String, ServiceDomain>();
     
-    // This is a temporary hack to provide a shared registry and endpoint
-    // provider for all domains.  Once we provide initialization properties
-    // for a domain, we can remove these and do this a bit more dynamically.
-    private static ServiceRegistry _registry = 
-        new DefaultServiceRegistry();
-    private static EndpointProvider _endpointProvider = 
-        new DefaultEndpointProvider();
+    private static ServiceRegistry _registry = null;
+    private static EndpointProvider _endpointProvider = null;
+        
+    public synchronized static void init() {
+    	String registryClassName = System.getProperty(ServiceRegistry.REGISTRY_CLASS_NAME,
+    			"org.switchyard.internal.DefaultServiceRegistry");
+    	String endpointProviderClassName = System.getProperty(EndpointProvider.ENDPOINT_PROVIDER_CLASS_NAME,
+    			"org.switchyard.internal.DefaultEndpointProvider");
+
+    	Class registryClass, endpointProviderClass;
+    	try {
+			registryClass = ClassUtil.forName(registryClassName);
+			endpointProviderClass = ClassUtil.forName(endpointProviderClassName);
+
+    		_registry = (ServiceRegistry) registryClass.newInstance();
+	    	_endpointProvider = (EndpointProvider) endpointProviderClass.newInstance();
+    	} catch (ClassNotFoundException e) {
+    		throw new RuntimeException(e);
+    	} catch (InstantiationException e) {
+    		throw new RuntimeException(e);
+    	} catch (IllegalAccessException e) {
+    		throw new RuntimeException(e);
+    	}    	
+    }
+    
+    public static boolean isInitialized() {
+    	return (_registry != null) && (_endpointProvider != null);
+    }
     
     public synchronized static ServiceDomain getDomain() {
+    	if (!isInitialized()) {
+    		init();
+    	}
+    	
         if (!_domains.containsKey(ROOT_DOMAIN)) {
             createDomain(ROOT_DOMAIN);
         }
@@ -52,7 +78,11 @@ public class ServiceDomains {
     }
     
     public synchronized static ServiceDomain createDomain(String name) {
-        if (_domains.containsKey(name)) {
+    	if (!isInitialized()) {
+    		init();
+    	}
+    	
+    	if (_domains.containsKey(name)) {
             throw new RuntimeException("Domain already exists: " + name);
         }
         

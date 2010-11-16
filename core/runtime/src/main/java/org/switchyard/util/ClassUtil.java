@@ -19,25 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.switchyard.util;
 
-package org.switchyard.spi;
-
-import java.util.List;
-
-import javax.xml.namespace.QName;
-
-import org.switchyard.HandlerChain;
-import org.switchyard.Service;
-import org.switchyard.ServiceDomain;
-
-public interface ServiceRegistry {
-
-    static final String REGISTRY_CLASS_NAME = "org.switchyard.registry.class.name";
-
-    Service registerService(QName serviceName, Endpoint endpoint, HandlerChain handlers, ServiceDomain domain);
-    void unregisterService(Service service);
-    
-    List<Service> getServices();
-    List<Service> getServices(QName serviceName);
-    List<Service> getServicesForDomain(String domainName);
+public class ClassUtil {
+    public static Class forName(String className) throws ClassNotFoundException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        if (classLoader != null) {
+            return Class.forName(className, true, classLoader) ;
+        }
+        return Class.forName(className, true, ClassLoader.getSystemClassLoader()) ;
+    }
 }

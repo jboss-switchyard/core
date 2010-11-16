@@ -22,11 +22,11 @@
 
 package org.switchyard.spi;
 
-import org.switchyard.spi.Endpoint;
 import org.switchyard.HandlerChain;
 
 public interface EndpointProvider {
-    
+    static final String ENDPOINT_PROVIDER_CLASS_NAME = "org.switchyard.endpoint.provider.class.name";
+
     Endpoint createEndpoint(HandlerChain handlerChain);
     
 }
