@@ -152,6 +152,13 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
                 <version>2.3.2-SNAPSHOT</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.switchyard</groupId>
+                        <artifactId>core-build</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <id>find-bugs</id>
@@ -387,12 +394,10 @@
                         <version>2.3.2-SNAPSHOT</version>
                         
                         <configuration>
-                            <outputDirectory>build</outputDirectory>
-                            <findbugsXmlOutput>true</findbugsXmlOutput>
-                            <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
                             <threshold>Normal</threshold>
                             <effort>Max</effort>
                             <xmlOutput>true</xmlOutput>
+                            <excludeFilterFile>findbugs/findbugs-exclude.xml</excludeFilterFile>
                         </configuration>                        
                     </plugin>
 			<plugin>
