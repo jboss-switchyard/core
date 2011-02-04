@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="Switchyard">
+
+    <skin>
+        <groupId>org.apache.juddi</groupId>
+        <artifactId>juddi-site-style</artifactId>
+        <version>1.0</version>
+    </skin>
+
+</project>
+
