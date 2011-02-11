@@ -109,13 +109,13 @@ public class ConfiguratorMojo extends AbstractMojo {
                 paths.add(path);
             }
             List<SwitchYardScanner> scanners = new ArrayList<SwitchYardScanner>();
-            scanners.add(new DefaultSwitchYardScanner());
             for (String scannerClassName : scannerClassNames) {
                 Class<?> scannerClass = Class.forName(scannerClassName, true, loader);
                 SwitchYardScanner scanner = (SwitchYardScanner)scannerClass.newInstance();
                 scanners.add(scanner);
             }
-            MergeSwitchYardScanner merge_scanner = new MergeSwitchYardScanner(scanners);
+            scanners.add(new DefaultSwitchYardScanner());
+            MergeSwitchYardScanner merge_scanner = new MergeSwitchYardScanner(false, scanners);
             SwitchYardModel switchyard = merge_scanner.scan(paths);
             if (outputFile == null) {
                 outputFile = new File(new File(outputDirectory, "META-INF"), "switchyard.xml");

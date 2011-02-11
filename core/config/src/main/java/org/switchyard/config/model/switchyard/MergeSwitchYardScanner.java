@@ -32,20 +32,19 @@ import org.switchyard.config.model.switchyard.v1.V1SwitchYardModel;
  */
 public class MergeSwitchYardScanner implements SwitchYardScanner {
 
+    private boolean _fromOverridesTo;
     private SwitchYardScanner[] _scanners;
 
-    public MergeSwitchYardScanner() {
-        _scanners = new SwitchYardScanner[0];
-    }
-
-    public MergeSwitchYardScanner(SwitchYardScanner... scanners) {
+    public MergeSwitchYardScanner(boolean fromOverridesTo, SwitchYardScanner... scanners) {
+        _fromOverridesTo = fromOverridesTo;
         int length = scanners.length;
         SwitchYardScanner[] copy = new SwitchYardScanner[length];
         System.arraycopy(scanners, 0, copy, 0, length);
         _scanners = copy;
     }
 
-    public MergeSwitchYardScanner(List<SwitchYardScanner> scanners) {
+    public MergeSwitchYardScanner(boolean fromOverridesTo, List<SwitchYardScanner> scanners) {
+        _fromOverridesTo = fromOverridesTo;
         SwitchYardScanner[] copy = new SwitchYardScanner[scanners.size()];
         _scanners = scanners.toArray(copy);
     }
@@ -55,7 +54,7 @@ public class MergeSwitchYardScanner implements SwitchYardScanner {
         for (SwitchYardScanner scanner : _scanners) {
             SwitchYardModel scanned = scanner.scan(paths);
             if (scanned != null) {
-                merged = (SwitchYardModel)Models.merge(scanned, merged);
+                merged = (SwitchYardModel)Models.merge(merged, scanned, _fromOverridesTo);
             }
         }
         return merged;

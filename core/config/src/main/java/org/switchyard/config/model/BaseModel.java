@@ -164,7 +164,7 @@ public abstract class BaseModel implements Model {
     protected final Model setChildModel(Model child) {
         if (child != null) {
             Configuration child_config = child.getModelConfiguration();
-            _config.removeChildren(child_config.getName());
+            _config.removeChildren(child_config.getQName());
             _config.addChild(child_config);
         }
         return this;

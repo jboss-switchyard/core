@@ -72,7 +72,6 @@ public class CompositeModelTests {
         CompositeModel incomplete_composite = (CompositeModel)_res.pull(INCOMPLETE_XML);
         CompositeModel fragment_composite = (CompositeModel)_res.pull(FRAGMENT_XML);
         CompositeModel merged_composite = (CompositeModel)Models.merge(fragment_composite, incomplete_composite);
-        //merged_composite.write(System.out);
         XMLUnit.setIgnoreWhitespace(true);
         CompositeModel complete_composite = (CompositeModel)_res.pull(COMPLETE_XML);
         Diff diff = XMLUnit.compareXML(complete_composite.toString(), merged_composite.toString());
