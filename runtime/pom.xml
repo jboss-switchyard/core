@@ -29,16 +29,16 @@
     
 	<parent>
 		<groupId>org.switchyard</groupId>
-		<artifactId>core-parent</artifactId>
+		<artifactId>switchyard-core-parent</artifactId>
 		<version>1.0-SNAPSHOT</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	
 	<groupId>org.switchyard</groupId>
-	<artifactId>core-runtime</artifactId>
+	<artifactId>switchyard-runtime</artifactId>
 	
 	<packaging>jar</packaging>
-	<name>Switchyard: Core Runtime</name>
+	<name>Switchyard: Runtime</name>
 	<version>${project.parent.version}</version>
 	<description>The core runtime library.</description>
 	<url>http://switchyard/</url>
@@ -47,7 +47,7 @@
 		<!-- internal dependencies -->
         <dependency>
             <groupId>org.switchyard</groupId>
-            <artifactId>core-api</artifactId>
+            <artifactId>switchyard-api</artifactId>
         </dependency>
 		<!-- N/A -->
 		<!-- external dependencies -->
