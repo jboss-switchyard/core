@@ -16,26 +16,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.switchyard.transform.config.model;
 
-import org.switchyard.config.model.transform.TransformModel;
+package org.switchyard.transform.internal.smooks;
 
 /**
- * SmooksTransformModel.
- *
- * @author David Ward &lt;<a href="mailto:dward@jboss.org">dward@jboss.org</a>&gt; (C) 2011 Red Hat Inc.
+ * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public interface SmooksTransformModel extends TransformModel {
+public class Person {
 
-    public static final String SMOOKS = "smooks";
-    public static final String CONFIG = "config";
-    public static final String REPORT_PATH = "reportPath";
+    private String name;
+    private int age;
 
-    public String getConfig();
+    public String getName() {
+        return name;
+    }
 
-    public SmooksTransformModel setConfig(String config);
+    public Person setName(String name) {
+        this.name = name;
+        return this;
+    }
 
-    public String getReportPath();
+    public int getAge() {
+        return age;
+    }
 
-    public SmooksTransformModel setReportPath(String config);
+    public Person setAge(int age) {
+        this.age = age;
+        return this;
+    }
 }

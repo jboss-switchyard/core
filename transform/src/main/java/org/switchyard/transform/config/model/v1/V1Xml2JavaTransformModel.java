@@ -16,28 +16,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.switchyard.transform.config.model.v1;
 
-import javax.xml.namespace.QName;
+package org.switchyard.transform.config.model.v1;
 
 import org.switchyard.config.Configuration;
 import org.switchyard.config.model.Descriptor;
 import org.switchyard.config.model.transform.TransformModel;
 import org.switchyard.config.model.transform.v1.V1BaseTransformModel;
-import org.switchyard.transform.config.model.SmooksTransformModel;
+import org.switchyard.transform.config.model.Xml2JavaTransformModel;
+
+import javax.xml.namespace.QName;
 
 /**
- * V1SmooksTransformModel.
+ * V1 XML to Java TransformModel.
  *
- * @author David Ward &lt;<a href="mailto:dward@jboss.org">dward@jboss.org</a>&gt; (C) 2011 Red Hat Inc.
+ * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class V1SmooksTransformModel extends V1BaseTransformModel implements SmooksTransformModel {
+public class V1Xml2JavaTransformModel extends V1BaseTransformModel implements Xml2JavaTransformModel {
 
-    public V1SmooksTransformModel() {
-        super(new QName(TransformModel.DEFAULT_NAMESPACE, TransformModel.TRANSFORM + '.' + SMOOKS));
+    public V1Xml2JavaTransformModel() {
+        super(new QName(TransformModel.DEFAULT_NAMESPACE, TransformModel.TRANSFORM + '.' + XML2JAVA));
     }
 
-    public V1SmooksTransformModel(Configuration config, Descriptor desc) {
+    public V1Xml2JavaTransformModel(Configuration config, Descriptor desc) {
         super(config, desc);
     }
 
@@ -53,25 +54,8 @@ public class V1SmooksTransformModel extends V1BaseTransformModel implements Smoo
      * {@inheritDoc}
      */
     @Override
-    public SmooksTransformModel setConfig(String config) {
+    public V1Xml2JavaTransformModel setConfig(String config) {
         setModelAttribute(CONFIG, config);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getReportPath() {
-        return getModelAttribute(REPORT_PATH);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SmooksTransformModel setReportPath(String reportPath) {
-        setModelAttribute(REPORT_PATH, reportPath);
         return this;
     }
 }

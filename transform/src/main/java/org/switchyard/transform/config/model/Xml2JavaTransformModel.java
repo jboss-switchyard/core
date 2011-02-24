@@ -16,26 +16,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
+
 package org.switchyard.transform.config.model;
 
 import org.switchyard.config.model.transform.TransformModel;
 
 /**
- * SmooksTransformModel.
+ * XML to Java TransformModel.
  *
- * @author David Ward &lt;<a href="mailto:dward@jboss.org">dward@jboss.org</a>&gt; (C) 2011 Red Hat Inc.
- */
-public interface SmooksTransformModel extends TransformModel {
+ * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+  */
+public interface Xml2JavaTransformModel extends TransformModel {
 
-    public static final String SMOOKS = "smooks";
+    public static final String XML2JAVA = "xml2java";
     public static final String CONFIG = "config";
-    public static final String REPORT_PATH = "reportPath";
 
     public String getConfig();
 
-    public SmooksTransformModel setConfig(String config);
-
-    public String getReportPath();
-
-    public SmooksTransformModel setReportPath(String config);
+    public Xml2JavaTransformModel setConfig(String config);
 }
