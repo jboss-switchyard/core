@@ -29,8 +29,13 @@ import org.switchyard.config.model.transform.TransformModel;
 public interface SmooksTransformModel extends TransformModel {
 
     public static final String SMOOKS = "smooks";
+    public static final String TYPE = "type";
     public static final String CONFIG = "config";
     public static final String REPORT_PATH = "reportPath";
+
+    public String getTransformType();
+
+    public SmooksTransformModel setTransformType(String type);
 
     public String getConfig();
 
