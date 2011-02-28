@@ -22,16 +22,41 @@ package org.switchyard.transform.config.model;
 import org.switchyard.config.model.transform.TransformModel;
 
 /**
- * Java to XML TransformModel.
+<<<<<<< HEAD
+ * A "transform.java2xml" configuration model.
+=======
+ * A "transform.java" configuration model.
+>>>>>>> d123ccc... squash me
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
   */
 public interface Java2XmlTransformModel extends TransformModel {
 
+    /** The "java2xml" name. */
     public static final String JAVA2XML = "java2xml";
+
+    /** The "config" name. */
     public static final String CONFIG = "config";
 
+    /**
+     * Gets the config attribute.
+     * @return the config attribute
+     */
     public String getConfig();
 
+    /**
+<<<<<<< HEAD
+<<<<<<< HEAD
+     * Sets the config attribute.
+=======
+     * Sets the config attribute
+>>>>>>> d123ccc... squash me
+=======
+     * Sets the config attribute.
+>>>>>>> 714de0c... squash me
+     * @param config the config attribute
+     * @return this Java2XmlTransformModel (useful for chaining)
+     */
     public Java2XmlTransformModel setConfig(String config);
+
 }
