@@ -95,11 +95,8 @@ public class SwitchYardConfigParser extends AbstractVFSParsingDeployer<SwitchYar
 
         final SwitchYardMetaData switchYardMetaData = new SwitchYardMetaData(archiveName, deploymentName);
         _log.debug("Parsed SwitchYard configuration'" + switchYardMetaData + "'");
-        InputStream is = configFile.openStream();
-
-        SwitchYardModel switchyardModel = new ModelResource<SwitchYardModel>().pull(is);
-        switchYardMetaData.setSwitchYardModel(switchyardModel);
-
+        switchYardMetaData.setSwitchYardFile(configFile);
+        
         return switchYardMetaData;
     }
 
@@ -111,7 +108,7 @@ public class SwitchYardConfigParser extends AbstractVFSParsingDeployer<SwitchYar
      * @throws DeploymentException If not configuration file could be found, or more than one was found.
      * @throws IOException 
      */
-    private VirtualFile findSwitchYardConfigFile(final VirtualFile file) throws DeploymentException, IOException {
+    public static VirtualFile findSwitchYardConfigFile(final VirtualFile file) throws DeploymentException, IOException {
         if (file.getName().endsWith(SWITCHYARD_XML_FILE)) {
             return file;
         }
