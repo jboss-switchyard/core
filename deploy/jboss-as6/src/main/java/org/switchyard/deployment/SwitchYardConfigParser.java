@@ -20,7 +20,6 @@
 package org.switchyard.deployment;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.apache.log4j.Logger;
 import org.jboss.deployers.spi.DeploymentException;
@@ -28,9 +27,6 @@ import org.jboss.deployers.spi.deployer.DeploymentStages;
 import org.jboss.deployers.vfs.spi.deployer.AbstractVFSParsingDeployer;
 import org.jboss.deployers.vfs.spi.structure.VFSDeploymentUnit;
 import org.jboss.vfs.VirtualFile;
-import org.switchyard.config.model.ModelResource;
-import org.switchyard.config.model.switchyard.SwitchYardModel;
-
 
 /**
  * SwitchYardConfigParser is a Microcontainer deployer that picks up switchyard.xml files, parses the content
@@ -106,7 +102,7 @@ public class SwitchYardConfigParser extends AbstractVFSParsingDeployer<SwitchYar
      * @param file          The virtual file. Can point to a file or a directory which will be searched.
      * @return VirtualFile  VirtualFile representing a found configuration file.
      * @throws DeploymentException If not configuration file could be found, or more than one was found.
-     * @throws IOException 
+     * @throws IOException IOException
      */
     public static VirtualFile findSwitchYardConfigFile(final VirtualFile file) throws DeploymentException, IOException {
         if (file.getName().endsWith(SWITCHYARD_XML_FILE)) {
