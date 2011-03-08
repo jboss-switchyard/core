@@ -33,6 +33,7 @@ import org.switchyard.config.model.composite.BindingModel;
 import org.switchyard.config.model.composite.ComponentModel;
 import org.switchyard.config.model.composite.ComponentReferenceModel;
 import org.switchyard.config.model.composite.ComponentServiceModel;
+import org.switchyard.config.model.composite.CompositeReferenceModel;
 import org.switchyard.config.model.composite.CompositeServiceModel;
 import org.switchyard.config.model.switchyard.SwitchYardModel;
 import org.switchyard.config.model.transform.TransformModel;
@@ -122,10 +123,10 @@ public class Deployment extends AbstractDeployment {
         _log.debug("Starting deployment for application " + _switchyardConfig.getName());
         // ordered startup lifecycle
         try {
-            deployReferenceBindings();
             deployServices();
             deployReferences();
             deployServiceBindings();
+            deployReferenceBindings();
         } catch (RuntimeException e1) {
             // Undo partial deployment...
             _log.debug("Undeploying partially deployed artifacts of failed deployment for application " + _switchyardConfig.getName());
@@ -146,10 +147,10 @@ public class Deployment extends AbstractDeployment {
      */
     public void stop() {
         _log.debug("Stopping deployment for application " + _switchyardConfig.getName());
+        undeployReferenceBindings();
         undeployServiceBindings();
         undeployServices();
         undeployReferences();
-        undeployReferenceBindings();
     }
 
     /**
@@ -239,6 +240,19 @@ public class Deployment extends AbstractDeployment {
 
     private void deployReferenceBindings() {
         _log.debug("Deploying reference bindings ...");
+        // activate bindings for each reference
+        for (CompositeReferenceModel service : _switchyardConfig.getComposite().getReferences()) {
+            for (BindingModel binding : service.getBindings()) {
+                _log.debug("Deploying binding " + binding.getType() + " for reference " + service.getName());
+                Activator activator = _gatewayActivators.get(binding.getType());
+                ExchangeHandler handler = activator.init(service.getQName(), service);
+                ServiceReference serviceRef = getDomain().registerService(service.getQName(), handler);
+                Activation activation = new Activation(serviceRef, activator);
+                activation.start();
+                _services.add(activation);
+                _referenceBindings.add(activation);
+            }
+        }
        
     }
 
