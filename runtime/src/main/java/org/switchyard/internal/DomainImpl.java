@@ -48,6 +48,7 @@ public class DomainImpl implements ServiceDomain {
     private final ServiceRegistry _registry;
     private final ExchangeBus _exchangeBus;
     private final TransformerRegistry _transformerRegistry;
+    private final ClassLoader _classLoader;
 
     /**
      * Constructor.
@@ -70,6 +71,9 @@ public class DomainImpl implements ServiceDomain {
         // handled this via config.
         _defaultHandlers = new DefaultHandlerChain();
         _defaultHandlers.addFirst("transformation", new TransformHandler(_transformerRegistry));
+
+        // The ClassLoader associated with the domain...
+        _classLoader = Thread.currentThread().getContextClassLoader();
     }
 
     @Override
@@ -91,8 +95,9 @@ public class DomainImpl implements ServiceDomain {
         }
 
         // create the exchange
-        ExchangeImpl exchange = new ExchangeImpl(service.getName(), contract, 
+        ExchangeImpl exchange = new ExchangeImpl(service.getName(), contract,
                 dispatcher, _transformerRegistry, replyChain);
+        exchange.setClassLoader(_classLoader);
         return exchange;
     }
 
