@@ -61,6 +61,7 @@ public class ExchangeImpl implements Exchange {
     private TransformerRegistry       _transformerRegistry;
     private HandlerChain              _replyChain;
     @Include private Context          _context;
+    private ClassLoader               _classLoader;
 
     /**
      * The serialization factory for ExchangeImpl.
@@ -224,7 +225,30 @@ public class ExchangeImpl implements Exchange {
             _log.warn("Fault generated during exchange without a handler: " + _message);
             return;
         }
-        _dispatch.dispatch(this);
+
+        if (_classLoader != null) {
+            ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+
+            try {
+                Thread.currentThread().setContextClassLoader(_classLoader);
+                _dispatch.dispatch(this);
+            } finally {
+                Thread.currentThread().setContextClassLoader(originalClassLoader);
+            }
+        } else {
+            _dispatch.dispatch(this);
+        }
+    }
+
+    /**
+     * Set the Context ClassLoader for the exchange.
+     * <p/>
+     * All message sending should take place in the context of this ClassLoader.
+     *
+     * @param classLoader Exchange context ClassLoader.
+     */
+    public void setClassLoader(ClassLoader classLoader) {
+        this._classLoader = classLoader;
     }
 
     private void assertExchangeStateOK() {
