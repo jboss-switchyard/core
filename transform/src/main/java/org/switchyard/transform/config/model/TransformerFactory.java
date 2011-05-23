@@ -25,6 +25,7 @@ import org.switchyard.metadata.java.JavaService;
 import org.switchyard.transform.BaseTransformer;
 import org.switchyard.transform.Transformer;
 import org.switchyard.transform.smooks.internal.SmooksTransformFactory;
+import org.switchyard.transform.xslt.XsltTransformFactory;
 
 import javax.xml.namespace.QName;
 import java.lang.reflect.InvocationTargetException;
@@ -65,6 +66,8 @@ public final class TransformerFactory {
             }
         } else if (transformModel instanceof SmooksTransformModel) {
             transformer = SmooksTransformFactory.newTransformer((SmooksTransformModel) transformModel);
+        } else if (transformModel instanceof XsltTransformModel) {
+        	transformer = XsltTransformFactory.newTransformer((XsltTransformModel) transformModel);
         }
 
         if (transformer == null) {

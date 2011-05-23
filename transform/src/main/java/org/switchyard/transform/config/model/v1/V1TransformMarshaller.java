@@ -26,6 +26,7 @@ import org.switchyard.config.model.Model;
 import org.switchyard.config.model.transform.TransformModel;
 import org.switchyard.transform.config.model.JavaTransformModel;
 import org.switchyard.transform.config.model.SmooksTransformModel;
+import org.switchyard.transform.config.model.XsltTransformModel;
 
 /**
  * Marshalls transform Models.
@@ -36,6 +37,7 @@ public class V1TransformMarshaller extends BaseMarshaller {
 
     private static final String TRANSFORM_JAVA = TransformModel.TRANSFORM + "." + JavaTransformModel.JAVA;
     private static final String TRANSFORM_SMOOKS = TransformModel.TRANSFORM + "." + SmooksTransformModel.SMOOKS;
+    private static final String TRANSFORM_XSLT = TransformModel.TRANSFORM + "." + XsltTransformModel.XSLT;
 
     /**
      * Constructs a new V1TransformMarshaller with the specified Descriptor.
@@ -56,6 +58,8 @@ public class V1TransformMarshaller extends BaseMarshaller {
             return new V1JavaTransformModel(config, desc);
         } else if (name.equals(TRANSFORM_SMOOKS)) {
             return new V1SmooksTransformModel(config, desc);
+        } else if (name.equals(TRANSFORM_XSLT)) {
+            return new V1XsltTransformModel(config, desc);
         }
         return null;
     }
