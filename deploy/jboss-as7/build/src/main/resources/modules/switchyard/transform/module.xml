@@ -35,5 +35,12 @@
         <module name="org.switchyard.common"/>
         <module name="org.switchyard.config"/>
         <module name="org.milyn"/>
+        <module name="org.switchyard.component.camel" optional="true">
+            <imports>
+                <include-set>
+                    <path name="META-INF/switchyard"/>
+                </include-set>
+            </imports>
+        </module>
     </dependencies>
 </module>
