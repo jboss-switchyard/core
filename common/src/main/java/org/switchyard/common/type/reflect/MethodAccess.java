@@ -21,6 +21,8 @@ package org.switchyard.common.type.reflect;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.switchyard.exception.SwitchYardException;
+
 /**
  * Access via wrapped read and write Methods.
  *
@@ -116,9 +118,9 @@ public final class MethodAccess<T> implements Access<T> {
             try {
                 return (T)_readMethod.invoke(target);
             } catch (IllegalAccessException iae) {
-                throw new RuntimeException(iae);
+                throw new SwitchYardException(iae);
             } catch (InvocationTargetException ite) {
-                throw new RuntimeException(ite);
+                throw new SwitchYardException(ite);
             }
         }
         return null;
@@ -133,9 +135,9 @@ public final class MethodAccess<T> implements Access<T> {
             try {
                 _writeMethod.invoke(target, value);
             } catch (IllegalAccessException iae) {
-                throw new RuntimeException(iae);
+                throw new SwitchYardException(iae);
             } catch (InvocationTargetException ite) {
-                throw new RuntimeException(ite);
+                throw new SwitchYardException(ite);
             }
         }
     }

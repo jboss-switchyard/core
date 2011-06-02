@@ -28,6 +28,7 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.switchyard.exception.SwitchYardException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -139,7 +140,7 @@ public class ElementResource extends Resource<Element> {
             return pull(new StringReader(sb.toString()));
         } catch (IOException ioe) {
             // shouldn't happen
-            throw new RuntimeException(ioe);
+            throw new SwitchYardException(ioe);
         }
     }
 

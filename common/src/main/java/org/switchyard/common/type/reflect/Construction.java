@@ -22,6 +22,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import org.switchyard.common.type.Classes;
+import org.switchyard.exception.SwitchYardException;
 
 /**
  * A utility class that makes it cleaner to construct objects using reflection.
@@ -124,7 +125,7 @@ public final class Construction {
         try {
             cnst = type.getConstructor(paramTypes);
         } catch (NoSuchMethodException nsme) {
-            throw new RuntimeException(nsme);
+            throw new SwitchYardException(nsme);
         }
         if (!cnst.isAccessible()) {
             cnst.setAccessible(true);
@@ -132,11 +133,11 @@ public final class Construction {
         try {
             return cnst.newInstance(params);
         } catch (InvocationTargetException ite) {
-            throw new RuntimeException(ite);
+            throw new SwitchYardException(ite);
         } catch (IllegalAccessException iae) {
-            throw new RuntimeException(iae);
+            throw new SwitchYardException(iae);
         } catch (InstantiationException ie) {
-            throw new RuntimeException(ie);
+            throw new SwitchYardException(ie);
         }
     }
 
