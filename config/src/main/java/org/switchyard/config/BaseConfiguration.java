@@ -34,6 +34,8 @@ import java.util.TreeSet;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
+import org.switchyard.exception.SwitchYardException;
+
 /**
  * An abstract representation of a Configuration, containing default implementations for many of the defined methods.
  *
@@ -183,7 +185,7 @@ public abstract class BaseConfiguration implements Configuration {
             write(writer);
             return writer.toString();
         } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
+            throw new SwitchYardException(ioe);
         }
     }
 

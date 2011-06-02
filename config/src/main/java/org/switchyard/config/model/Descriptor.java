@@ -47,6 +47,7 @@ import org.switchyard.common.io.resource.StringResource;
 import org.switchyard.common.type.Classes;
 import org.switchyard.common.type.reflect.Construction;
 import org.switchyard.config.Configuration;
+import org.switchyard.exception.SwitchYardException;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 
@@ -128,7 +129,7 @@ public final class Descriptor {
             }
         } catch (IOException ioe) {
             // should never happen
-            throw new RuntimeException(ioe);
+            throw new SwitchYardException(ioe);
         }
         addProperties(props);
     }
@@ -201,7 +202,7 @@ public final class Descriptor {
                     _namespaces_schema_map.put(namespaces, schema);
                 }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new SwitchYardException(e);
             }
         }
         return schema;
@@ -456,7 +457,7 @@ public final class Descriptor {
                         return new DescriptorLSInput(xsd, publicId, systemId, baseURI);
                     }
                 } catch (IOException ioe) {
-                    throw new RuntimeException(ioe);
+                    throw new SwitchYardException(ioe);
                 }
             }
             return null;

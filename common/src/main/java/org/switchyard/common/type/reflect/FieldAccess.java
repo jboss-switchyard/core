@@ -21,6 +21,8 @@ package org.switchyard.common.type.reflect;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import org.switchyard.exception.SwitchYardException;
+
 /**
  * Access via a wrapped Field.
  *
@@ -86,7 +88,7 @@ public final class FieldAccess<T> implements Access<T> {
         try {
             return (T)_field.get(target);
         } catch (IllegalAccessException iae) {
-            throw new RuntimeException(iae);
+            throw new SwitchYardException(iae);
         }
     }
 
@@ -98,7 +100,7 @@ public final class FieldAccess<T> implements Access<T> {
         try {
             _field.set(target, value);
         } catch (IllegalAccessException iae) {
-            throw new RuntimeException(iae);
+            throw new SwitchYardException(iae);
         }
     }
 
