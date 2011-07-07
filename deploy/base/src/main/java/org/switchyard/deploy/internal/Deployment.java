@@ -333,16 +333,23 @@ public class Deployment extends AbstractDeployment {
         // activate bindings for each service
         for (CompositeServiceModel service : getConfig().getComposite().getServices()) {
             for (BindingModel binding : service.getBindings()) {
+                QName svcQName = service.getQName();
                 _log.debug("Deploying binding " + binding.getType() + " for service " + service.getName());
+
                 Activator activator = findActivator(binding.getType());
-                ServiceReference serviceRef = getDomain().getService(service.getQName());
+                ExchangeHandler handler = activator.init(svcQName, service);
+
+                ServiceReference serviceRef = getDomain().getService(svcQName);
                 if (serviceRef == null) {
-                    throw new SwitchYardException("Unable to activate binding, service not found: " 
-                            + service.getQName());
+                    ServiceInterface si = getComponentServiceInterface(service.getComponentService());
+                    serviceRef = si != null
+                            ? getDomain().registerService(svcQName, handler, si)
+                            : getDomain().registerService(svcQName, handler);
                 }
-                activator.init(serviceRef.getName(), service);
+
                 Activation activation = new Activation(serviceRef, activator);
                 activation.start();
+
                 _serviceBindings.add(activation);
             }
         }
