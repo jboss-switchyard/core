@@ -162,7 +162,7 @@ public class SwitchYardPlugin implements Plugin {
         // Create the composite service
         V1CompositeServiceModel service = new V1CompositeServiceModel();
         service.setName(serviceName);
-        service.setPromote(new QName(serviceName));
+        service.setPromote(new QName[]{new QName(serviceName)});
         switchYard.getSwitchYardConfig().getComposite().addService(service);
         
         // Save configuration changes
@@ -199,7 +199,7 @@ public class SwitchYardPlugin implements Plugin {
         // Create the composite service
         V1CompositeReferenceModel reference = new V1CompositeReferenceModel();
         reference.setName(referenceName);
-        reference.setPromote(new QName(component.getComponent().getName() + V1CompositeReferenceModel.REFERENCE_SEPARATOR + referenceName));
+        reference.setPromote(new QName[]{new QName(component.getComponent().getName()), new QName(referenceName)});
         switchYard.getSwitchYardConfig().getComposite().addReference(reference);
         
         // Save configuration changes

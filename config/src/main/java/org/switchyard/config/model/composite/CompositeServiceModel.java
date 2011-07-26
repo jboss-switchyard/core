@@ -59,14 +59,14 @@ public interface CompositeServiceModel extends NamedModel {
      * Gets the promote attribute.
      * @return the promote attribute
      */
-    public QName getPromote();
+    public QName[] getPromote();
 
     /**
      * Sets the promote attribute.
      * @param promote the promote attribute
      * @return this CompositeServiceModel (useful for chaining)
      */
-    public CompositeServiceModel setPromote(QName promote);
+    public CompositeServiceModel setPromote(QName[] promote);
 
     /**
      * Gets the child binding models.

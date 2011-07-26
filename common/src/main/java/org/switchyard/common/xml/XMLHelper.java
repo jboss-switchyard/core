@@ -16,7 +16,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
  * MA  02110-1301, USA.
  */
-
 package org.switchyard.common.xml;
 
 import java.io.IOException;
@@ -26,6 +25,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.xml.namespace.QName;
@@ -620,6 +621,7 @@ public final class XMLHelper {
      * @return the QName
      */
     public static QName createQName(String name) {
+        name = trimToNull(name);
         if (name != null) {
             return QName.valueOf(name);
         }
@@ -643,13 +645,77 @@ public final class XMLHelper {
      * @return the QName
      */
     public static QName createQName(String namespace, String localName, String prefix) {
-        if (namespace != null && namespace.length() > 0) {
-            if (prefix != null && prefix.length() > 0) {
-                return new QName(namespace, localName, prefix);
+        localName = trimToNull(localName);
+        if (localName != null) {
+            namespace = trimToNull(namespace);
+            prefix = trimToNull(prefix);
+            if (namespace != null) {
+                if (prefix != null) {
+                    return new QName(namespace, localName, prefix);
+                }
+                return new QName(namespace, localName);
             }
-            return new QName(namespace, localName);
+            return QName.valueOf(localName);
         }
-        return createQName(localName);
+        return null;
+    }
+
+    private static String trimToNull(String str) {
+        if (str != null) {
+            str = str.trim();
+            if (str.length() == 0) {
+                str = null;
+            }
+        }
+        return str;
+    }
+
+    /**
+     * Splits a String into multiple QNames with a delimiter of '/'.
+     * @param str the String to split
+     * @return the multiple QNames
+     */
+    public static QName[] splitQNames(String str) {
+        return splitQNames(str, '/');
+    }
+
+    /**
+     * Splits a String into multiple QNames per the specified delimiter.
+     * @param str the String to split
+     * @param delim the specified delimiter; will default to "/" if null
+     * @return the multiple QNames
+     */
+    public static QName[] splitQNames(String str, char delim) {
+        List<QName> qnames = new ArrayList<QName>();
+        if (str != null) {
+            List<Integer> indexes = new ArrayList<Integer>();
+            boolean withinNamespaceURI = false;
+            char[] ca = str.toCharArray();
+            for (int i=0; i < ca.length; i++) {
+                char c = ca[i];
+                if (c == '{') {
+                    withinNamespaceURI = true;
+                } else if (withinNamespaceURI && c == '}') {
+                    withinNamespaceURI = false;
+                } else if (!withinNamespaceURI && c == delim) {
+                    indexes.add(Integer.valueOf(i));
+                }
+            }
+            for (Integer i : indexes) {
+                QName qname = createQName(str.substring(0, i.intValue()));
+                if (qname != null) {
+                    qnames.add(qname);
+                }
+                str = str.substring(i.intValue()+1, str.length());
+            }
+            if (str.length() > 0) {
+                QName qname = createQName(str);
+                if (qname != null) {
+                    qnames.add(qname);
+                }
+            }
+        }
+        return qnames.toArray(new QName[qnames.size()]);
     }
 
     static {
