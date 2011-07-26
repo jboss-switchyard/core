@@ -22,7 +22,6 @@ package org.switchyard.config.model.composite.v1;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.xml.namespace.QName;
 
@@ -43,11 +42,6 @@ import org.switchyard.config.model.composite.InterfaceModel;
  * @author David Ward &lt;<a href="mailto:dward@jboss.org">dward@jboss.org</a>&gt; (C) 2011 Red Hat Inc.
  */
 public class V1CompositeServiceModel extends BaseNamedModel implements CompositeServiceModel {
-
-    /**
-     * The separator used between component-name service-name combination.
-     */
-    public static final String REFERENCE_SEPARATOR = "/";
 
     private List<BindingModel> _bindings = new ArrayList<BindingModel>();
     private InterfaceModel _interface;
@@ -89,10 +83,9 @@ public class V1CompositeServiceModel extends BaseNamedModel implements Composite
     public ComponentModel getComponent() {
         CompositeModel composite = getComposite();
         if (composite != null) {
-            QName promote = getPromote();
-            if (promote != null) {
-                StringTokenizer st = new StringTokenizer(promote.getLocalPart(), REFERENCE_SEPARATOR);
-                QName componentName = XMLHelper.createQName(st.nextToken());
+            QName[] promote = getPromote();
+            if (promote.length > 0) {
+                QName componentName = promote[0];
                 for (ComponentModel component : composite.getComponents()) {
                     if (componentName.equals(component.getQName())) {
                         return component;
@@ -110,14 +103,15 @@ public class V1CompositeServiceModel extends BaseNamedModel implements Composite
     public ComponentServiceModel getComponentService() {
         CompositeModel composite = getComposite();
         if (composite != null) {
-            QName promote = getPromote();
-            if (promote != null) {
-                StringTokenizer st = new StringTokenizer(promote.getLocalPart(), REFERENCE_SEPARATOR);
-                int count = st.countTokens();
-                QName componentName = XMLHelper.createQName(st.nextToken());
-                QName componentServiceName = (count == 2) ? XMLHelper.createQName(st.nextToken()) : null;
+            QName[] promote = getPromote();
+            int count = promote.length;
+            if (count > 0) {
+                QName componentName = promote[0];
+                QName componentServiceName = (count == 2) ? promote[1] : null;
+                boolean missingComponent = true;
                 for (ComponentModel component : composite.getComponents()) {
                     if (componentName.equals(component.getQName())) {
+                        missingComponent = false;
                         List<ComponentServiceModel> services = component.getServices();
                         if (count == 1) {
                             if (services.size() > 0) {
@@ -130,9 +124,11 @@ public class V1CompositeServiceModel extends BaseNamedModel implements Composite
                                     return service;
                                 }
                             }
+                            throw new IllegalArgumentException("missing component service [" + componentServiceName + "] for component [" + componentName + "]");
                         }
                     }
                 }
+                throw new IllegalArgumentException("missing component service for " + (missingComponent ? "missing " : "") + "component [" + componentName + "]");
             }
         }
         return null;
@@ -142,16 +138,35 @@ public class V1CompositeServiceModel extends BaseNamedModel implements Composite
      * {@inheritDoc}
      */
     @Override
-    public QName getPromote() {
-        return XMLHelper.createQName(getModelAttribute(CompositeServiceModel.PROMOTE));
+    public QName[] getPromote() {
+        QName[] promote = XMLHelper.splitQNames(getModelAttribute(CompositeServiceModel.PROMOTE));
+        if (promote.length > 2) {
+            throw new IllegalArgumentException("promote.length > 2");
+        }
+        return promote;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public CompositeServiceModel setPromote(QName promote) {
-        setModelAttribute(CompositeServiceModel.PROMOTE, promote != null ? promote.toString() : null);
+    public CompositeServiceModel setPromote(QName[] promote) {
+        String str = null;
+        if (promote != null) {
+            if (promote.length > 2) {
+                throw new IllegalArgumentException("promote.length > 2");
+            }
+            for (int i=0; i < promote.length; i++) {
+                if (promote[i] != null) {
+                    if (str == null) {
+                        str = promote[i].toString();
+                    } else {
+                        str = "/" + promote[i].toString();
+                    }
+                }
+            }
+        }
+        setModelAttribute(CompositeServiceModel.PROMOTE, str);
         return this;
     }
 

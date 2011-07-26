@@ -59,14 +59,14 @@ public interface CompositeReferenceModel extends NamedModel {
      * Gets the promote attribute.
      * @return the promote attribute
      */
-    public QName getPromote();
+    public QName[] getPromote();
 
     /**
      * Sets the promote attribute.
      * @param promote the promote attribute
      * @return this CompositeReferenceModel (useful for chaining)
      */
-    public CompositeReferenceModel setPromote(QName promote);
+    public CompositeReferenceModel setPromote(QName[] promote);
 
     /**
      * Gets the child binding models.
