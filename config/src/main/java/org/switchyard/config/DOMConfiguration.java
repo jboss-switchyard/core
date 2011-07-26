@@ -230,14 +230,20 @@ public class DOMConfiguration extends BaseConfiguration {
      */
     @Override
     public String getAttribute(QName qname) {
+        String value = null;
         if (qname != null) {
             Attr attr = _element.getAttributeNodeNS(qname.getNamespaceURI(), qname.getLocalPart());
             if (attr != null) {
-                String value = attr.getValue();
-                return "".equals(value) ? null : value;
+                value = attr.getValue();
+                if ("".equals(value)) {
+                    value = null;
+                }
+            }
+            if (value == null) {
+                value = getAttribute(qname.getLocalPart());
             }
         }
-        return null;
+        return value;
     }
 
     /**
