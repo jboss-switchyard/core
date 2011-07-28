@@ -123,6 +123,7 @@ public class ConfigurationTests {
     @Test
     public void testNamespacesValues() throws Exception {
         Configuration config = _cfg_puller.pull(NAMESPACES_XML, getClass());
+        Assert.assertEquals("urn:test", config.getAttribute("targetNamespace"));
         Assert.assertEquals("http://a.org/a.xsd", config.getQName().getNamespaceURI());
         Assert.assertEquals("bar", config.getAttribute("foo"));
         Assert.assertEquals("stuff", config.getFirstChild("two").getValue());
