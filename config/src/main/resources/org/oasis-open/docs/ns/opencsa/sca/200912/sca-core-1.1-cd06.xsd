@@ -68,7 +68,12 @@
                     maxOccurs="unbounded"/>
             </sequence>
             <attribute name="name" type="NCName" use="required"/>
+            <!--
+            Original (use="required"):
             <attribute name="targetNamespace" type="anyURI" use="required"/>
+            SwitchYard (use="optional"):
+            -->
+            <attribute name="targetNamespace" type="anyURI" use="optional"/>
             <attribute name="local" type="boolean" use="optional" 
                        default="false"/>
             <attribute name="autowire" type="boolean" use="optional" 

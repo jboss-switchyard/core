@@ -16,8 +16,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-
 package org.switchyard.test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
 import org.custommonkey.xmlunit.XMLAssert;
@@ -27,6 +42,7 @@ import org.switchyard.ExchangeHandler;
 import org.switchyard.ServiceDomain;
 import org.switchyard.common.type.Classes;
 import org.switchyard.common.type.classpath.ClasspathScanner;
+import org.switchyard.common.xml.XMLHelper;
 import org.switchyard.config.model.MergeScanner;
 import org.switchyard.config.model.Model;
 import org.switchyard.config.model.ModelPuller;
@@ -50,21 +66,6 @@ import org.switchyard.transform.BaseTransformer;
 import org.switchyard.transform.Transformer;
 import org.switchyard.transform.TransformerUtil;
 import org.w3c.dom.Document;
-
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -231,6 +232,16 @@ public class SwitchYardTestKit {
     }
 
     /**
+     * Creates a QName given this test kit's config model's targetNamespace + the specified localPart.
+     * @param localPart the specified localPart
+     * @return the QName
+     */
+    public QName createQName(String localPart) {
+        String tns = _configModel != null ? _configModel.getTargetNamespace() : null;
+        return XMLHelper.createQName(tns, localPart);
+    }
+
+    /**
      * Register an IN_OUT Service.
      * <p/>
      * Registers a {@link MockHandler} as the service handler.
@@ -240,7 +251,7 @@ public class SwitchYardTestKit {
      */
     public MockHandler registerInOutService(String serviceName) {
         MockHandler handler = new MockHandler();
-        getServiceDomain().registerService(QName.valueOf(serviceName), handler, new InOutService());
+        getServiceDomain().registerService(createQName(serviceName), handler, new InOutService());
         return handler;
     }
 
@@ -251,7 +262,7 @@ public class SwitchYardTestKit {
      * @param serviceHandler The service handler.
      */
     public void registerInOutService(String serviceName, ExchangeHandler serviceHandler) {
-        getServiceDomain().registerService(QName.valueOf(serviceName), serviceHandler, new InOutService());
+        getServiceDomain().registerService(createQName(serviceName), serviceHandler, new InOutService());
     }
 
     /**
@@ -262,7 +273,7 @@ public class SwitchYardTestKit {
      * @param metadata Service interface.
      */
     public void registerInOutService(String serviceName, ExchangeHandler serviceHandler, ServiceInterface metadata) {
-        getServiceDomain().registerService(QName.valueOf(serviceName), serviceHandler, metadata);
+        getServiceDomain().registerService(createQName(serviceName), serviceHandler, metadata);
     }
 
     /**
@@ -275,7 +286,7 @@ public class SwitchYardTestKit {
      */
     public MockHandler registerInOnlyService(String serviceName) {
         MockHandler handler = new MockHandler();
-        getServiceDomain().registerService(QName.valueOf(serviceName), handler, new InOnlyService());
+        getServiceDomain().registerService(createQName(serviceName), handler, new InOnlyService());
         return handler;
     }
 
@@ -286,7 +297,7 @@ public class SwitchYardTestKit {
      * @param serviceHandler The service handler.
      */
     public void registerInOnlyService(String serviceName, ExchangeHandler serviceHandler) {
-        getServiceDomain().registerService(QName.valueOf(serviceName), serviceHandler, new InOnlyService());
+        getServiceDomain().registerService(createQName(serviceName), serviceHandler, new InOnlyService());
     }
 
     /**
@@ -313,7 +324,7 @@ public class SwitchYardTestKit {
      * @return The invoker instance.
      */
     public Invoker newInvoker(String serviceName) {
-        return new Invoker(getServiceDomain(), serviceName);
+        return newInvoker(createQName(serviceName));
     }
 
     /**

@@ -23,7 +23,12 @@
                <any namespace="##other" processContents="lax" 
                   minOccurs="0" maxOccurs="unbounded"/>
             </choice>
+            <!--
+            Original (use="required"):
             <attribute name="targetNamespace" type="anyURI" use="required"/>
+            SwitchYard (use="optional"):
+            -->
+            <attribute name="targetNamespace" type="anyURI" use="optional"/>
          </extension>
       </complexContent>
    </complexType>
