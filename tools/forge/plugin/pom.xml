@@ -16,12 +16,12 @@
     <dependency>
       <groupId>org.jboss.forge</groupId>
       <artifactId>forge-shell-api</artifactId>
-      <version>${forge.version}</version>
+      <version>${version.forge}</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.forge</groupId>
       <artifactId>forge-project-model-maven</artifactId>
-      <version>${forge.version}</version>
+      <version>${version.forge}</version>
     </dependency>
     <dependency>
       <groupId>org.switchyard</groupId>

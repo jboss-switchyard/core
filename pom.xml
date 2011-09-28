@@ -60,14 +60,14 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
+      <version>${version.junit}</version>
       <scope>test</scope>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
-      <version>${xmlunit.version}</version>
+      <version>${version.xmlunit}</version>
       <scope>test</scope>
       <optional>true</optional>
     </dependency>
