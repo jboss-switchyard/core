@@ -8,7 +8,6 @@
     <version>0.3.0-SNAPSHOT</version>
     <relativePath>../../../pom.xml</relativePath>
   </parent>
-  <groupId>org.switchyard</groupId>
   <artifactId>switchyard-forge-common</artifactId>
     <name>SwitchYard: Forge Common</name>
     <description>Common Classes for Forge Support</description>
@@ -17,12 +16,12 @@
     <dependency>
       <groupId>org.jboss.forge</groupId>
       <artifactId>forge-shell-api</artifactId>
-      <version>${version.forge}</version>
+      <version>${forge.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.forge</groupId>
       <artifactId>forge-project-model-maven</artifactId>
-      <version>${version.forge}</version>
+      <version>${forge.version}</version>
     </dependency>
     <dependency>
       <groupId>org.switchyard</groupId>
