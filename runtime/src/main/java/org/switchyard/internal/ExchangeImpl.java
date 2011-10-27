@@ -45,6 +45,7 @@ import org.switchyard.metadata.ServiceOperation;
 import org.switchyard.spi.Dispatcher;
 import org.switchyard.transform.TransformSequence;
 import org.switchyard.transform.TransformerRegistry;
+import org.switchyard.validate.Validator;
 
 /**
  * Implementation of Exchange.
@@ -161,9 +162,11 @@ public class ExchangeImpl implements Exchange {
         // Set exchange phase
         if (_phase == null) {
             _phase = ExchangePhase.IN;
+            initInValidator();
             initInTransformSequence();
         } else if (_phase.equals(ExchangePhase.IN)) {
             _phase = ExchangePhase.OUT;
+            initOutValidator();
             initOutTransformSequence();
             // set relatesTo header on OUT context
             _context.setProperty(RELATES_TO, _context.getProperty(
@@ -297,6 +300,41 @@ public class ExchangeImpl implements Exchange {
                     from(serviceOperationOutputType).
                     to(exchangeOutputType).
                     associateWith(this, Scope.OUT);
+        }
+    }
+
+    private void initInValidator() {
+        QName exchangeInputType = _contract.getInvokerInvocationMetaData().getInputType();
+        QName serviceOperationInputType = _contract.getServiceOperation().getInputType();
+        if (exchangeInputType != null) {
+            _context.setProperty(
+                    Validator.class.getName() + "." + DomainImpl.Phase.BEFORE_TRANSFORM.toString(),
+                    exchangeInputType,
+                    Scope.IN);
+        }
+        if (serviceOperationInputType != null && !serviceOperationInputType.equals(exchangeInputType)) {
+            _context.setProperty(
+                    Validator.class.getName() + "." + DomainImpl.Phase.AFTER_TRANSFORM.toString(),
+                    serviceOperationInputType,
+                    Scope.IN);
+        }
+    }
+
+    private void initOutValidator() {
+        QName serviceOperationOutputType = _contract.getServiceOperation().getOutputType();
+        QName exchangeOutputType = _contract.getInvokerInvocationMetaData().getOutputType();
+
+        if (serviceOperationOutputType != null) {
+            _context.setProperty(
+                    Validator.class.getName() + "." + DomainImpl.Phase.BEFORE_TRANSFORM.toString(),
+                    serviceOperationOutputType,
+                    Scope.OUT);
+        }
+        if (exchangeOutputType != null && !exchangeOutputType.equals(serviceOperationOutputType)) {
+            _context.setProperty(
+                    Validator.class.getName() + "." + DomainImpl.Phase.AFTER_TRANSFORM.toString(),
+                    exchangeOutputType,
+                    Scope.OUT);
         }
     }
 }
