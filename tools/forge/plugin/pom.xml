@@ -12,7 +12,14 @@
     <name>SwitchYard: Forge Plugin</name>
     <description>SwitchYard Forge Support</description>
     <url>http://switchyard.org/</url>
+    <version>${project.parent.version}</version>
   <dependencies>
+    <dependency>
+      <groupId>org.jboss.forge</groupId>
+      <artifactId>forge-shell</artifactId>
+      <version>${version.forge}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.jboss.forge</groupId>
       <artifactId>forge-shell-api</artifactId>
@@ -21,9 +28,27 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.forge</groupId>
+      <artifactId>forge-test-harness</artifactId>
+      <version>${version.forge}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.forge</groupId>
       <artifactId>forge-maven-api</artifactId>
       <version>${version.forge}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.shrinkwrap</groupId>
+      <artifactId>shrinkwrap-api</artifactId>
+      <version>${version.shrinkwrap.forgebeta3}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.shrinkwrap</groupId>
+      <artifactId>shrinkwrap-impl-base</artifactId>
+      <version>${version.shrinkwrap.forgebeta3}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.switchyard</groupId>
