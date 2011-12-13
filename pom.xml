@@ -63,6 +63,7 @@
     <version.netty>3.2.1.Final</version.netty>
     <version.servlet>2.5</version.servlet>
     <version.shrinkwrap>1.0.0-alpha-12</version.shrinkwrap>
+    <version.shrinkwrap.forgebeta3>1.0.0-alpha-11</version.shrinkwrap.forgebeta3>
     <version.tomcat>6.0.29</version.tomcat>
     <version.weld>1.1.0.Final</version.weld>
   </properties>
