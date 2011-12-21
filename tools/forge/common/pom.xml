@@ -15,6 +15,16 @@
   <dependencies>
     <dependency>
       <groupId>org.jboss.forge</groupId>
+      <artifactId>forge-shell</artifactId>
+      <version>${version.forge}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.forge</groupId>
+      <artifactId>forge-test-harness</artifactId>
+      <version>${version.forge}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.forge</groupId>
       <artifactId>forge-shell-api</artifactId>
       <version>${version.forge}</version>
       <scope>provided</scope>
@@ -28,6 +38,34 @@
     <dependency>
       <groupId>org.switchyard</groupId>
       <artifactId>switchyard-config</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.shrinkwrap</groupId>
+      <artifactId>shrinkwrap-api</artifactId>
+      <version>${version.shrinkwrap.forgebeta3}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.shrinkwrap.descriptors</groupId>
+      <artifactId>shrinkwrap-descriptors-impl</artifactId>
+      <version>${version.shrinkwrap.descriptors}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.shrinkwrap.descriptors</groupId>
+      <artifactId>shrinkwrap-descriptors-api</artifactId>
+      <version>${version.shrinkwrap.descriptors}</version>
+      <scope>test</scope> 
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.shrinkwrap</groupId>
+      <artifactId>shrinkwrap-impl-base</artifactId>
+      <version>${version.shrinkwrap.forgebeta3}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
   <build>
