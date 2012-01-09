@@ -18,7 +18,13 @@
  */
 package org.switchyard.tools.forge.plugin;
 
+import java.util.List;
+
 import javax.inject.Inject;
+
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Model;
+import org.jboss.forge.maven.MavenCoreFacet;
 
 import org.jboss.forge.project.Project;
 import org.jboss.forge.project.facets.MetadataFacet;
@@ -50,6 +56,8 @@ import org.switchyard.config.model.domain.v1.V1DomainModel;
 import org.switchyard.config.model.domain.v1.V1HandlerModel;
 import org.switchyard.config.model.domain.v1.V1HandlersModel;
 import org.switchyard.config.model.switchyard.SwitchYardModel;
+
+import java.util.Iterator;
 
 /**
  * Project-level commands for SwitchYard applications.
@@ -164,6 +172,18 @@ public class SwitchYardPlugin implements Plugin {
     @Command(value = "get-version", help = "Show the version of SwitchYard used by this application.")
     public void getVersion(final PipeOut out) {
         String version = _project.getFacet(SwitchYardFacet.class).getVersion();
+
+        if ("".equals(version) || (version == null)) {
+            Model pom = _project.getFacet(MavenCoreFacet.class).getPOM();
+            List<Dependency> deps = pom.getDependencies();
+            Iterator itr = deps.iterator();
+            while (itr.hasNext()) {
+                Dependency dep = (Dependency) itr.next();
+                if ("org.switchyard".equals(dep.getGroupId()) && "switchyard-api".equals(dep.getArtifactId())) {
+                    version = dep.getVersion();
+                }
+            }
+        }
         out.println("SwitchYard version " + version);
     }
     
