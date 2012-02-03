@@ -138,8 +138,10 @@ public class DefaultHandlerChain implements HandlerChain {
 
     @Override
     public void handleMessage(Exchange exchange) {
+        HandlerRef handlerRef = null;
         try {
             for (HandlerRef ref : listHandlers()) {
+                handlerRef = ref;
                 if (_logger.isDebugEnabled()) {
                     _logger.debug("Executing ExchangeHandler (" + ref + ") on message Exchange instance (" + System.identityHashCode(exchange) + ").");
                 }
@@ -152,7 +154,7 @@ public class DefaultHandlerChain implements HandlerChain {
                 }
             }
         } catch (HandlerException handlerEx) {
-            _logger.error(handlerEx);
+            _logger.error("Handler (" + handlerRef.getName() + ") Failed to handle message", handlerEx);
 
             Message faultMessage = exchange.createMessage().setContent(handlerEx);
             initFaultTransformsequence(exchange, handlerEx, faultMessage);
