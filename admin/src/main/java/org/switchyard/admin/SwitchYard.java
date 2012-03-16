@@ -25,17 +25,26 @@ import java.util.Set;
 
 import javax.xml.namespace.QName;
 
+import org.switchyard.version.Version;
+
 /**
  * Top-level admin interface for SwitchYard runtime.
  */
 public interface SwitchYard {
 
     /**
-     * The version of the SwitchYard runtime.
+     * The version of the SwitchYard API.
      * 
-     * @return SwitchYard version
+     * @return SwitchYard API version
      */
-    String getVersion();
+    Version getAPIVersion();
+
+    /**
+     * The version of the SwitchYard Runtime.
+     * 
+     * @return SwitchYard Runtime version
+     */
+    Version getRuntimeVersion();
 
     /**
      * List of applications current deployed in SwitchYard runtime.

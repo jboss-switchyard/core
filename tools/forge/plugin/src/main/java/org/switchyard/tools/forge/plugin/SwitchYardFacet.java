@@ -22,10 +22,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import javax.inject.Inject;
 import javax.xml.transform.Transformer;
@@ -88,14 +86,10 @@ public class SwitchYardFacet extends AbstractFacet {
             "org.switchyard:switchyard-test"
     };
     
-    static final String PROPS_PATH = "/org/switchyard/tools/forge/plugin/plugin.properties";
-    static final String PROP_VERSION = "default.version";
-    
     // Used if we are dealing with an OpenShift application
     static final String OPEN_SHIFT_PROFILE = "openshift";
     static final String OPEN_SHIFT_TRANSFORM = "/org/switchyard/tools/forge/plugin/openshift.xsl";
     static final String OPEN_SHIFT_CONFIG = ".openshift/config/standalone.xml";
-
 
     @Inject
     private Shell _shell;
@@ -109,14 +103,12 @@ public class SwitchYardFacet extends AbstractFacet {
     
     @Override
     public boolean install() {
-
         // Doing this in a try/finally to set and unset the context class loader
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        final ClassLoader orig = Classes.setTCCL(getClass().getClassLoader());
         try {
-            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
             return performInstall();
         } finally {
-            Thread.currentThread().setContextClassLoader(orig);
+            Classes.setTCCL(orig);
         }
     }
     
@@ -260,21 +252,16 @@ public class SwitchYardFacet extends AbstractFacet {
         }
     }
 
-    String loadSwitchYardVersion(String propsPath) {
-        String version = null;
-        
-        try {
-            URL urlPath = Classes.getResource(propsPath);
-            if (urlPath != null) {
-                Properties props = new Properties();
-                props.load(urlPath.openStream());
-                version = props.getProperty(PROP_VERSION);
+    private Dependency getDefaultDependency(List<Dependency> deps) {
+        Dependency def = null;
+        String version = SwitchYardFacet.class.getPackage().getSpecificationVersion();
+        for (Dependency dep : deps) {
+            def = dep;
+            if (dep.getVersion().equals(version)) {
+                break;
             }
-        } catch (java.io.IOException ioEx) {
-            ioEx.printStackTrace();
         }
-        
-        return version;
+        return def;
     }
     
     private void addNexusRepository() {
@@ -359,14 +346,6 @@ public class SwitchYardFacet extends AbstractFacet {
     }
     
     private boolean performInstall() {        
-        String version = loadSwitchYardVersion(PROPS_PATH);
-        if (version == null) {
-            // Ask the user which version of SwitchYard they want to use
-            DependencyFacet deps = project.getFacet(DependencyFacet.class);
-            List<Dependency> versions = deps.resolveAvailableVersions(DEPENDENCIES[0] + ":[,]");
-            Dependency dep = _shell.promptChoiceTyped("Please select a version to install:", versions);
-            version = dep.getVersion();
-        }
         try {
             tweakForOpenShift();
         } catch (Exception ex) {
@@ -374,8 +353,16 @@ public class SwitchYardFacet extends AbstractFacet {
             return false;
         }
         
+        // Ask the user which version of SwitchYard they want to use
+        DependencyFacet dfac = project.getFacet(DependencyFacet.class);
+        List<Dependency> deps = dfac.resolveAvailableVersions(DEPENDENCIES[0] + ":[,]");
+        Dependency def = getDefaultDependency(deps);
+        //Dependency dep = _shell.promptChoiceTyped("Please select a version to install:", deps, def);
+        // For now just go with the default version.
+        Dependency dep = def;
+
         // Update the project with version and dependency info
-        setVersion(version);
+        setVersion(dep.getVersion());
         installDependencies();
         addPluginRepository();
         

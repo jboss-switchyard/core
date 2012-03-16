@@ -35,6 +35,8 @@ import org.switchyard.admin.Application;
 import org.switchyard.admin.Component;
 import org.switchyard.admin.Service;
 import org.switchyard.admin.SwitchYard;
+import org.switchyard.version.Version;
+import org.switchyard.version.Versions;
 
 /**
  * In-memory representation of System admin contract. Note that Service objects
@@ -44,7 +46,8 @@ import org.switchyard.admin.SwitchYard;
  */
 public class BaseSwitchYard implements SwitchYard {
 
-    private String _version;
+    private final Version _apiVersion;
+    private final Version _runtimeVersion;
     private ConcurrentMap<QName, Application> _applications = new ConcurrentHashMap<QName, Application>();
     private ConcurrentMap<String, Component> _components = new ConcurrentHashMap<String, Component>();
     private List<Service> _services = Collections.synchronizedList(new LinkedList<Service>());
@@ -54,11 +57,10 @@ public class BaseSwitchYard implements SwitchYard {
 
     /**
      * Create a new BaseSwitchYard.
-     * 
-     * @param version the release version of the SwitchYard system.
      */
-    public BaseSwitchYard(String version) {
-        _version = version;
+    public BaseSwitchYard() {
+        _apiVersion = Versions.getSwitchYardAPIVersion();
+        _runtimeVersion = Versions.getSwitchYardRuntimeVersion();
     }
 
     @Override
@@ -158,18 +160,20 @@ public class BaseSwitchYard implements SwitchYard {
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public String getVersion() {
-        return _version;
+    public Version getAPIVersion() {
+        return _apiVersion;
     }
 
     /**
-     * Set the version of the SwitchYard runtime.
-     * 
-     * @param version SwitchYard version
+     * {@inheritDoc}
      */
-    public void setVersion(String version) {
-        _version = version;
+    @Override
+    public Version getRuntimeVersion() {
+        return _runtimeVersion;
     }
 
     @Override
