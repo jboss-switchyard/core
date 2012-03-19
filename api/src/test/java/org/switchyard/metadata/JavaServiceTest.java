@@ -87,6 +87,7 @@ public class JavaServiceTest {
         Assert.assertNotNull(method);
     }
     
+    @Ignore
     @Test
     public void testInterfaceWithBadSignature() throws Exception {
         Exception error = null;
