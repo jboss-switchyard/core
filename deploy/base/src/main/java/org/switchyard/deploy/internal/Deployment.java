@@ -357,13 +357,21 @@ public class Deployment extends AbstractDeployment {
     }
     
     private void deployImplementations() {
-        // discover any service promotions
+        // discover any service and reference promotions
         Map<ComponentServiceModel,CompositeServiceModel> servicePromotions = 
                 new HashMap<ComponentServiceModel,CompositeServiceModel>();
         for (CompositeServiceModel compositeService : getConfig().getComposite().getServices()) {
             ComponentServiceModel componentService = compositeService.getComponentService();
             if (componentService != null) {
                 servicePromotions.put(componentService, compositeService);
+            }
+        }
+        Map<ComponentReferenceModel,CompositeReferenceModel> referencePromotions =
+                new HashMap<ComponentReferenceModel,CompositeReferenceModel>();
+        for (CompositeReferenceModel compositeReference : getConfig().getComposite().getReferences()) {
+            ComponentReferenceModel componentReference = compositeReference.getComponentReference();
+            if (componentReference != null) {
+                referencePromotions.put(componentReference, compositeReference);
             }
         }
         
@@ -382,6 +390,12 @@ public class Deployment extends AbstractDeployment {
                 ServiceInterface refIntf = getComponentReferenceInterface(reference);
                 deployAutoRegisteredTransformers(refIntf);
                 references.add(getDomain().registerServiceReference(reference.getQName(), refIntf));
+                
+                // register any reference promotions, avoiding duplicate reference names
+                CompositeReferenceModel promotion = referencePromotions.get(reference);
+                if (promotion != null && !promotion.getQName().equals(reference.getQName())) {
+                    getDomain().registerServiceReference(promotion.getQName(), refIntf);
+                }
             }
             
             // register a service for each one declared in the component
