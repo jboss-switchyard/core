@@ -1,4 +1,4 @@
-README
+Switchyard README
 ======
 Project instructions for developers below.
 
