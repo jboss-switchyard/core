@@ -127,7 +127,7 @@ public class MockInitialContextFactory implements InitialContextFactory {
 
     static class ContextInvocationHandler implements InvocationHandler {
 
-        private Map<Object, Object> _boundObjects = new HashMap<Object, Object>();
+		private Map<Object, Object> _boundObjects = new HashMap<Object, Object>();
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
