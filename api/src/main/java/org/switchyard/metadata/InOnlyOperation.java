@@ -47,8 +47,7 @@ public class InOnlyOperation extends BaseInvocationContract implements ServiceOp
      * @param operationName the name of the operation
      */
     public InOnlyOperation(String operationName) {
-        super(null, null, null);
-        _operationName = operationName;
+        this(operationName, null);
     }
     
     /**
