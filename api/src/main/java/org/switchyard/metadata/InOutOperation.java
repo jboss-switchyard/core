@@ -92,7 +92,7 @@ public class InOutOperation extends BaseInvocationContract implements ServiceOpe
 
     @Override
     public String toString() {
-        return _operationName + "{IN_OUT}";
+        return _operationName + " : IN_OUT : [" + getInputType() + ", " + getOutputType() + ", " + getFaultType() + "]";
     }
     
     /**
