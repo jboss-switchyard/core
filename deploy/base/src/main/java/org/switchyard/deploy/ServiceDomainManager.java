@@ -30,6 +30,7 @@ import org.switchyard.exception.SwitchYardException;
 import org.switchyard.internal.DefaultServiceRegistry;
 import org.switchyard.internal.DomainImpl;
 import org.switchyard.internal.EventManager;
+import org.switchyard.internal.EventManagerFactory;
 import org.switchyard.internal.LocalExchangeBus;
 import org.switchyard.internal.transform.BaseTransformerRegistry;
 import org.switchyard.internal.validate.BaseValidatorRegistry;
@@ -69,7 +70,7 @@ public class ServiceDomainManager {
     // to registered services across application domains
     private ServiceRegistry _registry = new DefaultServiceRegistry();
     private ExchangeBus _bus = new LocalExchangeBus();
-    private EventManager _eventManager = new EventManager();
+    private EventManager _eventManager = EventManagerFactory.getInstance().getEventManager();
 
     /**
      * Create a ServiceDomain instance.
