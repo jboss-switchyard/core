@@ -170,7 +170,7 @@ public class Deployment extends AbstractDeployment {
     /**
      * Tear everything down.
      */
-    public void destroy() {
+    protected void destroy() {
         _log.debug("Destroying deployment " + getName());
         
         // Clean up our list of activations, just in case something's left

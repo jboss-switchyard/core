@@ -19,8 +19,12 @@
 
 package org.switchyard.deploy;
 
+import java.lang.ref.WeakReference;
+import java.util.EventObject;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 
@@ -33,6 +37,8 @@ import org.switchyard.common.type.Classes;
 import org.switchyard.config.model.domain.DomainModel;
 import org.switchyard.config.model.domain.HandlerModel;
 import org.switchyard.config.model.switchyard.SwitchYardModel;
+import org.switchyard.event.DomainShutdownEvent;
+import org.switchyard.event.EventObserver;
 import org.switchyard.exception.SwitchYardException;
 import org.switchyard.internal.DefaultServiceRegistry;
 import org.switchyard.internal.DomainImpl;
@@ -55,7 +61,7 @@ import org.switchyard.spi.ServiceRegistry;
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class ServiceDomainManager {
+public class ServiceDomainManager implements EventObserver {
 
     /**
      * Root domain property.
@@ -69,13 +75,14 @@ public class ServiceDomainManager {
      * Registry class name property.
      */
     public static final String REGISTRY_CLASS_NAME = "registryProvider";
-    
+
     private static Logger _log = Logger.getLogger(ServiceDomainManager.class);
 
     // Share the same service registry and bus across domains to give visibility 
     // to registered services across application domains
     private ServiceRegistry _registry = new DefaultServiceRegistry();
     private EventManager _eventManager = new EventManager();
+    private Map<QName, WeakReference<ServiceDomain>> _domains = new HashMap<QName, WeakReference<ServiceDomain>>();
 
     /**
      * Create a ServiceDomain instance.
@@ -97,12 +104,23 @@ public class ServiceDomainManager {
         BaseTransformerRegistry transformerRegistry = new BaseTransformerRegistry();
         BaseValidatorRegistry validatorRegistry = new BaseValidatorRegistry();
 
-        SwitchYardCamelContext camelContext = new SwitchYardCamelContext();
-        CamelExchangeBus bus = new CamelExchangeBus(camelContext);
+        ServiceDomain domain = null;
+        if (_domains.containsKey(domainName)) {
+            WeakReference<ServiceDomain> reference = _domains.get(domainName);
+            if (reference.get() != null) {
+                domain = _domains.get(domainName).get();
+            }
+        }
 
-        DomainImpl domain = new DomainImpl(
-                domainName, _registry, bus, transformerRegistry, validatorRegistry, _eventManager);
-        camelContext.setServiceDomain(domain);
+        if (domain == null) {
+            SwitchYardCamelContext camelContext = new SwitchYardCamelContext();
+            CamelExchangeBus bus = new CamelExchangeBus(camelContext);
+
+            domain = new DomainImpl(domainName, _registry, bus, transformerRegistry, validatorRegistry, _eventManager);
+            camelContext.setServiceDomain(domain);
+
+            _domains.put(domainName, new WeakReference<ServiceDomain>(domain));
+        }
 
         if (switchyardConfig != null) {
             domain.getHandlers().addAll(getDomainHandlers(switchyardConfig.getDomain()));
@@ -147,4 +165,16 @@ public class ServiceDomainManager {
         }
         return handlers;
     }
+
+    @Override
+    public void notify(EventObject event) {
+        if (event instanceof DomainShutdownEvent) {
+            removeDomain((DomainShutdownEvent) event);
+        }
+    }
+
+    private void removeDomain(DomainShutdownEvent event) {
+        _domains.remove(event.getDomain().getName());
+    }
+
 }
