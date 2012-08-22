@@ -19,8 +19,11 @@
 
 package org.switchyard.deploy;
 
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 
@@ -71,7 +74,7 @@ public class ServiceDomainManager {
      * Registry class name property.
      */
     public static final String REGISTRY_CLASS_NAME = "registryProvider";
-    
+
     private static Logger _log = Logger.getLogger(ServiceDomainManager.class);
 
     // Share the same service registry and bus across domains to give visibility 
@@ -79,6 +82,7 @@ public class ServiceDomainManager {
     private ServiceRegistry _registry = new DefaultServiceRegistry();
     private EventManager _eventManager = new EventManager();
     private CamelContextManager _camelManager = new CamelContextManager();
+    private Map<QName, WeakReference<ServiceDomain>> domains = new HashMap<QName, WeakReference<ServiceDomain>>();
 
     /**
      * Create a ServiceDomain instance.
@@ -104,10 +108,19 @@ public class ServiceDomainManager {
         _eventManager.addObserver(_camelManager, DomainStartupEvent.class);
         _eventManager.addObserver(_camelManager, DomainShutdownEvent.class);
 
-        CamelExchangeBus bus = new CamelExchangeBus();
+        ServiceDomain domain = null;
+        if (domains.containsKey(domainName)) {
+            WeakReference<ServiceDomain> reference = domains.get(domainName);
+            if (reference.get() != null) {
+                domain = domains.get(domainName).get();
+            }
+        }
 
-        DomainImpl domain = new DomainImpl(
-                domainName, _registry, bus, transformerRegistry, validatorRegistry, _eventManager);
+        if (domain == null) {
+            CamelExchangeBus bus = new CamelExchangeBus();
+            domain = new DomainImpl(domainName, _registry, bus, transformerRegistry, validatorRegistry, _eventManager);
+            domains.put(domainName, new WeakReference<ServiceDomain>(domain));
+        }
 
         if (switchyardConfig != null) {
             domain.getHandlers().addAll(getDomainHandlers(switchyardConfig.getDomain()));
@@ -152,4 +165,5 @@ public class ServiceDomainManager {
         }
         return handlers;
     }
+
 }

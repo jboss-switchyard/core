@@ -86,7 +86,7 @@ public class SwitchYardCDIDeployer implements Extension {
     public void beforeShutdown(@Observes BeforeShutdown event) {
         if (_deployment != null) {
             _deployment.stop();
-            _deployment.destroy();
+            _deployment.shutdown();
         }
     }
 }

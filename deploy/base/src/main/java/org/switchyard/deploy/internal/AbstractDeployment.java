@@ -19,7 +19,9 @@
 
 package org.switchyard.deploy.internal;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 
@@ -39,6 +41,8 @@ public abstract class AbstractDeployment {
      * Default classpath location for the switchyard configuration.
      */
     public static final String SWITCHYARD_XML = "/META-INF/switchyard.xml";
+    private static final String DEPLOYMENTS = "SwitchYardDeployments";
+
     /**
      * Parent deployment.
      */
@@ -108,10 +112,20 @@ public abstract class AbstractDeployment {
      * @param appServiceDomain The ServiceDomain for the application.
      * @param activators The list of SwitchYard component activators.
      */
+    @SuppressWarnings("unchecked")
     public final void init(ServiceDomain appServiceDomain, List<Activator> activators) {
         if (appServiceDomain == null) {
             throw new IllegalArgumentException("null 'appServiceDomain' argument.");
         }
+
+        // obtain domain deployments
+        Map<String, Object> properties = appServiceDomain.getProperties();
+        if (!properties.containsKey(DEPLOYMENTS)) {
+            properties.put(DEPLOYMENTS, new LinkedList<AbstractDeployment>());
+        }
+
+        // register current deployment for domain
+        ((List<AbstractDeployment>) properties.get(DEPLOYMENTS)).add(this);
 
         // initialize deployment name
         if (getConfig() != null) {
@@ -123,14 +137,14 @@ public abstract class AbstractDeployment {
                 }
             }
         }
-        
+
         _serviceDomain = appServiceDomain;
         _transformerRegistryLoader = new TransformerRegistryLoader(appServiceDomain.getTransformerRegistry());
         _transformerRegistryLoader.loadOOTBTransforms();
-        
+
         _validatorRegistryLoader = new ValidatorRegistryLoader(appServiceDomain.getValidatorRegistry());
         _validatorRegistryLoader.loadOOTBValidates();
-        
+
         doInit(activators);
     }
 
@@ -172,7 +186,7 @@ public abstract class AbstractDeployment {
     public ValidatorRegistryLoader getValidatorRegistryLoader() {
         return _validatorRegistryLoader;
     }
-    
+
     /**
      * Initialize the deployment
      */
@@ -191,7 +205,21 @@ public abstract class AbstractDeployment {
     /**
      * Destroy the deployment.
      */
-    public abstract void destroy();
+    protected abstract void destroy();
+
+    /**
+     * Method which controls deployment shutdown.
+     */
+    @SuppressWarnings("unchecked")
+    public final void shutdown() {
+        List<AbstractDeployment> deployments = (List<AbstractDeployment>) getDomain().getProperties().get(DEPLOYMENTS);
+        // unregister current deployment and check if there any other using same domain
+        deployments.remove(this);
+        if (deployments.isEmpty()) {
+            getDomain().destroy();
+        }
+        destroy();
+    }
 
     /**
      * @return the SwitchYard configuration for this deployment.
