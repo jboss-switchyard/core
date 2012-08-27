@@ -24,6 +24,7 @@ package org.switchyard.bus.camel;
 
 import javax.xml.namespace.QName;
 
+import org.apache.camel.CamelContext;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,6 +35,8 @@ import org.switchyard.HandlerException;
 import org.switchyard.MockDomain;
 import org.switchyard.Scope;
 import org.switchyard.Service;
+import org.switchyard.common.camel.CamelContextManager;
+import org.switchyard.common.camel.SwitchYardCamelContext;
 import org.switchyard.internal.ExchangeImpl;
 import org.switchyard.metadata.ExchangeContract;
 import org.switchyard.metadata.InOnlyService;
@@ -43,17 +46,21 @@ import org.switchyard.spi.Dispatcher;
 public class ExchangeDispatcherTest {
 
     private CamelExchangeBus _provider;
+	private CamelContext _camelContext;
 
     @Before
     public void setUp() throws Exception {
+        MockDomain mockDomain = new MockDomain();
+        _camelContext = new SwitchYardCamelContext(mockDomain);
+        mockDomain.getProperties().put(CamelContextManager.CAMEL_CONTEXT_PROPERTY, _camelContext);
         _provider = new CamelExchangeBus();
-        _provider.init(new MockDomain());
-        _provider.start();
+        _provider.init(mockDomain);
+        _camelContext.start();
     }
     
     @After
     public void tearDown() throws Exception {
-        _provider.stop();
+        _camelContext.stop();
     }
     
     @Test
