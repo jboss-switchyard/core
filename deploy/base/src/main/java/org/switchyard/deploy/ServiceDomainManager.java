@@ -19,8 +19,11 @@
 
 package org.switchyard.deploy;
 
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 
@@ -28,16 +31,19 @@ import org.apache.log4j.Logger;
 import org.switchyard.ExchangeHandler;
 import org.switchyard.ServiceDomain;
 import org.switchyard.bus.camel.CamelExchangeBus;
+import org.switchyard.common.camel.CamelContextManager;
 import org.switchyard.common.type.Classes;
+import org.switchyard.config.model.domain.DomainModel;
 import org.switchyard.config.model.domain.HandlerModel;
 import org.switchyard.config.model.switchyard.SwitchYardModel;
+import org.switchyard.event.DomainShutdownEvent;
+import org.switchyard.event.DomainStartupEvent;
 import org.switchyard.exception.SwitchYardException;
 import org.switchyard.internal.DefaultServiceRegistry;
 import org.switchyard.internal.DomainImpl;
 import org.switchyard.internal.EventManager;
 import org.switchyard.internal.transform.BaseTransformerRegistry;
 import org.switchyard.internal.validate.BaseValidatorRegistry;
-import org.switchyard.spi.ExchangeBus;
 import org.switchyard.spi.ServiceRegistry;
 
 /**
@@ -68,13 +74,15 @@ public class ServiceDomainManager {
      * Registry class name property.
      */
     public static final String REGISTRY_CLASS_NAME = "registryProvider";
-    
+
     private static Logger _log = Logger.getLogger(ServiceDomainManager.class);
 
     // Share the same service registry and bus across domains to give visibility 
     // to registered services across application domains
     private ServiceRegistry _registry = new DefaultServiceRegistry();
     private EventManager _eventManager = new EventManager();
+    private CamelContextManager _camelManager = new CamelContextManager();
+    private Map<QName, WeakReference<ServiceDomain>> domains = new HashMap<QName, WeakReference<ServiceDomain>>();
 
     /**
      * Create a ServiceDomain instance.
@@ -95,16 +103,32 @@ public class ServiceDomainManager {
     public ServiceDomain createDomain(QName domainName, SwitchYardModel switchyardConfig) {
         BaseTransformerRegistry transformerRegistry = new BaseTransformerRegistry();
         BaseValidatorRegistry validatorRegistry = new BaseValidatorRegistry();
-        List<ExchangeHandler> handlers = getDomainHandlers(switchyardConfig);
-        ExchangeBus bus = new CamelExchangeBus();
-        
-        DomainImpl domain = new DomainImpl(
-                domainName, _registry, bus, transformerRegistry, validatorRegistry, _eventManager);
-        domain.getHandlers().addAll(handlers);
+
+        // register camel manager as domain lifecycle tracker
+        _eventManager.addObserver(_camelManager, DomainStartupEvent.class);
+        _eventManager.addObserver(_camelManager, DomainShutdownEvent.class);
+
+        ServiceDomain domain = null;
+        if (domains.containsKey(domainName)) {
+            WeakReference<ServiceDomain> reference = domains.get(domainName);
+            if (reference.get() != null) {
+                domain = domains.get(domainName).get();
+            }
+        }
+
+        if (domain == null) {
+            CamelExchangeBus bus = new CamelExchangeBus();
+            domain = new DomainImpl(domainName, _registry, bus, transformerRegistry, validatorRegistry, _eventManager);
+            domains.put(domainName, new WeakReference<ServiceDomain>(domain));
+        }
+
+        if (switchyardConfig != null) {
+            domain.getHandlers().addAll(getDomainHandlers(switchyardConfig.getDomain()));
+        }
 
         return domain;
     }
-    
+
     /**
      * Return the shared EventManager used for all ServiceDomain instances.
      * @return EventManager instance
@@ -112,16 +136,16 @@ public class ServiceDomainManager {
     public EventManager getEventManager() {
         return _eventManager;
     }
-    
+
     /**
      * Looks for handler definitions in the switchyard config and attempts to 
      * create and add them to the domain's global handler chain.
      *
      */
-    private List<ExchangeHandler> getDomainHandlers(SwitchYardModel config) {
+    private List<ExchangeHandler> getDomainHandlers(DomainModel domain) {
         LinkedList<ExchangeHandler> handlers = new LinkedList<ExchangeHandler>();
-        if (config != null && config.getDomain() != null && config.getDomain().getHandlers() != null) {
-            for (HandlerModel handlerConfig : config.getDomain().getHandlers().getHandlers()) {
+        if (domain != null && domain.getHandlers() != null) {
+            for (HandlerModel handlerConfig : domain.getHandlers().getHandlers()) {
                 Class<?> handlerClass = Classes.forName(handlerConfig.getClassName());
                 if (handlerClass == null) {
                     throw new SwitchYardException("Handler class not found " + handlerConfig.getClassName());
@@ -141,4 +165,5 @@ public class ServiceDomainManager {
         }
         return handlers;
     }
+
 }
