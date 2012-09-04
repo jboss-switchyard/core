@@ -160,8 +160,8 @@ public class DomainImpl implements ServiceDomain {
     
     @Override
     public ServiceReference registerServiceReference(QName serviceName,
-            ServiceInterface metadata, ExchangeHandler handler, List<Policy> provides, Registrant owner) {
-        ServiceReferenceImpl reference = new ServiceReferenceImpl(serviceName, metadata, this, handler, provides, owner);
+            ServiceInterface metadata, ExchangeHandler handler, List<Policy> requires, Registrant owner) {
+        ServiceReferenceImpl reference = new ServiceReferenceImpl(serviceName, metadata, this, requires, handler, owner);
         Dispatcher dispatch = _exchangeBus.createDispatcher(reference);
         reference.setDispatcher(dispatch);
         _references.put(serviceName, reference);

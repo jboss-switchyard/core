@@ -103,7 +103,7 @@ public interface ServiceDomain {
      * @param serviceName the name of the reference
      * @param contract service consumer contract
      * @param handler the handler to use to process replies from the service
-     * @param provides policies provided by the reference
+     * @param requires policies required for the reference
      * @param owner metadata related to the entity registering the reference
      * @return a reference to the registered service that can be used to
      * unregister when required
@@ -111,7 +111,7 @@ public interface ServiceDomain {
     ServiceReference registerServiceReference(QName serviceName,
             ServiceInterface contract,
             ExchangeHandler handler,
-            List<Policy> provides,
+            List<Policy> requires,
             Registrant owner);
     
     /**

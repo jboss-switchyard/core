@@ -93,12 +93,32 @@ public class PolicyHandlerTest {
 	    public String getName() {
 	        return FOO_POLICY_NAME;
 	    }
+
+        @Override
+        public PolicyType getType() {
+            return PolicyType.INTERACTION;
+        }
+
+        @Override
+        public boolean isCompatibleWith(Policy target) {
+            return true;
+        }
 	}
 	
 	class BarPolicy implements Policy {
         @Override
         public String getName() {
             return BAR_POLICY_NAME;
+        }
+
+        @Override
+        public PolicyType getType() {
+            return PolicyType.INTERACTION;
+        }
+
+        @Override
+        public boolean isCompatibleWith(Policy target) {
+            return true;
         }
     }
 }

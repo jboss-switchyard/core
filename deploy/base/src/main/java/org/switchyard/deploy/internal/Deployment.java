@@ -37,6 +37,7 @@ import org.switchyard.ServiceReference;
 import org.switchyard.common.type.Classes;
 import org.switchyard.config.model.ModelPuller;
 import org.switchyard.config.model.composite.BindingModel;
+import org.switchyard.config.model.composite.ComponentImplementationModel;
 import org.switchyard.config.model.composite.ComponentModel;
 import org.switchyard.config.model.composite.ComponentReferenceModel;
 import org.switchyard.config.model.composite.ComponentServiceModel;
@@ -65,6 +66,8 @@ import org.switchyard.metadata.InOutService;
 import org.switchyard.metadata.ServiceInterface;
 import org.switchyard.metadata.java.JavaService;
 import org.switchyard.policy.Policy;
+import org.switchyard.policy.Policy.PolicyType;
+import org.switchyard.policy.PolicyFactory;
 
 /**
  * Deployment is a framework-independent representation of a deployed SwitchYard 
@@ -413,28 +416,61 @@ public class Deployment extends AbstractDeployment {
                 continue;
             }
 
+            List<Policy> requiresImpl = null;
+            try {
+                requiresImpl = getPolicyRequirements(component.getImplementation());
+            } catch (Exception e) {
+                throw new SwitchYardException(e);
+            }
+            
             Implementation impl = new Implementation(component.getImplementation());
             List<ServiceReference> references = new LinkedList<ServiceReference>();
-
+            List<Policy> requiresReferences = new LinkedList<Policy>();
+            
             // register a reference for each one declared in the component
             for (ComponentReferenceModel reference : component.getReferences()) {
                 _log.debug("Registering reference " + reference.getQName()
                        + " for component " + component.getImplementation().getType() + " for deployment " + getName());
+
+                List<Policy> requires = null;
+                try {
+                    requires = getPolicyRequirements(reference);
+                } catch (Exception e) {
+                    throw new SwitchYardException(e);
+                }
+                requiresReferences.addAll(requires);
+
                 ServiceInterface refIntf = getComponentReferenceInterface(reference);
                 ServiceReference svcRef = getDomain().registerServiceReference(
-                        reference.getQName(), refIntf, null, null, impl);
+                        reference.getQName(), refIntf, null, requires, impl);
                 references.add(svcRef);
             }
             
             // register a service for each one declared in the component
-            for (ComponentServiceModel service : component.getServices()) {
+            if (component.getServices().size() > 1) {
+                throw new SwitchYardException("Multiple services in the Component '"
+                        + component.getName() + "' - Just one service is allowed");
+
+            } else if (component.getServices().size() == 1) {
+                ComponentServiceModel service = component.getServices().get(0);
                 _log.debug("Registering service " + service.getQName()
                        + " for component " + component.getImplementation().getType() + " for deployment " + getName());
+
+                List<Policy> requires = null;
+                try {
+                    requires = getPolicyRequirements(service);
+                    validatePolicy(requires, requiresImpl, requiresReferences);
+                } catch (Exception e) {
+                    throw new SwitchYardException(e);
+                }
+                requires.addAll(requiresImpl);
+                for (ServiceReference ref : references) {
+                    ref.setProvidedPolicies(requires);
+                }
 
                 ServiceHandler handler = activator.activateService(service.getQName(), component);
                 Activation activation = new Activation(activator, service.getQName(), handler);
                 ServiceInterface serviceIntf = getComponentServiceInterface(service);
-                List<Policy> requires = getPolicyRequirements(service);
                 Service svc = getDomain().registerService(service.getQName(), serviceIntf, handler, requires, impl);
                 activation.addService(svc);
                 activation.addReferences(references);
@@ -447,12 +483,20 @@ public class Deployment extends AbstractDeployment {
                 
                 _services.add(activation);
                 handler.start();
-            }
-            
-            // we don't have a distinct call for activateReference right now,
-            // so this catches cases where an implementation has one or more
-            // references, but no services.  (this is pretty crappy)
-            if (component.getServices().isEmpty()) {
+
+            } else {
+                try {
+                    validatePolicy(null, requiresImpl, requiresReferences);
+                } catch (Exception e) {
+                    throw new SwitchYardException(e);
+                }
+                for (ServiceReference ref : references) {
+                    ref.setProvidedPolicies(requiresImpl);
+                }
+
+                // we don't have a distinct call for activateReference right now,
+                // so this catches cases where an implementation has one or more
+                // references, but no services.  (this is pretty crappy)
                 activator.activateService(null, component);
             }
         }
@@ -548,30 +592,78 @@ public class Deployment extends AbstractDeployment {
         return Classes.forName(className, getClass());
     }
     
-    private List<Policy> getPolicyRequirements(ComponentServiceModel model) {
+    private List<Policy> getPolicyRequirements(ComponentServiceModel serviceModel) throws Exception {
         LinkedList<Policy> requires = new LinkedList<Policy>();
-        for (final String policyName : model.getPolicyRequirements()) {
-            requires.add(new ServicePolicy(policyName));
+        for (final String policyName : serviceModel.getPolicyRequirements()) {
+            requires.add(PolicyFactory.getPolicy(policyName));
         }
         return requires;
     }
 
-}
-
-class ServicePolicy implements Policy {
-    private String _policyName;
-    
-    ServicePolicy(String policyName) {
-        _policyName = policyName;
-    }
-
-    public String getName() {
-        return _policyName;
-    }
-    public String toString() {
-        return _policyName;
+    private List<Policy> getPolicyRequirements(ComponentImplementationModel implModel) throws Exception {
+        LinkedList<Policy> requires = new LinkedList<Policy>();
+        for (final String policyName : implModel.getPolicyRequirements()) {
+            requires.add(PolicyFactory.getPolicy(policyName));
+        }
+        return requires;
     }
     
+    private List<Policy> getPolicyRequirements(ComponentReferenceModel referenceModel) throws Exception {
+        LinkedList<Policy> requires = new LinkedList<Policy>();
+        for (final String policyName : referenceModel.getPolicyRequirements()) {
+            requires.add(PolicyFactory.getPolicy(policyName));
+        }
+        return requires;
+    }
+
+    private void validatePolicy(List<Policy> service, List<Policy> impl, List<Policy> reference) throws Exception {
+        for (int i=0; service != null && i<service.size(); i++) {
+            if (service.get(i).getType() != PolicyType.INTERACTION) {
+                throw new Exception("Policy '" + service.get(i) + "' is not interaction policy, but " + service.get(i).getType() + ".");
+            }
+
+            for (int j=i+1; j<service.size(); j++) {
+                if (!service.get(i).isCompatibleWith(service.get(j))) {
+                    throw new Exception("Service Interaction Policy '" + service.get(i) + "' and '" + service.get(j) + " are not compatible.");
+                }
+            }
+        }
+
+        for (int i=0; reference != null && i<reference.size(); i++) {
+            if (reference.get(i).getType() != PolicyType.INTERACTION) {
+                throw new Exception("Policy '" + reference.get(i) + "' is not interaction policy, but " + reference.get(i).getType() + ".");
+            }
+
+            for (int j=i+1; j<reference.size(); j++) {
+                if (!reference.get(i).isCompatibleWith(reference.get(j))) {
+                    throw new Exception("Reference Interaction Policy '" + reference.get(i) + "' and '" + reference.get(j) + " are not compatible.");
+                }
+            }
+        }
+
+        for (int i=0; impl != null && i<impl.size(); i++) {
+            if (impl.get(i).getType() != PolicyType.IMPLEMENTATION) {
+                throw new Exception("Policy '" + impl.get(i) + "' is not implementation policy, but " + impl.get(i).getType() + ".");
+            }
+            
+            for (int j=i+1; j<impl.size(); j++) {
+                if (!impl.get(i).isCompatibleWith(impl.get(j))) {
+                    throw new Exception("Implementation Policy '" + impl.get(i) + "' and '" + impl.get(j) + " are not compatible.");
+                }
+            }
+
+            for (int j=0; service != null && j<service.size(); j++) {
+                if (!impl.get(i).isCompatibleWith(service.get(j))) {
+                    throw new Exception("Implementation Policy '" + impl.get(i) + "' and Service Interaciton Policy'" + service.get(j) + " are not compatible.");
+                }
+            }
+            for (int j=0; reference != null && j<reference.size(); j++) {
+                if (!impl.get(i).isCompatibleWith(reference.get(j))) {
+                    throw new Exception("Implementation Policy '" + impl.get(i) + "' and Reference Interaciton Policy'" + reference.get(j) + " are not compatible.");
+                }
+            }
+        }
+    }
 }
 
 class Activation {
