@@ -83,7 +83,7 @@ public class DomainImpl implements ServiceDomain {
             new LocalExchangeBus(), 
             new BaseTransformerRegistry(), 
             new BaseValidatorRegistry(), 
-            new EventManager());
+            EventManagerFactory.getInstance().getEventManager());
     }
     
     /**

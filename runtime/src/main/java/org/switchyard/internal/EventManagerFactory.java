@@ -23,10 +23,10 @@ public class EventManagerFactory {
 	/**
 	 * get new instance of EventManager
 	 * 
-	 * @return {@link AsynchronousEventManager}
+	 * @return {@link EventManager}
 	 */
 	public EventManager getEventManager() {
-		return new AsynchronousEventManager();
+		return new EventManager();
 	}
 
 	static {

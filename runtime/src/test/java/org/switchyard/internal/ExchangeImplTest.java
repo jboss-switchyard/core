@@ -153,16 +153,31 @@ public class ExchangeImplTest {
         }
     }
 
+    class CompletionCounter implements EventObserver {
+        int count;
+        public void notify(EventObject event) {
+            if (event instanceof ExchangeCompletionEvent) {
+                ++count;
+            
+                synchronized (this) {
+    				this.notifyAll();
+    			}
+            }
+        }
+        
+        public void waitForEvent() {
+	        synchronized (this) {
+				try {
+					this.wait();
+				} catch (InterruptedException e) {
+				}
+			}
+        }
+    };
+    
     @Test
     public void testExchangeCompletedEvent() {
-        class CompletionCounter implements EventObserver {
-            int count;
-            public void notify(EventObject event) {
-                if (event instanceof ExchangeCompletionEvent) {
-                    ++count;
-                }
-            }
-        };
+        
         CompletionCounter counter = new CompletionCounter();
         _domain.addEventObserver(counter, ExchangeCompletionEvent.class);
         
@@ -170,6 +185,9 @@ public class ExchangeImplTest {
         ServiceReference inOnlyService = _domain.createInOnlyService(new QName("ExchangeCompleteEvent-1"));
         Exchange inOnly = inOnlyService.createExchange();
         inOnly.send(inOnly.createMessage());
+        
+        counter.waitForEvent();
+        
         Assert.assertEquals(1, counter.count);
         
         // reset count
@@ -180,6 +198,8 @@ public class ExchangeImplTest {
                 new QName("ExchangeCompleteEvent-2"), new MockHandler().forwardInToOut());
         Exchange inOut = inOutService.createExchange(new MockHandler());
         inOut.send(inOut.createMessage());
+        
+        counter.waitForEvent();
         Assert.assertEquals(1, counter.count);
     }
 
