@@ -171,7 +171,7 @@ public class CDIMixIn extends AbstractTestMixIn {
     public void after(AbstractDeployment deployment) {
         if (_simpleCdiDeployment != null) {
             _simpleCdiDeployment.stop();
-            _simpleCdiDeployment.destroy();
+            _simpleCdiDeployment.shutdown();
         }
     }
 

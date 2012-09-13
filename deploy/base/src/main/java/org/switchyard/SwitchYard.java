@@ -45,6 +45,7 @@ public class SwitchYard {
     private List<Activator> _activatorList;
     private ServiceDomain _domain;
     private Deployment _deployment;
+	private ServiceDomainManager _domainManager;
 
     /**
      * Create a new SwitchYard runtime from the specified config.
@@ -53,8 +54,8 @@ public class SwitchYard {
      */
     public SwitchYard(InputStream config) throws IOException {
         _deployment = new Deployment(config);
-        _domain = new ServiceDomainManager().createDomain(
-                _deployment.getConfig().getQName(), _deployment.getConfig());
+        _domainManager = new ServiceDomainManager();
+        _domain = _domainManager.createDomain(_deployment.getConfig().getQName(), _deployment.getConfig());
         _activatorList = ActivatorLoader.createActivators(_domain);
     }
 
@@ -63,7 +64,7 @@ public class SwitchYard {
      */
     public void start() {
         _logger.debug("Starting SwitchYard application '" + _deployment.getConfig().getQName() + "'.");
-        
+
         _deployment.init(_domain, _activatorList);
         _deployment.start();
         _logger.debug("SwitchYard application '" + _deployment.getConfig().getQName() + "' started.");

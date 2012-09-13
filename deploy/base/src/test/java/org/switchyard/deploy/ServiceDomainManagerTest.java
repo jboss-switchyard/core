@@ -19,6 +19,9 @@
 
 package org.switchyard.deploy;
 
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+
 import javax.xml.namespace.QName;
 
 import org.junit.Assert;
@@ -26,6 +29,8 @@ import org.junit.Test;
 import org.switchyard.ServiceDomain;
 import org.switchyard.config.model.ModelPuller;
 import org.switchyard.config.model.switchyard.SwitchYardModel;
+import org.switchyard.config.model.switchyard.v1.V1SwitchYardModel;
+import org.switchyard.event.DomainShutdownEvent;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -41,5 +46,21 @@ public class ServiceDomainManagerTest {
                 new QName("test"), switchyard);
         
         Assert.assertEquals(2, domain.getHandlers().size());
+    }
+
+    @Test
+    public void testSharedDomain() throws Exception {
+        ServiceDomainManager domainManager = new ServiceDomainManager();
+        domainManager.getEventManager().addObserver(domainManager, DomainShutdownEvent.class);
+
+        QName domainName = new QName("urn:switchyard:test", "test-domain");
+
+        SwitchYardModel switchyardConfig = new V1SwitchYardModel();
+        ServiceDomain domain = domainManager.createDomain(domainName, switchyardConfig);
+
+        assertSame(domain, domainManager.createDomain(domainName, switchyardConfig));
+
+        domain.destroy();
+        assertNotSame(domain, domainManager.createDomain(domainName, switchyardConfig));
     }
 }

@@ -278,7 +278,7 @@ public class SwitchYardTestKit {
         assertDeployed();
         _deployment.stop();
         mixInAfter();
-        _deployment.destroy();
+        _deployment.shutdown();
     }
 
     /**
