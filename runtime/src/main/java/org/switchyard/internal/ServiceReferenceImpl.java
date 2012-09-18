@@ -205,4 +205,9 @@ public class ServiceReferenceImpl implements ServiceReference {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "ServiceReference [name=" + _name + ", interface=" + _interface + ", domain=" + _domain + "]";
+    }
+
 }
