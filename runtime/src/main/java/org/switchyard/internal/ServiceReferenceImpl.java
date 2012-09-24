@@ -47,7 +47,8 @@ public class ServiceReferenceImpl implements ServiceReference {
     private QName _name;
     private ServiceInterface _interface;
     private DomainImpl _domain;
-    private List<Policy> _provides;
+    private List<Policy> _requires;
+    private List<Policy> _provides = Collections.emptyList();
     private ExchangeHandler _handler;
     private Dispatcher _dispatcher;
     private Registrant _consumerMetadata;
@@ -68,7 +69,7 @@ public class ServiceReferenceImpl implements ServiceReference {
      * Creates a new reference to a service.
      * @param name name of the service reference
      * @param serviceInterface the service interface
-     * @param provides list of policies provided by this reference
+     * @param requires list of policies required for this reference
      * @param handler handler used to process reply faults/messages
      * @param domain domain in which the service is used 
      * @param consumerMetadata information related to the consumer
@@ -76,8 +77,8 @@ public class ServiceReferenceImpl implements ServiceReference {
     public ServiceReferenceImpl(QName name, 
             ServiceInterface serviceInterface, 
             DomainImpl domain,
+            List<Policy> requires,
             ExchangeHandler handler,
-            List<Policy> provides,
             Registrant consumerMetadata) {
         
         _name = name;
@@ -86,11 +87,12 @@ public class ServiceReferenceImpl implements ServiceReference {
         _domain = domain;
         _consumerMetadata = consumerMetadata;
         
-        if (provides != null) {
-            _provides = provides;
+        if (requires != null) {
+            _requires = requires;
         } else {
-            _provides = Collections.emptyList();
+            _requires = Collections.emptyList();
         }
+        
     }
     
     @Override
@@ -126,6 +128,9 @@ public class ServiceReferenceImpl implements ServiceReference {
         ex.consumer(this, op);
         ex.setOutputDispatcher(_dispatcher);
         
+        for (Policy policy : _requires) {
+            PolicyUtil.require(ex, policy);
+        }
         for (Policy policy : _provides) {
             PolicyUtil.provide(ex, policy);
         }
@@ -143,8 +148,18 @@ public class ServiceReferenceImpl implements ServiceReference {
     }
 
     @Override
+    public List<Policy> getRequiredPolicies() {
+        return Collections.unmodifiableList(_requires);
+    }
+    
+    @Override
     public List<Policy> getProvidedPolicies() {
         return Collections.unmodifiableList(_provides);
+    }
+    
+    @Override
+    public void setProvidedPolicies(List<Policy> provides) {
+        _provides.addAll(provides);
     }
     
     @Override

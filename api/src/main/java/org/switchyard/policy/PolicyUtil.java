@@ -100,6 +100,19 @@ public final class PolicyUtil {
         return containsPolicy(getRequired(exchange), policy);
     }
     
+    /**
+     * Removes a policy from provided policy set if it exists.
+     * @param exchange check policy on this exchange
+     * @param policy the policy to remove
+     * @return true if successfully removed
+     */
+    public static boolean disprovide(Exchange exchange, Policy policy) {
+        Set<Policy> provided = getPolicies(exchange, PROVIDED_PROPERTY);
+        boolean result = provided.remove(policy);
+        exchange.getContext().setProperty(PROVIDED_PROPERTY, provided);
+        return result;
+    }
+
     @SuppressWarnings("unchecked")
     private static Set<Policy> getPolicies(Exchange exchange, String propertyName) {
         Property intentsProperty = exchange.getContext().getProperty(propertyName);
