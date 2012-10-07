@@ -21,8 +21,10 @@ package org.switchyard.deploy.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,7 @@ import org.switchyard.config.model.composite.BindingModel;
 import org.switchyard.config.model.composite.ComponentModel;
 import org.switchyard.config.model.composite.ComponentReferenceModel;
 import org.switchyard.config.model.composite.ComponentServiceModel;
+import org.switchyard.config.model.composite.CompositeModel;
 import org.switchyard.config.model.composite.CompositeReferenceModel;
 import org.switchyard.config.model.composite.CompositeServiceModel;
 import org.switchyard.config.model.composite.InterfaceModel;
@@ -46,12 +49,15 @@ import org.switchyard.config.model.switchyard.SwitchYardModel;
 import org.switchyard.config.model.transform.TransformsModel;
 import org.switchyard.config.model.validate.ValidatesModel;
 import org.switchyard.deploy.Activator;
+import org.switchyard.deploy.Binding;
+import org.switchyard.deploy.Implementation;
 import org.switchyard.deploy.ServiceHandler;
 import org.switchyard.deploy.event.ApplicationDeployedEvent;
 import org.switchyard.deploy.event.ApplicationUndeployedEvent;
 import org.switchyard.exception.SwitchYardException;
 import org.switchyard.extensions.wsdl.WSDLReaderException;
 import org.switchyard.extensions.wsdl.WSDLService;
+import org.switchyard.internal.ServiceReferenceImpl;
 import org.switchyard.metadata.InOnlyOperation;
 import org.switchyard.metadata.InOnlyService;
 import org.switchyard.metadata.InOutOperation;
@@ -201,6 +207,38 @@ public class Deployment extends AbstractDeployment {
     }
     
     /**
+     * Returns a list of activator types required by this deployment.  The list
+     * is built from implementation, service binding, and reference binding 
+     * types in the application.
+     * @return list of activator type names
+     */
+    public List<String> getActivationTypes() {
+        HashSet<String> types = new HashSet<String>();
+        CompositeModel composite = getConfig().getComposite();
+        
+        // reference bindings
+        for (CompositeReferenceModel reference : composite.getReferences()) {
+            for (BindingModel binding : reference.getBindings()) {
+                types.add(binding.getType());
+            }
+        }
+        // service bindings
+        for (CompositeServiceModel service : composite.getServices()) {
+            for (BindingModel binding : service.getBindings()) {
+                types.add(binding.getType());
+            }
+        }
+        // implementations
+        for (ComponentModel component : composite.getComponents()) {
+            if (component.getImplementation() != null) {
+                types.add(component.getImplementation().getType());
+            }
+        }
+        
+        return new ArrayList<String>(types);
+    }
+    
+    /**
      * Finds an activator that handles the component implementation type.
      * @throws SwitchYardException if the component definition does not contain
      * an implementation type
@@ -242,7 +280,9 @@ public class Deployment extends AbstractDeployment {
                 ServiceHandler handler = activator.activateBinding(reference.getQName(), binding);
                 Activation activation = new Activation(activator, reference.getQName(), handler);
                 ServiceInterface si = getCompositeReferenceInterface(reference);
-                activation.addService(getDomain().registerService(refQName, si, handler));
+                Binding bindingMetadata = new Binding(binding);
+                Service svc = getDomain().registerService(refQName, si, handler, null, bindingMetadata);
+                activation.addService(svc);
                 _referenceBindings.add(activation);
                         
                 handler.start();
@@ -373,6 +413,7 @@ public class Deployment extends AbstractDeployment {
                 continue;
             }
 
+            Implementation impl = new Implementation(component.getImplementation());
             List<ServiceReference> references = new LinkedList<ServiceReference>();
 
             // register a reference for each one declared in the component
@@ -380,7 +421,9 @@ public class Deployment extends AbstractDeployment {
                 _log.debug("Registering reference " + reference.getQName()
                        + " for component " + component.getImplementation().getType() + " for deployment " + getName());
                 ServiceInterface refIntf = getComponentReferenceInterface(reference);
-                references.add(getDomain().registerServiceReference(reference.getQName(), refIntf));
+                ServiceReference svcRef = getDomain().registerServiceReference(
+                        reference.getQName(), refIntf, null, null, impl);
+                references.add(svcRef);
             }
             
             // register a service for each one declared in the component
@@ -392,7 +435,8 @@ public class Deployment extends AbstractDeployment {
                 Activation activation = new Activation(activator, service.getQName(), handler);
                 ServiceInterface serviceIntf = getComponentServiceInterface(service);
                 List<Policy> requires = getPolicyRequirements(service);
-                activation.addService(getDomain().registerService(service.getQName(), serviceIntf, handler, requires));
+                Service svc = getDomain().registerService(service.getQName(), serviceIntf, handler, requires, impl);
+                activation.addService(svc);
                 activation.addReferences(references);
                 
                 // register any service promotions, avoiding duplicate service names
@@ -418,18 +462,26 @@ public class Deployment extends AbstractDeployment {
         _log.debug("Deploying service bindings for deployment " + getName());
         // activate bindings for each service
         for (CompositeServiceModel service : getConfig().getComposite().getServices()) {
+            // Create the reference for the composite service
+            ServiceReference reference = getDomain().registerServiceReference(
+                    service.getQName(), getCompositeServiceInterface(service));
+            
             for (BindingModel binding : service.getBindings()) {
-                _log.debug("Deploying binding " + binding.getType() + " for service " + service.getQName() + " for deployment " + getName());
+                _log.debug("Deploying binding " + binding.getType() + " for service " 
+                        + service.getQName() + " for deployment " + getName());
                 
                 Activator activator = findActivator(binding.getType());
                 if (activator == null) {
                     continue;
                 }
 
+                // Hack to set consumer metadata on reference
+                Binding bindingMetadata = new Binding(binding);
+                ((ServiceReferenceImpl)reference).setConsumerMetadata(bindingMetadata);
+                
                 ServiceHandler handler = activator.activateBinding(service.getQName(), binding);
                 Activation activation = new Activation(activator, service.getQName(), handler);
-                activation.addReference(
-                        getDomain().registerServiceReference(service.getQName(), getCompositeServiceInterface(service)));
+                activation.addReference(reference);
                 _serviceBindings.add(activation);
                 
                 handler.start();

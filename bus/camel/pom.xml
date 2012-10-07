@@ -43,6 +43,10 @@
         </dependency>
         <dependency>
             <groupId>org.switchyard</groupId>
+            <artifactId>switchyard-common-camel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.switchyard</groupId>
             <artifactId>switchyard-runtime</artifactId>
         </dependency>
          <dependency>
@@ -61,6 +65,11 @@
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-core</artifactId>
+        </dependency>
+        <dependency>
+        	<groupId>org.slf4j</groupId>
+        	<artifactId>slf4j-simple</artifactId>
+        	<scope>test</scope>
         </dependency>
     </dependencies>
 </project>

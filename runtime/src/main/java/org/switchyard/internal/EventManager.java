@@ -38,14 +38,14 @@ import org.switchyard.event.EventPublisher;
 public class EventManager implements EventPublisher {
 
 	private static Logger _logger = Logger.getLogger(EventManager.class);
+	
 	private Map<Class<? extends EventObject>, List<EventObserver>> _observers;
-
+	
 	/**
 	 * pool executes publish asynchronously. One pool for eventManager
 	 */
 	private ExecutorService publishExecutor = Executors
 			.newSingleThreadExecutor();
-
 	/**
 	 * Creates a new instance of EventManager.
 	 */
@@ -58,19 +58,23 @@ public class EventManager implements EventPublisher {
 	 */
 	@Override
 	public void publish(EventObject event) {
+       if (_logger.isTraceEnabled()) {
+           _logger.trace("Publishing event " + event);
+       }
+
+	   	if (_logger.isTraceEnabled()) {
+           _logger.trace("Publishing event " + event);
+       	}
+	
 		publishExecutor.execute(new NotifyObserversTask(event));
 	}
 
 	/**
 	 * Returns a list of EventObserver instances for a given event type.
-	 * 
-	 * @param event
-	 *            event type to query for observers
-	 * @return list of EventObservers for the type or an empty list if none are
-	 *         registered
+     * @param event event type to query for observers
+     * @return list of EventObservers for the type or an empty list if none are registered
 	 */
-	public List<EventObserver> getObserversForEvent(
-			Class<? extends EventObject> event) {
+    public List<EventObserver> getObserversForEvent(Class<? extends EventObject> event) {
 		if (_observers.containsKey(event)) {
 			return _observers.get(event);
 		} else {
@@ -79,18 +83,15 @@ public class EventManager implements EventPublisher {
 	}
 
 	/**
-	 * Synchronizing this method since adding an observer may lead to a new list
-	 * being created for an event entry and we don't want a race condition if
-	 * multiple threads hit this during deployment/startup.
-	 * 
-	 * @param observer
-	 *            observer instance to add
-	 * @param event
-	 *            the event to register against
+     * Synchronizing this method since adding an observer may lead to a 
+     * new list being created for an event entry and we don't want a race 
+     * condition if multiple threads hit this during deployment/startup.
+     * @param observer observer instance to add
+     * @param event the event to register against
 	 * @return a reference to this EventManger for chaining calls
 	 */
-	public synchronized EventManager addObserver(EventObserver observer,
-			Class<? extends EventObject> event) {
+    public synchronized EventManager addObserver(
+            EventObserver observer, Class<? extends EventObject> event) {
 
 		List<EventObserver> observerList = _observers.get(event);
 		if (observerList == null) {
@@ -105,9 +106,7 @@ public class EventManager implements EventPublisher {
 
 	/**
 	 * Remove all event registrations for a given EventObserver instance.
-	 * 
-	 * @param observer
-	 *            the observer to unregister
+     * @param observer the observer to unregister
 	 */
 	public synchronized void removeObserver(EventObserver observer) {
 		for (List<EventObserver> observers : _observers.values()) {
@@ -117,14 +116,11 @@ public class EventManager implements EventPublisher {
 
 	/**
 	 * Remove an EventObserver from a specific event type.
-	 * 
-	 * @param observer
-	 *            the EventObserver to unregister
-	 * @param event
-	 *            the event to unregister
+     * @param observer the EventObserver to unregister
+     * @param event the event to unregister
 	 */
-	public synchronized void removeObserverForEvent(EventObserver observer,
-			Class<? extends EventObject> event) {
+    public synchronized void removeObserverForEvent(
+            EventObserver observer, Class<? extends EventObject> event) {
 
 		List<EventObserver> observers = _observers.get(event);
 		if (observers != null) {

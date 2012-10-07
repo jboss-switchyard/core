@@ -22,36 +22,23 @@ package org.switchyard.metadata;
 /**
  * Exchange Contract.
  * <p/>
- * Two-way Exchange contract, detailing the requirements of both the invoker (in terms of
- * accepted response/fault types) and target {@link ServiceOperation} being invoked.
+ * Two-way Exchange contract, detailing the requirements of both the consumer
+ * and provider {@link ServiceOperation} being invoked.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public interface ExchangeContract {
-
+    
     /**
-     * Default {@link org.switchyard.ExchangePattern#IN_ONLY} exchange contract.
+     * Returns the consumer contract for a message exchange.
+     * @return consumer contract
      */
-    ExchangeContract IN_ONLY = new InOnlyContract();
+    ServiceOperation getConsumerOperation();
+    
     /**
-     * Default {@link org.switchyard.ExchangePattern#IN_OUT} exchange contract.
+     * Returns the provider contract for a message exchange.
+     * @return provider contract
      */
-    ExchangeContract IN_OUT = new InOutContract();
-
-    /**
-     * Get the invocation metadata associated with the exchange invoker.
-     * <p/>
-     * This represents the data input into the exchange by the invoker/consumer,
-     * before it sends the message to the target service operation.  Also represents
-     * the data types it requires back in the exchange, including fault types if a fault
-     * occurs.
-     * @return The exchange invoker's invocation metadata.
-     */
-    InvocationContract getInvokerInvocationMetaData();
-
-    /**
-     * Get the target service operation being invoked.
-     * @return The target service operation being invoked.
-     */
-    ServiceOperation getServiceOperation();
+    ServiceOperation getProviderOperation();
+    
 }

@@ -25,27 +25,23 @@ package org.switchyard.bus.camel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ServiceLoader;
 
 import javax.xml.namespace.QName;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.CompositeRegistry;
-import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.impl.SimpleRegistry;
-import org.apache.camel.spi.PackageScanClassResolver;
-import org.apache.camel.spi.Registry;
+import org.apache.log4j.Logger;
 import org.switchyard.ExchangeHandler;
 import org.switchyard.HandlerException;
 import org.switchyard.Message;
 import org.switchyard.Scope;
-import org.switchyard.Service;
 import org.switchyard.ServiceDomain;
+import org.switchyard.ServiceReference;
+import org.switchyard.common.camel.SwitchYardCamelContext;
 import org.switchyard.exception.SwitchYardException;
+import org.switchyard.handlers.AddressingHandler;
 import org.switchyard.handlers.PolicyHandler;
 import org.switchyard.handlers.TransactionHandler;
 import org.switchyard.handlers.TransformHandler;
@@ -58,49 +54,54 @@ import org.switchyard.spi.ExchangeBus;
 import org.switchyard.transform.TransformSequence;
 
 /**
- * 
+ * Exchange bus implemented on to of Apache Camel mediation engine. SwitchYard
+ * handlers are wrapped into camel Exchange processors.
  */
 public class CamelExchangeBus implements ExchangeBus {
 
     private static final String IN_OUT_CHECK = 
-            "${property.SwitchYardExchange.contract.serviceOperation.exchangePattern} == 'IN_OUT'";
-    
+            "${property.SwitchYardExchange.contract.consumerOperation.exchangePattern} == 'IN_OUT'";
+
+    private Logger _logger = Logger.getLogger(CamelExchangeBus.class);
+
     private HashMap<QName, ExchangeDispatcher> _dispatchers = 
         new HashMap<QName, ExchangeDispatcher>();
-    
-    private CamelContext _camelContext;
-    
+
+    private SwitchYardCamelContext _camelContext;
+
     /**
      * Create a new Camel exchange bus provider.
+     * @param context the CamelContext instance used by this provider
      */
-    public CamelExchangeBus() {
+    public CamelExchangeBus(SwitchYardCamelContext context) {
+        _camelContext = context;
     }
-    
+
     @Override
     public void init(ServiceDomain domain) {
+        if (_logger.isDebugEnabled()) {
+            _logger.debug("Initialization of CamelExchangeBus for domain " + domain.getName());
+        }
+
         // Create our handler Processors
         TransactionHandler transactionHandler = new TransactionHandler();
         ValidateHandler validateHandler = new ValidateHandler(domain.getValidatorRegistry());
         TransformHandler transformHandler = new TransformHandler(domain.getTransformerRegistry());
-        SimpleRegistry processors = new SimpleRegistry();
-        processors.put("domain-handlers", new HandlerProcessor(domain.getHandlers()));
-        processors.put("transaction-handler", new HandlerProcessor(transactionHandler));
-        processors.put("generic-policy", new HandlerProcessor(new PolicyHandler()));
-        processors.put("validation", new HandlerProcessor(validateHandler));
-        processors.put("transformation", new HandlerProcessor(transformHandler));
-        processors.put("consumer-callback", new ConsumerCallbackProcessor(transformHandler));
-        
-        _camelContext =  new DefaultCamelContext(createRegistry(processors));
-    
-        final PackageScanClassResolver packageScanClassResolver = getPackageScanClassResolver();
-        if (packageScanClassResolver != null) {
-            _camelContext.setPackageScanClassResolver(packageScanClassResolver);
-        }
+
+        SimpleRegistry registry = _camelContext.getWritebleRegistry();
+        registry.put("domain-handlers", new HandlerProcessor(domain.getHandlers()));
+        registry.put("addressing", new HandlerProcessor(new AddressingHandler(domain)));
+        registry.put("transaction-handler", new HandlerProcessor(transactionHandler));
+        registry.put("generic-policy", new HandlerProcessor(new PolicyHandler()));
+        registry.put("validation", new HandlerProcessor(validateHandler));
+        registry.put("transformation", new HandlerProcessor(transformHandler));
+        registry.put("consumer-callback", new ConsumerCallbackProcessor(transformHandler));
     }
-    
+
     /**
      * Start the bus provider.
      */
+    @Override
     public synchronized void start() {
         try {
             _camelContext.start();
@@ -108,10 +109,11 @@ public class CamelExchangeBus implements ExchangeBus {
             throw new SwitchYardException("Failed to start Camel Exchange Bus", ex);
         }
     }
-    
+
     /**
      * Stop the provider.
      */
+    @Override
     public synchronized void stop() {
         try {
             _dispatchers.clear();
@@ -122,25 +124,30 @@ public class CamelExchangeBus implements ExchangeBus {
     }
 
     @Override
-    public Dispatcher getDispatcher(Service service) {
-        return _dispatchers.get(service.getName());
+    public Dispatcher getDispatcher(ServiceReference reference) {
+        return _dispatchers.get(reference.getName());
     }
 
     @Override
-    public Dispatcher createDispatcher(final Service service, final ExchangeHandler serviceHandler) {
-        final String endpoint = "direct:" + service.getName();
-        
+    public Dispatcher createDispatcher(final ServiceReference reference) {
+        if (_logger.isDebugEnabled()) {
+            _logger.debug("Creating Camel dispatcher for " + reference.getName());
+        }
+
+        final String endpoint = "direct:" + reference.getName();
+
         RouteBuilder rb = new RouteBuilder() {
             public void configure() throws Exception {
                 from(endpoint).routeId(endpoint)
                     .onException(HandlerException.class).processRef("consumer-callback").handled(true).end()
                     .processRef("domain-handlers")
+                    .processRef("addressing")
                     .processRef("transaction-handler")
                     .processRef("generic-policy")
                     .processRef("validation")
                     .processRef("transformation")
                     .processRef("validation")
-                    .process(new HandlerProcessor(serviceHandler))
+                    .process(new ProviderProcessor())
                     .processRef("transaction-handler")
                     .filter().simple(IN_OUT_CHECK)
                         .processRef("domain-handlers")
@@ -150,52 +157,32 @@ public class CamelExchangeBus implements ExchangeBus {
                         .processRef("consumer-callback");
             }
         };
-        
+
         try {
             // TODO - remove this logic once the test framework is able 
             // to hot-replace a service endpoint.
             if (_camelContext.getRoute(endpoint) != null) {
                 _camelContext.removeRoute(endpoint);
+                if (_logger.isInfoEnabled()) {
+                    _logger.info("Removing route " + endpoint);
+                }
             }
+
+            if (_logger.isDebugEnabled()) {
+                _logger.debug("Created route for " + endpoint + ", definition is: " + rb.toString());
+            }
+
             _camelContext.addRoutes(rb);
         } catch (Exception ex) {
-            throw new SwitchYardException("Failed to create Camel route for service " + service.getName(), ex);
+            throw new SwitchYardException("Failed to create Camel route for service " + reference.getName(), ex);
         }
-        
+
         ExchangeDispatcher dispatcher = new ExchangeDispatcher(
-                service, _camelContext.createProducerTemplate());
-        _dispatchers.put(service.getName(), dispatcher);
+                reference, _camelContext.createProducerTemplate());
+        _dispatchers.put(reference.getName(), dispatcher);
         return dispatcher;
     }
 
-    /**
-     * Get the first PackageScanClassResolver Service found on the classpath.
-     * @return The first PackageScanClassResolver Service found on the classpath.
-     */
-    public  PackageScanClassResolver getPackageScanClassResolver() {
-        final ServiceLoader<PackageScanClassResolver> resolverLoaders = 
-                ServiceLoader.load(PackageScanClassResolver.class, this.getClass().getClassLoader());
-    
-        for (PackageScanClassResolver packageScanClassResolver : resolverLoaders) {
-            return packageScanClassResolver;
-        }
-    
-        return null;
-    }
-    
-    // This code is ripped off from the camel component
-    private Registry createRegistry(Registry processors) {
-        final ServiceLoader<Registry> registriesLoaders = ServiceLoader.load(Registry.class, getClass().getClassLoader());
-        final List<Registry> registries = new ArrayList<Registry>();
-        registries.add(new JndiRegistry());
-        registries.add(processors);
-
-        for (Registry registry : registriesLoaders) {
-            registries.add(registry);
-        }
-        
-        return new CompositeRegistry(registries);
-    }
 }
 
 class HandlerProcessor implements Processor {
@@ -221,6 +208,16 @@ class HandlerProcessor implements Processor {
     
 }
 
+class ProviderProcessor implements Processor {
+    @Override
+    public void process(Exchange ex) throws Exception {
+        org.switchyard.Exchange syEx = ex.getProperty(
+                ExchangeDispatcher.SY_EXCHANGE, org.switchyard.Exchange.class);
+        syEx.getProvider().getProviderHandler().handleMessage(ex.getProperty(
+                ExchangeDispatcher.SY_EXCHANGE, org.switchyard.Exchange.class));
+    }
+}
+
 class ConsumerCallbackProcessor implements Processor {
     
     private TransformHandler _transform;
@@ -243,16 +240,21 @@ class ConsumerCallbackProcessor implements Processor {
         }
     }
     
-    private void handleFault(ExchangeImpl exchange, HandlerException handlerEx) {
-        Message faultMessage = exchange.createMessage().setContent(handlerEx);
+    private void handleFault(ExchangeImpl exchange, HandlerException ex) {
+        Throwable error = ex.isWrapper() ? ex.getCause() : ex;
+        Message faultMessage = exchange.createMessage().setContent(error);
         exchange.sendFault(faultMessage);
         
         ExchangeContract contract = exchange.getContract();
-        QName exceptionTypeName = contract.getServiceOperation().getFaultType();
-        QName invokerFaultTypeName = contract.getInvokerInvocationMetaData().getFaultType();
+        QName exceptionTypeName = null;
+        if (contract.getProviderOperation() != null) {
+            exceptionTypeName = contract.getProviderOperation().getFaultType();
+        }
+        QName invokerFaultTypeName = contract.getConsumerOperation().getFaultType();
 
+        // no fault defined on provider interface
         if (exceptionTypeName == null) {
-            exceptionTypeName = JavaService.toMessageType(handlerEx.getClass());
+            exceptionTypeName = JavaService.toMessageType(error.getClass());
         }
 
         if (exceptionTypeName != null && invokerFaultTypeName != null) {
