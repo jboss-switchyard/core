@@ -62,13 +62,17 @@ public abstract class AbstractFacet extends BaseFacet {
 
     @Override
     public boolean isInstalled() {
+        PackagingType packagingType = project.getFacet(PackagingFacet.class).getPackagingType();
         boolean installed = false;
-        // If the first dependency is present then we assume the facet is installed
-        if (!_depends.isEmpty()) {
-            Dependency dep = DependencyBuilder.create(_depends.get(0));
-            PackagingType packagingType = project.getFacet(PackagingFacet.class).getPackagingType();
-            installed = project.getFacet(DependencyFacet.class).hasDirectDependency(dep)
-                    && PackagingType.JAR.equals(packagingType);
+        if (PackagingType.JAR.equals(packagingType)) {
+            installed = true;
+            for (String dependency : _depends) {
+                Dependency dep = DependencyBuilder.create(dependency);
+                if (!project.getFacet(DependencyFacet.class).hasDirectDependency(dep)) {
+                    installed = false;
+                    break;
+                }
+            }
         }
         return installed;
     }
