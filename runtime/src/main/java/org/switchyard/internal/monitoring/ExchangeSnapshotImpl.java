@@ -1,4 +1,4 @@
-package org.switchyard.runtime.event;
+package org.switchyard.internal.monitoring;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -6,18 +6,19 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Date;
 
-import javax.xml.namespace.QName;
-
 import org.apache.log4j.Logger;
 import org.switchyard.Context;
 import org.switchyard.Exchange;
 import org.switchyard.ExchangePhase;
 import org.switchyard.ExchangeState;
 import org.switchyard.Message;
+import org.switchyard.Service;
+import org.switchyard.ServiceReference;
 import org.switchyard.internal.DefaultContext;
 import org.switchyard.internal.DefaultMessage;
 import org.switchyard.internal.io.Serializer;
 import org.switchyard.metadata.ExchangeContract;
+import org.switchyard.metadata.ServiceOperation;
 
 /**
  * Snapshot of Exchange, used to save state of exchange at some point of time
@@ -32,7 +33,6 @@ public class ExchangeSnapshotImpl implements Externalizable, ExchangeSnapshot {
 	private long createdAt;
 	private Context _context;
 	private ExchangeContract _contract;
-	private QName _serviceName;
 	private Message _message;
 	private ExchangeState _state;
 	private ExchangePhase _phase;
@@ -53,7 +53,6 @@ public class ExchangeSnapshotImpl implements Externalizable, ExchangeSnapshot {
 		
 		// set parts which unusual to change 
 		setContract(exchange.getContract());
-		setServiceName(exchange.getServiceName());
 		setPhase(exchange.getPhase());
 		setState(exchange.getState());
 
@@ -131,20 +130,6 @@ public class ExchangeSnapshotImpl implements Externalizable, ExchangeSnapshot {
 	 */
 	public void setContract(ExchangeContract _contract) {
 		this._contract = _contract;
-	}
-
-	@Override
-	public QName getServiceName() {
-		return _serviceName;
-	}
-
-	/**
-	 * set service name
-	 * 
-	 * @param _serviceName
-	 */
-	public void setServiceName(QName _serviceName) {
-		this._serviceName = _serviceName;
 	}
 
 	@Override
@@ -238,6 +223,31 @@ public class ExchangeSnapshotImpl implements Externalizable, ExchangeSnapshot {
 		return new Date(createdAt);
 	}
 
+	@Override
+	public ServiceReference getConsumer() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Service getProvider() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Exchange consumer(ServiceReference consumer,
+			ServiceOperation operation) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Exchange provider(Service provider, ServiceOperation operation) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	/**
 	 * set original message
 	 * 
@@ -262,4 +272,6 @@ public class ExchangeSnapshotImpl implements Externalizable, ExchangeSnapshot {
 	public byte[] getMessageBytes() {
 		return _messageBytes;
 	}
+
+	
 }

@@ -1,8 +1,6 @@
-package org.switchyard.runtime.event;
+package org.switchyard.runtime.event.monitoring;
 
 import org.switchyard.Exchange;
-import org.switchyard.Property;
-import org.switchyard.Scope;
 
 /**
  * InPhase event signals start of message processing, this should be at time
@@ -11,9 +9,9 @@ import org.switchyard.Scope;
  * @author Andriy Vyedyeneyev (andriy.vyedyeneyev@github.com)
  * 
  */
-public class ExchangeInPhaseEvent extends MonitoringEvent {
+public class ExchangeStartEvent extends MonitoringEvent {
 
-	public ExchangeInPhaseEvent(Exchange exchange) {
+	public ExchangeStartEvent(Exchange exchange) {
 		super(exchange);
 	}
 

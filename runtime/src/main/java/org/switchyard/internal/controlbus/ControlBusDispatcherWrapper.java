@@ -1,7 +1,7 @@
 package org.switchyard.internal.controlbus;
 
 import org.switchyard.Exchange;
-import org.switchyard.Service;
+import org.switchyard.ServiceReference;
 import org.switchyard.spi.Dispatcher;
 
 public class ControlBusDispatcherWrapper implements Dispatcher {
@@ -12,13 +12,19 @@ public class ControlBusDispatcherWrapper implements Dispatcher {
 		_dispatcher = dispatcher;
 	}
 
-	@Override
-	public Service getService() {
-		return _dispatcher.getService();
-	}
-
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void dispatch(Exchange exchange) {
 		_dispatcher.dispatch(exchange);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ServiceReference getServiceReference() {
+		return _dispatcher.getServiceReference();
 	}
 }

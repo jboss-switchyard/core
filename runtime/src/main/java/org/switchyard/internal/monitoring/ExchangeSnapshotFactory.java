@@ -1,4 +1,4 @@
-package org.switchyard.runtime.event;
+package org.switchyard.internal.monitoring;
 
 import org.switchyard.Exchange;
 import org.switchyard.internal.io.SerializerType;

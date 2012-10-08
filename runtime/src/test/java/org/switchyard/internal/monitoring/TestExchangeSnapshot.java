@@ -14,14 +14,9 @@ import javax.xml.namespace.QName;
 
 import org.junit.Test;
 import org.switchyard.ExchangePhase;
-import org.switchyard.ExchangeState;
 import org.switchyard.MockExchange;
-import org.switchyard.internal.DefaultContext;
-import org.switchyard.internal.DefaultMessage;
-import org.switchyard.metadata.BaseExchangeContract;
+import org.switchyard.internal.ServiceImpl;
 import org.switchyard.metadata.InOnlyOperation;
-import org.switchyard.runtime.event.ExchangeSnapshot;
-import org.switchyard.runtime.event.ExchangeSnapshotFactory;
 
 public class TestExchangeSnapshot {
 
@@ -50,7 +45,6 @@ public class TestExchangeSnapshot {
 				+ (System.currentTimeMillis() - startedAt) + " ms");
 		
 		assertNotNull(snapshot.getContext());
-		assertNotNull(snapshot.getServiceName());
 		assertNotNull(snapshot.getContract());
 		assertNotNull(snapshot.getPhase());
 		assertNotNull(snapshot.getState());
@@ -66,22 +60,18 @@ public class TestExchangeSnapshot {
 
 	private MockExchange createExchange() {
 		MockExchange mockExchange = new MockExchange();
-		mockExchange.setContext(new DefaultContext());
 		
 		InOnlyOperation testOperation = new InOnlyOperation("test");
 		testOperation.setInputType(QName.valueOf("test:input"));
-
-		BaseExchangeContract exchangeContract = new BaseExchangeContract(
-				testOperation, testOperation);
 		
-		mockExchange.setContract(exchangeContract);
-		mockExchange.setServiceName(QName.valueOf("test:inputService"));
+		mockExchange.provider(
+				new ServiceImpl(QName.valueOf("test:inputService"), null, null,
+						null), testOperation);
 		
 		mockExchange.setPhase(ExchangePhase.IN);
-		mockExchange.setState(ExchangeState.OK);
 		
-		mockExchange.setMessage(new DefaultMessage());
 		mockExchange.getMessage().setContent("ORIGINAL");
+		
 		return mockExchange;
 	}
 	

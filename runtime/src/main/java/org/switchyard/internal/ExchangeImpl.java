@@ -37,10 +37,12 @@ import org.switchyard.Service;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceReference;
 import org.switchyard.exception.SwitchYardException;
+import org.switchyard.handlers.MonitoringHandler;
 import org.switchyard.metadata.BaseExchangeContract;
 import org.switchyard.metadata.ExchangeContract;
 import org.switchyard.metadata.ServiceOperation;
 import org.switchyard.runtime.event.ExchangeCompletionEvent;
+import org.switchyard.runtime.event.monitoring.MonitoringEventFactory;
 import org.switchyard.spi.Dispatcher;
 
 /**
@@ -194,6 +196,11 @@ public class ExchangeImpl implements Exchange {
                 faultContent = _message.getContent().toString();
             }
             _log.warn("Fault generated during exchange without a handler: " + faultContent);
+            
+            // TODO review it !! complete [if fault] processing should be reviewed
+            // let fault be processed by MonitoringHandler
+            _domain.getEventPublisher().publish(new MonitoringEventFactory().createEvent(this));
+            //new MonitoringHandler(_domain.getEventPublisher()).handleFault(this);
         } else {
             _dispatch.dispatch(this);
         }
