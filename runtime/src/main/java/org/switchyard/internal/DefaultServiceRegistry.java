@@ -43,7 +43,7 @@ public class DefaultServiceRegistry implements ServiceRegistry {
 
     @Override
     public synchronized List<Service> getServices() {
-        LinkedList<Service> serviceList = new LinkedList<Service>();
+        List<Service> serviceList = new LinkedList<Service>();
         for (List<Service> services : _services.values()) {
             serviceList.addAll(services);
         }
@@ -53,24 +53,19 @@ public class DefaultServiceRegistry implements ServiceRegistry {
 
     @Override
     public synchronized List<Service> getServices(QName serviceName) {
-        List<Service> services = _services.get(serviceName);
-        if (services == null) {
+        if (!_services.containsKey(serviceName)) {
             return Collections.emptyList();
         }
 
-        return new LinkedList<Service>(services);
+        return new LinkedList<Service>(_services.get(serviceName));
     }
 
     @Override
     public synchronized Service registerService(Service service) {
-
-        List<Service> serviceList = _services.get(service.getName());
-        if (serviceList == null) {
-            serviceList = new LinkedList<Service>();
-             _services.put(service.getName(), serviceList);
+        if (!_services.containsKey(service.getName())) {
+            _services.put(service.getName(), new LinkedList<Service>());
         }
-
-        serviceList.add(service);
+        _services.get(service.getName()).add(service);
 
         if (_logger.isDebugEnabled()) {
             _logger.debug("Registered Service '" + service.getName() + "'.");

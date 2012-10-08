@@ -35,6 +35,7 @@ import org.switchyard.ExchangeHandler;
 import org.switchyard.Service;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceReference;
+import org.switchyard.ServiceSecurity;
 import org.switchyard.event.DomainShutdownEvent;
 import org.switchyard.event.DomainStartupEvent;
 import org.switchyard.event.EventObserver;
@@ -62,6 +63,7 @@ public class DomainImpl implements ServiceDomain {
     private static Logger _logger = Logger.getLogger(DomainImpl.class);
 
     private final QName _name;
+    private final ServiceSecurity _security;
     private EventManager _eventManager;
     private ServiceRegistry _registry;
     private ExchangeBus _exchangeBus;
@@ -78,6 +80,7 @@ public class DomainImpl implements ServiceDomain {
      */
     public DomainImpl(QName name) {
         this(name, 
+            new DefaultServiceSecurity(),
             new DefaultServiceRegistry(), 
             new LocalExchangeBus(), 
             new BaseTransformerRegistry(), 
@@ -91,6 +94,7 @@ public class DomainImpl implements ServiceDomain {
     /**
      * Create a new ServiceDomain.
      * @param name name
+     * @param security service security
      * @param registry registry
      * @param exchangeBus message exchange bus
      * @param transformerRegistry transformerRegistry
@@ -98,6 +102,7 @@ public class DomainImpl implements ServiceDomain {
      * @param eventManager event manager
      */
     public DomainImpl(QName name,
+            ServiceSecurity security,
             ServiceRegistry registry,
             ExchangeBus exchangeBus,
             TransformerRegistry transformerRegistry,
@@ -105,6 +110,7 @@ public class DomainImpl implements ServiceDomain {
             EventManager eventManager) {
 
         _name = name;
+        _security = security;
         _registry = registry;
         _exchangeBus  = exchangeBus;
         _transformerRegistry = transformerRegistry;
@@ -149,19 +155,19 @@ public class DomainImpl implements ServiceDomain {
     @Override
     public ServiceReference registerServiceReference(QName serviceName,
             ServiceInterface metadata) {
-        return registerServiceReference(serviceName, metadata, null, null, null);
+        return registerServiceReference(serviceName, metadata, null, null, null, null);
     }
 
     @Override
     public ServiceReference registerServiceReference(QName serviceName,
             ServiceInterface metadata, ExchangeHandler handler) {
-        return registerServiceReference(serviceName, metadata, handler, null, null);
+        return registerServiceReference(serviceName, metadata, handler, null, null, null);
     }
     
     @Override
     public ServiceReference registerServiceReference(QName serviceName,
-            ServiceInterface metadata, ExchangeHandler handler, List<Policy> provides, Registrant owner) {
-        ServiceReferenceImpl reference = new ServiceReferenceImpl(serviceName, metadata, this, handler, provides, owner);
+            ServiceInterface metadata, ExchangeHandler handler, List<Policy> provides, List<Policy> requires, Registrant owner) {
+        ServiceReferenceImpl reference = new ServiceReferenceImpl(serviceName, metadata, this, provides, requires, handler, owner);
         Dispatcher dispatch = _exchangeBus.createDispatcher(reference);
         reference.setDispatcher(dispatch);
         _references.put(serviceName, reference);
@@ -195,7 +201,12 @@ public class DomainImpl implements ServiceDomain {
     public QName getName() {
         return _name;
     }
-
+    
+    @Override
+    public ServiceSecurity getServiceSecurity() {
+        return _security;
+    }
+    
     @Override
     public TransformerRegistry getTransformerRegistry() {
         return _transformerRegistry;
@@ -274,4 +285,10 @@ public class DomainImpl implements ServiceDomain {
                     + target.getClass().getCanonicalName(), ex);
         }
     }
+
+    @Override
+    public String toString() {
+        return "ServiceDomain [name=" + _name + "]";
+    }
+
 }

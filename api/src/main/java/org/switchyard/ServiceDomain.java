@@ -104,6 +104,7 @@ public interface ServiceDomain {
      * @param contract service consumer contract
      * @param handler the handler to use to process replies from the service
      * @param provides policies provided by the reference
+     * @param requires policies required for the reference
      * @param owner metadata related to the entity registering the reference
      * @return a reference to the registered service that can be used to
      * unregister when required
@@ -112,6 +113,7 @@ public interface ServiceDomain {
             ServiceInterface contract,
             ExchangeHandler handler,
             List<Policy> provides,
+            List<Policy> requires,
             Registrant owner);
     
     /**
@@ -143,15 +145,21 @@ public interface ServiceDomain {
      * @param service service provider
      */
     void wireReference(ServiceReference reference, Service service);
-
+    
     /**
-     * Returns a references to the transformer registry for this domain.
+     * Returns a reference to the service security for this domain.
+     * @return service security instance
+     */
+    public ServiceSecurity getServiceSecurity();
+    
+    /**
+     * Returns a reference to the transformer registry for this domain.
      * @return transformer registry instance
      */
     TransformerRegistry getTransformerRegistry();
     
     /**
-     * Returns a references to the validator registry for this domain.
+     * Returns a reference to the validator registry for this domain.
      * @return validator registry instance
      */
     ValidatorRegistry getValidatorRegistry();

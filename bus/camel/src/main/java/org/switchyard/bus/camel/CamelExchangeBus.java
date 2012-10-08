@@ -22,36 +22,45 @@
 
 package org.switchyard.bus.camel;
 
-import java.util.ArrayList;
+import static org.switchyard.bus.camel.processors.Processors.ADDRESSING;
+import static org.switchyard.bus.camel.processors.Processors.CONSUMER_CALLBACK;
+import static org.switchyard.bus.camel.processors.Processors.DOMAIN_HANDLERS;
+import static org.switchyard.bus.camel.processors.Processors.GENERIC_POLICY;
+import static org.switchyard.bus.camel.processors.Processors.PROVIDER_CALLBACK;
+import static org.switchyard.bus.camel.processors.Processors.SECURITY;
+import static org.switchyard.bus.camel.processors.Processors.TRANSACTION_HANDLER;
+import static org.switchyard.bus.camel.processors.Processors.TRANSFORMATION;
+import static org.switchyard.bus.camel.processors.Processors.VALIDATION;
+
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.namespace.QName;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
+import org.apache.camel.Predicate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.SimpleRegistry;
+import org.apache.camel.model.ExpressionNode;
+import org.apache.camel.model.FilterDefinition;
+import org.apache.camel.model.OnExceptionDefinition;
+import org.apache.camel.model.RouteDefinition;
+import org.apache.camel.spi.InterceptStrategy;
 import org.apache.log4j.Logger;
-import org.switchyard.ExchangeHandler;
+import org.switchyard.ExchangePattern;
 import org.switchyard.HandlerException;
-import org.switchyard.Message;
-import org.switchyard.Scope;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceReference;
+import org.switchyard.bus.camel.audit.AuditInterceptStrategy;
+import org.switchyard.bus.camel.audit.FaultInterceptStrategy;
+import org.switchyard.bus.camel.processors.Processors;
 import org.switchyard.common.camel.SwitchYardCamelContext;
 import org.switchyard.exception.SwitchYardException;
-import org.switchyard.handlers.AddressingHandler;
-import org.switchyard.handlers.PolicyHandler;
-import org.switchyard.handlers.TransactionHandler;
-import org.switchyard.handlers.TransformHandler;
-import org.switchyard.handlers.ValidateHandler;
 import org.switchyard.internal.ExchangeImpl;
-import org.switchyard.metadata.ExchangeContract;
-import org.switchyard.metadata.java.JavaService;
+import org.switchyard.metadata.ServiceOperation;
 import org.switchyard.spi.Dispatcher;
 import org.switchyard.spi.ExchangeBus;
-import org.switchyard.transform.TransformSequence;
 
 /**
  * Exchange bus implemented on to of Apache Camel mediation engine. SwitchYard
@@ -59,8 +68,17 @@ import org.switchyard.transform.TransformSequence;
  */
 public class CamelExchangeBus implements ExchangeBus {
 
-    private static final String IN_OUT_CHECK = 
-            "${property.SwitchYardExchange.contract.consumerOperation.exchangePattern} == 'IN_OUT'";
+    private static final Predicate IN_OUT_CHECK = new Predicate() {
+        @Override
+        public boolean matches(Exchange exchange) {
+            ExchangeImpl syEx = exchange.getProperty(ExchangeDispatcher.SY_EXCHANGE, ExchangeImpl.class);
+            ServiceOperation operation = syEx.getContract().getConsumerOperation();
+            return operation.getExchangePattern() == ExchangePattern.IN_OUT;
+        }
+        public String toString() {
+            return "IN_OUT_CHECK";
+        }
+    };
 
     private Logger _logger = Logger.getLogger(CamelExchangeBus.class);
 
@@ -83,19 +101,10 @@ public class CamelExchangeBus implements ExchangeBus {
             _logger.debug("Initialization of CamelExchangeBus for domain " + domain.getName());
         }
 
-        // Create our handler Processors
-        TransactionHandler transactionHandler = new TransactionHandler();
-        ValidateHandler validateHandler = new ValidateHandler(domain.getValidatorRegistry());
-        TransformHandler transformHandler = new TransformHandler(domain.getTransformerRegistry());
-
         SimpleRegistry registry = _camelContext.getWritebleRegistry();
-        registry.put("domain-handlers", new HandlerProcessor(domain.getHandlers()));
-        registry.put("addressing", new HandlerProcessor(new AddressingHandler(domain)));
-        registry.put("transaction-handler", new HandlerProcessor(transactionHandler));
-        registry.put("generic-policy", new HandlerProcessor(new PolicyHandler()));
-        registry.put("validation", new HandlerProcessor(validateHandler));
-        registry.put("transformation", new HandlerProcessor(transformHandler));
-        registry.put("consumer-callback", new ConsumerCallbackProcessor(transformHandler));
+        for (Processors processor : Processors.values()) {
+            registry.put(processor.name(), processor.create(domain));
+        }
     }
 
     /**
@@ -138,23 +147,51 @@ public class CamelExchangeBus implements ExchangeBus {
 
         RouteBuilder rb = new RouteBuilder() {
             public void configure() throws Exception {
-                from(endpoint).routeId(endpoint)
-                    .onException(HandlerException.class).processRef("consumer-callback").handled(true).end()
-                    .processRef("domain-handlers")
-                    .processRef("addressing")
-                    .processRef("transaction-handler")
-                    .processRef("generic-policy")
-                    .processRef("validation")
-                    .processRef("transformation")
-                    .processRef("validation")
-                    .process(new ProviderProcessor())
-                    .processRef("transaction-handler")
-                    .filter().simple(IN_OUT_CHECK)
-                        .processRef("domain-handlers")
-                        .processRef("validation")
-                        .processRef("transformation")
-                        .processRef("validation")
-                        .processRef("consumer-callback");
+                RouteDefinition definition = from(endpoint);
+                definition.routeId(endpoint);
+
+                // add default intercept strategy using @Audit annotation
+                definition.addInterceptStrategy(new AuditInterceptStrategy());
+                // fault handling & forwarding
+                definition.addInterceptStrategy(new FaultInterceptStrategy());
+
+                Map<String, InterceptStrategy> interceptStrategies = _camelContext.getRegistry().lookupByType(InterceptStrategy.class);
+                if (interceptStrategies != null) {
+                    for (Entry<String, InterceptStrategy> interceptEntry : interceptStrategies.entrySet()) {
+                        if (_logger.isDebugEnabled()) {
+                            _logger.debug("Adding intercept strategy " + interceptEntry.getKey() + " to route " + endpoint);
+                        }
+                        definition.addInterceptStrategy(interceptEntry.getValue());
+                    }
+                }
+
+                final ExpressionNode filterDefinition = new FilterDefinition(IN_OUT_CHECK)
+                    .processRef(DOMAIN_HANDLERS.name())
+                    .processRef(VALIDATION.name())
+                    .processRef(TRANSFORMATION.name())
+                    .processRef(VALIDATION.name())
+                    .processRef(CONSUMER_CALLBACK.name());
+
+                OnExceptionDefinition onException = new OnExceptionDefinition(HandlerException.class);
+                onException.handled(true);
+                //onException.processRef(CONSUMER_CALLBACK.name());
+                onException.addOutput(filterDefinition);
+                // register exception closure
+                definition.addOutput(onException);
+
+                definition
+                    .processRef(DOMAIN_HANDLERS.name())
+                    .processRef(ADDRESSING.name())
+                    .processRef(TRANSACTION_HANDLER.name())
+                    .processRef(SECURITY.name())
+                    .processRef(GENERIC_POLICY.name())
+                    .processRef(VALIDATION.name())
+                    .processRef(TRANSFORMATION.name())
+                    .processRef(VALIDATION.name())
+                    .processRef(PROVIDER_CALLBACK.name())
+                    .processRef(TRANSACTION_HANDLER.name())
+                    .addOutput(filterDefinition);
+                
             }
         };
 
@@ -185,88 +222,3 @@ public class CamelExchangeBus implements ExchangeBus {
 
 }
 
-class HandlerProcessor implements Processor {
-
-    private List<ExchangeHandler> _handlers;
-    
-    HandlerProcessor(ExchangeHandler handler) {
-        _handlers = new ArrayList<ExchangeHandler>();
-        _handlers.add(handler);
-    }
-    
-    HandlerProcessor(List<ExchangeHandler> handlers) {
-        _handlers = handlers;
-    }
-    
-    @Override
-    public void process(Exchange ex) throws Exception {
-        for (ExchangeHandler handler : _handlers) {
-            handler.handleMessage(ex.getProperty(
-                    ExchangeDispatcher.SY_EXCHANGE, org.switchyard.Exchange.class));
-        }
-    }
-    
-}
-
-class ProviderProcessor implements Processor {
-    @Override
-    public void process(Exchange ex) throws Exception {
-        org.switchyard.Exchange syEx = ex.getProperty(
-                ExchangeDispatcher.SY_EXCHANGE, org.switchyard.Exchange.class);
-        syEx.getProvider().getProviderHandler().handleMessage(ex.getProperty(
-                ExchangeDispatcher.SY_EXCHANGE, org.switchyard.Exchange.class));
-    }
-}
-
-class ConsumerCallbackProcessor implements Processor {
-    
-    private TransformHandler _transform;
-    
-    ConsumerCallbackProcessor(TransformHandler transform) {
-        _transform = transform;
-    }
-    
-    @Override
-    public void process(Exchange ex) throws Exception {
-        ExchangeImpl syEx = ex.getProperty(
-                ExchangeDispatcher.SY_EXCHANGE, org.switchyard.internal.ExchangeImpl.class);
-        
-        // Did we fail?
-        HandlerException error = ex.getProperty(Exchange.EXCEPTION_CAUGHT, HandlerException.class);
-        if (error != null) {
-            handleFault(syEx, error);
-        } else {
-            syEx.getReplyHandler().handleMessage(syEx);
-        }
-    }
-    
-    private void handleFault(ExchangeImpl exchange, HandlerException ex) {
-        Throwable error = ex.isWrapper() ? ex.getCause() : ex;
-        Message faultMessage = exchange.createMessage().setContent(error);
-        exchange.sendFault(faultMessage);
-        
-        ExchangeContract contract = exchange.getContract();
-        QName exceptionTypeName = null;
-        if (contract.getProviderOperation() != null) {
-            exceptionTypeName = contract.getProviderOperation().getFaultType();
-        }
-        QName invokerFaultTypeName = contract.getConsumerOperation().getFaultType();
-
-        // no fault defined on provider interface
-        if (exceptionTypeName == null) {
-            exceptionTypeName = JavaService.toMessageType(error.getClass());
-        }
-
-        if (exceptionTypeName != null && invokerFaultTypeName != null) {
-            // Set up the type info on the message context so as the exception gets transformed
-            // appropriately for the invoker...
-            TransformSequence.
-                from(exceptionTypeName).
-                to(invokerFaultTypeName).
-                associateWith(exchange, Scope.OUT);
-            _transform.handleFault(exchange);
-        }
-        
-        exchange.getReplyHandler().handleFault(exchange);
-    }
-}

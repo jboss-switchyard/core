@@ -18,24 +18,21 @@
  */
 package org.switchyard.config;
 
+import static javax.xml.XMLConstants.NULL_NS_URI;
+import static javax.xml.XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
+
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 
 import org.switchyard.common.io.pull.ElementPuller;
-import org.switchyard.common.io.pull.StringPuller;
 import org.switchyard.common.lang.Strings;
 import org.switchyard.common.xml.XMLHelper;
 import org.w3c.dom.Attr;
@@ -112,6 +109,22 @@ public class DOMConfiguration extends BaseConfiguration {
     @Override
     public QName getQName() {
         return XMLHelper.createQName(_element);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String lookupNamespaceURI(String prefix) {
+        return _element.lookupNamespaceURI(prefix);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String lookupPrefix(String namespaceURI) {
+        return _element.lookupPrefix(namespaceURI);
     }
 
     /**
@@ -298,7 +311,7 @@ public class DOMConfiguration extends BaseConfiguration {
             } else {
                 attr.setValue(value);
             }
-        } else if (value != null && !DEFAULT_XMLNS_URI.equals(namespaceURI)) {
+        } else if (value != null && !XMLNS_ATTRIBUTE_NS_URI.equals(namespaceURI)) {
             attr = _element.getOwnerDocument().createAttributeNS(namespaceURI, localPart);
             String prefix = qname.getPrefix();
             if (prefix != null  && prefix.length() > 0) {
@@ -554,12 +567,16 @@ public class DOMConfiguration extends BaseConfiguration {
      */
     @Override
     public Configuration removeChildren() {
+        List<Node> removals = new ArrayList<Node>();
         NodeList nodes = _element.getChildNodes();
         for (int i=0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             if (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
-                _element.removeChild(node);
+                removals.add(node);
             }
+        }
+        for (Node node : removals) {
+            _element.removeChild(node);
         }
         return this;
     }
@@ -569,14 +586,18 @@ public class DOMConfiguration extends BaseConfiguration {
      */
     @Override
     public Configuration removeChildren(String name) {
+        List<Node> removals = new ArrayList<Node>();
         NodeList nodes = _element.getChildNodes();
         for (int i=0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             if (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
                 if (XMLHelper.nameOf(node).equals(name)) {
-                    _element.removeChild(node);
+                    removals.add(node);
                 }
             }
+        }
+        for (Node node : removals) {
+            _element.removeChild(node);
         }
         return this;
     }
@@ -586,14 +607,18 @@ public class DOMConfiguration extends BaseConfiguration {
      */
     @Override
     public Configuration removeChildrenStartsWith(String name) {
+        List<Node> removals = new ArrayList<Node>();
         NodeList nodes = _element.getChildNodes();
         for (int i=0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             if (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
                 if (XMLHelper.nameOf(node).startsWith(name)) {
-                    _element.removeChild(node);
+                    removals.add(node);
                 }
             }
+        }
+        for (Node node : removals) {
+            _element.removeChild(node);
         }
         return this;
     }
@@ -603,14 +628,18 @@ public class DOMConfiguration extends BaseConfiguration {
      */
     @Override
     public Configuration removeChildrenMatches(String regexp) {
+        List<Node> removals = new ArrayList<Node>();
         NodeList nodes = _element.getChildNodes();
         for (int i=0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             if (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
                 if (XMLHelper.nameOf(node).matches(regexp)) {
-                    _element.removeChild(node);
+                    removals.add(node);
                 }
             }
+        }
+        for (Node node : removals) {
+            _element.removeChild(node);
         }
         return this;
     }
@@ -620,12 +649,16 @@ public class DOMConfiguration extends BaseConfiguration {
      */
     @Override
     public Configuration removeChildren(QName qname) {
+        List<Node> removals = new ArrayList<Node>();
         NodeList nodes = _element.getElementsByTagNameNS(qname.getNamespaceURI(), qname.getLocalPart());
         for (int i=0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             if (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
-                _element.removeChild(node);
+                removals.add(node);
             }
+        }
+        for (Node node : removals) {
+            _element.removeChild(node);
         }
         return this;
     }
@@ -674,24 +707,21 @@ public class DOMConfiguration extends BaseConfiguration {
      */
     @Override
     public void write(Writer writer, OutputKey... keys) throws IOException {
-        try {
-            TransformerFactory tf = TransformerFactory.newInstance();
-            String xsl = new StringPuller().pull("/org/switchyard/config/pretty-print.xsl", getClass());
-            Transformer t = tf.newTransformer(new StreamSource(new StringReader(xsl)));
-            List<OutputKey> key_list = Arrays.asList(keys);
-            if (!key_list.contains(OutputKey.EXCLUDE_NORMALIZATION)) {
-                normalize();
-            }
-            if (key_list.contains(OutputKey.INCLUDE_ORDERING)) {
-                orderChildren();
-            }
-            if (key_list.contains(OutputKey.EXCLUDE_XML_DECLARATION)) {
-                t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            }
-            t.transform(new DOMSource(_element), new StreamResult(writer));
-        } catch (TransformerException te) {
-            throw new IOException(te);
+        List<OutputKey> key_list = Arrays.asList(keys);
+        if (!key_list.contains(OutputKey.EXCLUDE_NORMALIZATION)) {
+            normalize();
         }
+        if (key_list.contains(OutputKey.INCLUDE_ORDERING)) {
+            orderChildren();
+        }
+        Map<String, String> outputProperties = new HashMap<String, String>();
+        if (key_list.contains(OutputKey.PRETTY_PRINT)) {
+            outputProperties.put(OutputKey.PRETTY_PRINT.hint(), "yes");
+        }
+        if (key_list.contains(OutputKey.OMIT_XML_DECLARATION)) {
+            outputProperties.put(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        }
+        XMLHelper.write(_element, writer, outputProperties);
     }
 
     /**
