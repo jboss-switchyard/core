@@ -56,6 +56,21 @@ public class CamelEventBridge extends EventNotifierSupport {
         _publisher = publisher;
     }
 
+    /**
+     * Creates new event bridge without event publisher instance.
+     */
+    public CamelEventBridge() {
+    }
+
+    /**
+     * Sets event publisher for bridge.
+     * 
+     * @param _publisher Event publisher to use.
+     */
+    public void setEventPublisher(EventPublisher publisher) {
+        this._publisher = publisher;
+    }
+
     @Override
     public void notify(EventObject event) throws Exception {
         _publisher.publish(event);
