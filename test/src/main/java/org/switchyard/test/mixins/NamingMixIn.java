@@ -89,6 +89,15 @@ public class NamingMixIn extends AbstractTestMixIn {
 
     @Override
     public void uninitialize() {
+        try
+        {
+            initialContext.destroySubcontext( "java:comp" );
+        }
+        catch ( NamingException e )
+        {
+            Assert.fail("Failed to destroy context : " + e.getMessage());
+        }
         NamingContext.setActiveNamingStore(new InMemoryNamingStore());
+        initialContext = null;
     }
 }
