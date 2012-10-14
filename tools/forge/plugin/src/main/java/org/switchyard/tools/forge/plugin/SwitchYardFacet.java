@@ -117,6 +117,16 @@ public class SwitchYardFacet extends AbstractFacet {
         }
     }
     
+    @Override
+    public boolean isInstalled() {
+        boolean installed = super.isInstalled();
+        if (installed && getVersion() == null) {
+            // Taking care of the case that project exists but POM doesn't have ${switchyard.version} property.
+            setVersion(Versions.getSwitchYardVersion());
+        }
+        return installed;
+    }
+    
     /**
      * Save the current SwitchYard configuration model.
      */
