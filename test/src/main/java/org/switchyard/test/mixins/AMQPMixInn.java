@@ -37,7 +37,7 @@ import org.switchyard.test.MixInDependencies;
  * Time: 7:22 PM
  */
 @MixInDependencies(required = {CDIMixIn.class, NamingMixIn.class})
-public class AMQPMixIn extends AbstractTestMixIn {
+public class AMQPMixInn extends AbstractTestMixIn {
 
     public static final String JNDI_CONNECTION_FACTORY = "java:jboss/qpidConnectionFactory";
     public static final String JNDI_QUEUE_EXCHANGE = "java:jboss/queueExchange";
@@ -61,7 +61,7 @@ public class AMQPMixIn extends AbstractTestMixIn {
     private String qpidQueueExchange;
     private String qpidTopicExchange;
 
-    public AMQPMixIn() throws NamingException, IOException {
+    public AMQPMixInn() throws NamingException, IOException {
         properties = new Properties();
         properties.load(this.getClass().getResourceAsStream(AMQP_PROPERTIES_FILE));
         qpidConnectionFactory = properties.getProperty(AMQP_PROPS_QPID_CONNECTIONFACTORY);

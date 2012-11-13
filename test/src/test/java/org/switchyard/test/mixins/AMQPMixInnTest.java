@@ -28,10 +28,10 @@ import static org.junit.Assert.assertThat;
  * Date: 11/12/12
  * Time: 11:07 PM
  */
-public class AMQPMixInTest {
+public class AMQPMixInnTest {
 
     private NamingMixIn _namingMixIn;
-    private AMQPMixIn _mixIn;
+    private AMQPMixInn _mixIn;
 
     private Context _context;
     private ConnectionFactory _connectionFactory;
@@ -41,7 +41,7 @@ public class AMQPMixInTest {
     public void setUp() {
         try {
             _namingMixIn = new NamingMixIn();
-            _mixIn = new AMQPMixIn();
+            _mixIn = new AMQPMixInn();
             _namingMixIn.initialize();
             _mixIn.initialize();
             _context = _mixIn.getContext();
@@ -73,12 +73,12 @@ public class AMQPMixInTest {
 
     @Test
     public void testMixIn() throws NamingException, IOException, JMSException {
-        sendMessage(AMQPMixIn.JNDI_QUEUE_EXCHANGE, "Hello queued world!");
+        sendMessage(AMQPMixInn.JNDI_QUEUE_EXCHANGE, "Hello queued world!");
     }
 
     @Test
     public void testSendMessageToTopic() throws NamingException, IOException, JMSException {
-        sendMessage(AMQPMixIn.JNDI_TOPIC_EXCHANGE, "Hello topical world!");
+        sendMessage(AMQPMixInn.JNDI_TOPIC_EXCHANGE, "Hello topical world!");
     }
 
     private void sendMessage(String destinationName, String messageText) throws JMSException, NamingException {
