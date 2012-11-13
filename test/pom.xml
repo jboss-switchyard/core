@@ -22,6 +22,9 @@
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <properties>
+        <qpid-broker-plugins-access-control.version>0.18</qpid-broker-plugins-access-control.version>
+    </properties>
     <parent>
         <groupId>org.switchyard</groupId>
         <artifactId>switchyard-core-parent</artifactId>
@@ -72,6 +75,16 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>not-yet-commons-ssl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.qpid</groupId>
+            <artifactId>qpid-client</artifactId>
+            <version>${qpid-broker-plugins-access-control.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.qpid</groupId>
+            <artifactId>qpid-broker</artifactId>
+            <version>${qpid-broker-plugins-access-control.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
