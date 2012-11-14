@@ -72,7 +72,7 @@ public class AMQPMixInTest {
     }
 
     @Test
-    public void testMixIn() throws NamingException, IOException, JMSException {
+    public void testSendMessageToQueue() throws NamingException, IOException, JMSException {
         sendMessage(AMQPMixIn.JNDI_QUEUE_EXCHANGE, "Hello queued world!");
     }
 

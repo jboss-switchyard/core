@@ -24,7 +24,7 @@ import org.switchyard.test.MixInDependencies;
  *
  * - amqp.properties file is used to define the following parameters:
  *      - qpidConnectionfactory: connection factory url (e.g. qpidConnectionfactory = amqp://guest:guest@/test?brokerlist='tcp://localhost:5672')
- *      - queueExchange: queue exchange to be used as a destination (e.g. BURL:direct://amq.direct//GreetingServiceQueue?routingkey='#')
+ *      - queueExchange: queue exchange to be used as a destination (e.g. BURL:direct://amq.direct//ping?routingkey='#')
  *      - topicExchange: topic exchange to be used as a destination (e.g. BURL:topic://amq.topic//MyTopic?routingkey='#')
  *
  * - config.xml file used for Apache QPID configuration.
@@ -47,11 +47,11 @@ public class AMQPMixIn extends AbstractTestMixIn {
     private static final String AMQP_PROPERTIES_FILE = "/amqp.properties";
     private static final String LOG_XML = "/log4j.xml";
     private static final String CONFIG_XML = "/config.xml";
+    private static final String QPID_WORK_DIRECTORY = "/qpid";
     private static final String SYS_PROP_QPID_HOME = "QPID_HOME";
     private static final String SYS_PROP_QPID_WORK = "QPID_WORK";
-    private static final String QPID_WORK_DIRECTORY = "qpid";
     protected static final String AMQP_PROPS_QPID_CONNECTIONFACTORY = "qpidConnectionfactory";
-    protected static final String AMQP_PROPS_QPID_QUEUE_EXCHANGE = "queueExchange";
+    protected static final String AMQP_PROPS_QUEUE_EXCHANGE = "queueExchange";
     protected static final String AMPQ_PROPS_TOPIC_EXCHANGE = "topicExchange";
 
     private Broker broker;
@@ -70,12 +70,12 @@ public class AMQPMixIn extends AbstractTestMixIn {
                     " in the "+AMQP_PROPERTIES_FILE+" file found in the class path of your application");
         }
 
-        qpidQueueExchange = properties.getProperty(AMQP_PROPS_QPID_QUEUE_EXCHANGE);
+        qpidQueueExchange = properties.getProperty(AMQP_PROPS_QUEUE_EXCHANGE);
         qpidTopicExchange = properties.getProperty(AMPQ_PROPS_TOPIC_EXCHANGE);
 
         if ((qpidQueueExchange == null) && (qpidTopicExchange == null)) {
             throw new SwitchYardException("No topic or queue configured. Please set either one by using "+
-                    AMQP_PROPS_QPID_QUEUE_EXCHANGE+" or "+AMPQ_PROPS_TOPIC_EXCHANGE+" in your "+AMQP_PROPERTIES_FILE+" properties file.");
+                    AMQP_PROPS_QUEUE_EXCHANGE +" or "+AMPQ_PROPS_TOPIC_EXCHANGE+" in your "+AMQP_PROPERTIES_FILE+" properties file.");
         }
     }
 
@@ -105,8 +105,10 @@ public class AMQPMixIn extends AbstractTestMixIn {
         BrokerOptions options = new BrokerOptions();
         System.setProperty(SYS_PROP_QPID_HOME, file.getPath());
         System.setProperty(SYS_PROP_QPID_WORK, file.getParent() + QPID_WORK_DIRECTORY);
-        options.setConfigFile(this.getClass().getResource(CONFIG_XML).getFile());
-        options.setLogConfigFile(this.getClass().getResource(LOG_XML).getFile());
+        final String configFile = this.getClass().getResource(CONFIG_XML).getFile();
+        options.setConfigFile(configFile);
+        final String logFile = this.getClass().getResource(LOG_XML).getFile();
+        options.setLogConfigFile(logFile);
         broker = new Broker();
         try {
             broker.startup(options);
