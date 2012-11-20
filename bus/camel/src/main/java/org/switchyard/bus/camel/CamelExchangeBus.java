@@ -40,11 +40,13 @@ import javax.xml.namespace.QName;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.model.ExpressionNode;
 import org.apache.camel.model.FilterDefinition;
 import org.apache.camel.model.OnExceptionDefinition;
+import org.apache.camel.model.ProcessDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.spi.InterceptStrategy;
 import org.apache.log4j.Logger;
@@ -175,6 +177,15 @@ public class CamelExchangeBus implements ExchangeBus {
                 onException.addOutput(filterDefinition);
                 // register exception closure
                 definition.addOutput(onException);
+
+                Map<String, Processor> processors = _camelContext.getRegistry().lookupByType(Processor.class);
+                for (Entry<String, Processor> entry : processors.entrySet()) {
+                    if (!Processors.isSwitchYardSpecific(entry.getKey())) {
+                        ProcessDefinition processor = new ProcessDefinition(entry.getValue());
+                        processor.description(entry.getKey(), "Custom processor looked up from registry", null);
+                        definition.addOutput(processor);
+                    }
+                }
 
                 definition
                     .processRef(DOMAIN_HANDLERS.name())
