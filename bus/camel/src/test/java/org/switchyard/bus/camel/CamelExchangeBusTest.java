@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 
 import javax.xml.namespace.QName;
 
+import org.apache.camel.Processor;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,6 +46,7 @@ import org.switchyard.bus.camel.handler.ErrorOutHandler;
 import org.switchyard.bus.camel.handler.RuntimeErrorFaultHandler;
 import org.switchyard.bus.camel.handler.RuntimeErrorInHandler;
 import org.switchyard.bus.camel.handler.RuntimeErrorOutHandler;
+import org.switchyard.bus.camel.processors.Processors;
 import org.switchyard.common.camel.SwitchYardCamelContext;
 import org.switchyard.internal.ServiceReferenceImpl;
 import org.switchyard.metadata.InOnlyService;
@@ -55,10 +57,18 @@ import org.switchyard.spi.Dispatcher;
 public class CamelExchangeBusTest {
 
     private final static String TEST_CONTENT = "Some content to sent";
+    private final static String PREFIX = "prefix ";
 
     private CamelExchangeBus _provider;
     private SwitchYardCamelContext _camelContext;
     private MockDomain _domain;
+    private Processor _procesor = new Processor() {
+        @Override
+        public void process(org.apache.camel.Exchange exchange) throws Exception {
+            Exchange syEx = exchange.getProperty(ExchangeDispatcher.SY_EXCHANGE, Exchange.class);
+            syEx.getMessage().setContent(PREFIX + syEx.getMessage().getContent(String.class));
+        }
+    };
 
     @Before
     public void setUp() throws Exception {
@@ -94,6 +104,31 @@ public class CamelExchangeBusTest {
         Dispatcher dispatch = _provider.createDispatcher(ref);
         
         Assert.assertEquals(dispatch, _provider.getDispatcher(ref));
+    }
+
+    @Test
+    public void testCustomProcessor() throws Exception {
+        _camelContext.getWritebleRegistry().put("custom-processor", _procesor);
+        MockHandler handler = new MockHandler().forwardInToOut();
+        ServiceReference ref = registerInOutService("test", handler);
+        Exchange exchange = sendMessage(ref, TEST_CONTENT);
+
+        assertEquals(PREFIX + TEST_CONTENT, exchange.getMessage().getContent());
+    }
+
+    @Test
+    public void testCustomProcessorWithReservedName() throws Exception {
+        MockHandler domainHandler = new MockHandler().forwardInToFault();
+        _domain.getHandlers().add(domainHandler);
+        _camelContext.getWritebleRegistry().put(Processors.DOMAIN_HANDLERS.name(), _procesor);
+
+        MockHandler handler = new MockHandler().forwardInToOut();
+        ServiceReference ref = registerInOutService("test", handler);
+        Exchange exchange = sendMessage(ref, TEST_CONTENT);
+
+        // remember that domain handlers are called twice !
+        assertEquals(PREFIX + PREFIX + TEST_CONTENT, exchange.getMessage().getContent());
+        assertTrue(domainHandler.getMessages().isEmpty());
     }
 
     /**

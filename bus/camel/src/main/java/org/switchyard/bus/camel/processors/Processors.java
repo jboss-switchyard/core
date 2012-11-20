@@ -21,7 +21,9 @@
  */
 package org.switchyard.bus.camel.processors;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.camel.Processor;
 import org.switchyard.ExchangeHandler;
@@ -120,6 +122,13 @@ public enum Processors {
         }
     };
 
+    private static Set<String> NAMES = new HashSet<String>();
+    static {
+        for (Processors processor : values()) {
+            NAMES.add(processor.name());
+        }
+    }
+
     /**
      * Creates new processor for given Service Domain.
      * 
@@ -148,6 +157,16 @@ public enum Processors {
      */
     private static Processor wrap(List<ExchangeHandler> handlers) {
         return new HandlerProcessor(handlers);
+    }
+
+    /**
+     * Checks if given processor name is specific to SwitchYard route flow.
+     * 
+     * @param name Processor name.
+     * @return True if given name is reserved for SwitchYard specific parts.
+     */
+    public static boolean isSwitchYardSpecific(String name) {
+        return NAMES.contains(name);
     }
 
 }
