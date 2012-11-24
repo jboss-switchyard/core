@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-
 /**
  * Utility class to safely access ("pull") Strings from various sources.
  *
@@ -37,8 +36,8 @@ public class StringPuller extends Puller<String> {
      * {@inheritDoc}
      */
     @Override
-    public String pull(InputStream is) throws IOException {
-        return pull(new InputStreamReader(is));
+    public String pull(InputStream stream) throws IOException {
+        return pull(new InputStreamReader(stream));
     }
 
     /**

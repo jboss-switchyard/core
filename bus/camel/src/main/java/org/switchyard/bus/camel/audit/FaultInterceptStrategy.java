@@ -36,7 +36,6 @@ public class FaultInterceptStrategy implements InterceptStrategy {
     public Processor wrapProcessorInInterceptors(CamelContext context,
         ProcessorDefinition<?> definition, Processor target,
         Processor nextTarget) throws Exception {
-
         return new FaultProcessor(target);
     }
 

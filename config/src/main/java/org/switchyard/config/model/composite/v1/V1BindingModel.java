@@ -35,6 +35,7 @@ import org.switchyard.config.model.composite.BindingModel;
 import org.switchyard.config.model.composite.CompositeModel;
 import org.switchyard.config.model.composite.CompositeReferenceModel;
 import org.switchyard.config.model.composite.CompositeServiceModel;
+import org.switchyard.config.model.selector.OperationSelectorModel;
 
 /**
  * A version 1 BindingModel.
@@ -43,6 +44,7 @@ import org.switchyard.config.model.composite.CompositeServiceModel;
  */
 public class V1BindingModel extends BaseTypedModel implements BindingModel {
 
+    private OperationSelectorModel _operationSelector;
     private ContextMapperModel _contextMapper;
     private MessageComposerModel _messageComposer;
 
@@ -78,6 +80,7 @@ public class V1BindingModel extends BaseTypedModel implements BindingModel {
     @Override
     protected final Model setModelChildrenOrder(String... childrenOrder) {
         Set<String> mco = new LinkedHashSet<String>();
+        mco.add(OperationSelectorModel.OPERATION_SELECTOR + ".*");
         mco.add(ContextMapperModel.CONTEXT_MAPPER);
         mco.add(MessageComposerModel.MESSAGE_COMPOSER);
         if (childrenOrder != null) {
@@ -104,6 +107,27 @@ public class V1BindingModel extends BaseTypedModel implements BindingModel {
      * {@inheritDoc}
      */
     @Override
+    public OperationSelectorModel getOperationSelector() {
+        if (_operationSelector == null) {
+            _operationSelector = (OperationSelectorModel)this.getFirstChildModelStartsWith(OperationSelectorModel.OPERATION_SELECTOR);
+        }
+        return _operationSelector;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BindingModel setOperationSelector(OperationSelectorModel model) {
+        setChildModel(model);
+        _operationSelector = model;
+        return this;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ContextMapperModel getContextMapper() {
         if (_contextMapper == null) {
             _contextMapper = (ContextMapperModel)getFirstChildModel(ContextMapperModel.CONTEXT_MAPPER);
@@ -122,6 +146,26 @@ public class V1BindingModel extends BaseTypedModel implements BindingModel {
         return _messageComposer;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BindingModel setContextMapper(ContextMapperModel model) {
+        _contextMapper = model;
+        setChildModel(model);
+        return this;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BindingModel setMessageComposer(MessageComposerModel model) {
+        _messageComposer = model;
+        setChildModel(model);
+        return this;
+    }
+    
     @Override
     public boolean isServiceBinding() {
         return (getModelParent() instanceof CompositeServiceModel);

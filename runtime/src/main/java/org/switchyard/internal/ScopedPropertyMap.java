@@ -26,8 +26,8 @@ import java.util.Set;
 
 import org.switchyard.Property;
 import org.switchyard.Scope;
-import org.switchyard.io.Serialization.AccessType;
-import org.switchyard.io.Serialization.Strategy;
+import org.switchyard.serial.graph.AccessType;
+import org.switchyard.serial.graph.Strategy;
 
 /**
  * A simple container for a set of scoped property maps.  Properties that are 

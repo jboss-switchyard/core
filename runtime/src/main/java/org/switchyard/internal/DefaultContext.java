@@ -24,14 +24,13 @@ import java.util.Set;
 import org.switchyard.Context;
 import org.switchyard.Property;
 import org.switchyard.Scope;
-import org.switchyard.io.Serialization.AccessType;
-import org.switchyard.io.Serialization.CoverageType;
-import org.switchyard.io.Serialization.Strategy;
+import org.switchyard.serial.graph.AccessType;
+import org.switchyard.serial.graph.Strategy;
 
 /**
  * Base context implementation.
  */
-@Strategy(access=AccessType.FIELD, coverage=CoverageType.INCLUSIVE)
+@Strategy(access=AccessType.FIELD)
 public class DefaultContext implements Context {
     
     private ScopedPropertyMap _properties;

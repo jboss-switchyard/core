@@ -19,7 +19,6 @@
 
 package org.switchyard.internal;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
@@ -28,9 +27,9 @@ import org.switchyard.Property;
 import org.switchyard.Scope;
 import org.switchyard.common.lang.Strings;
 import org.switchyard.internal.ContextProperty.ContextPropertyFactory;
-import org.switchyard.io.Serialization.AccessType;
-import org.switchyard.io.Serialization.Factory;
-import org.switchyard.io.Serialization.Strategy;
+import org.switchyard.serial.graph.AccessType;
+import org.switchyard.serial.graph.Factory;
+import org.switchyard.serial.graph.Strategy;
 
 /**
  * Serializable implementation of <code>Context</code>.
@@ -168,11 +167,14 @@ public class ContextProperty implements Property {
     }
     
     /**
-     * The serialization factory for ContextProperty.
+     * The serialization factory for context properties.
      */
     public static final class ContextPropertyFactory implements Factory<ContextProperty> {
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public ContextProperty create(Class<ContextProperty> type) throws IOException {
+        public ContextProperty create(Class<ContextProperty> type) {
             return new ContextProperty();
         }
     }
