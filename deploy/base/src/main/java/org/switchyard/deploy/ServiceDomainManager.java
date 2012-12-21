@@ -41,6 +41,7 @@ import org.switchyard.internal.DefaultServiceRegistry;
 import org.switchyard.internal.DefaultServiceSecurity;
 import org.switchyard.internal.DomainImpl;
 import org.switchyard.internal.EventManager;
+import org.switchyard.internal.EventManagerFactory;
 import org.switchyard.internal.transform.BaseTransformerRegistry;
 import org.switchyard.internal.validate.BaseValidatorRegistry;
 import org.switchyard.spi.ServiceRegistry;
@@ -70,18 +71,16 @@ public class ServiceDomainManager {
     
     private static Logger _log = Logger.getLogger(ServiceDomainManager.class);
 
-    // Share the same service registry and bus across domains to give visibility 
-    // to registered services across application domains
+    // Share the same service registry and event manager across domains
+    // to give visibility to registered services across application domains
     private ServiceRegistry _registry = new DefaultServiceRegistry();
-    private EventManager _eventManager = new EventManager();
-    
+    private EventManager _eventManager = EventManagerFactory.getInstance().getEventManager();
+
     /**
      * Constructs a new ServiceDomainManager.
      */
-    public ServiceDomainManager() {
-         
-    }
-    
+    public ServiceDomainManager() {}
+
     /**
      * Create a ServiceDomain instance.
      * <p/>

@@ -58,6 +58,7 @@ public class InOutOperation extends BaseServiceOperation {
      * @param outputType output message name
      * @param faultType fault message name
      */
+    
     public InOutOperation(String operationName, QName inputType, QName outputType, QName faultType) {
         super(ExchangePattern.IN_OUT, operationName, inputType, outputType, faultType);
     }

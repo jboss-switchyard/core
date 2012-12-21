@@ -79,13 +79,13 @@ public class DomainImpl implements ServiceDomain {
      * @param name name
      */
     public DomainImpl(QName name) {
-        this(name,
+        this(name, 
             new DefaultServiceSecurity(),
-            new DefaultServiceRegistry(),
-            new LocalExchangeBus(),
-            new BaseTransformerRegistry(),
-            new BaseValidatorRegistry(),
-            new EventManager());
+            new DefaultServiceRegistry(), 
+            new LocalExchangeBus(), 
+            new BaseTransformerRegistry(), 
+            new BaseValidatorRegistry(), 
+            EventManagerFactory.getInstance().getEventManager());
         // this constructor is used for tests, normally exchange bus can listen
         // for domain events
 //        ((LocalExchangeBus) _exchangeBus).init(this);

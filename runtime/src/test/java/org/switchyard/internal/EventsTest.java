@@ -19,7 +19,10 @@
 
 package org.switchyard.internal;
 
+import java.util.Collections;
 import java.util.EventObject;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 
@@ -70,10 +73,15 @@ public class EventsTest {
                 return null;
             }
         };
+        
         _domain.getTransformerRegistry().addTransformer(t);
-        Assert.assertTrue(_observer.addTransformerCalled);
         _domain.getTransformerRegistry().removeTransformer(t);
+        
+        _observer.waitFor(TransformerAddedEvent.class, TransformerRemovedEvent.class);
+        
+        Assert.assertTrue(_observer.addTransformerCalled);
         Assert.assertTrue(_observer.removeTransformerCalled);
+
     }
 
     @Test
@@ -86,8 +94,12 @@ public class EventsTest {
             }
         };
         _domain.getValidatorRegistry().addValidator(t);
-        Assert.assertTrue(_observer.addValidatorCalled);
         _domain.getValidatorRegistry().removeValidator(t);
+        
+        
+        _observer.waitFor(ValidatorAddedEvent.class, ValidatorRemovedEvent.class);
+
+        Assert.assertTrue(_observer.addValidatorCalled);
         Assert.assertTrue(_observer.removeValidatorCalled);
     }
     
@@ -97,8 +109,10 @@ public class EventsTest {
             .addEventObserver(_observer, ReferenceUnregistrationEvent.class);
         
         ServiceReference ref = _domain.registerServiceReference(new QName("test"), new InOutService());
-        Assert.assertTrue(_observer.referenceRegistrationCalled);
         ref.unregister();
+        
+        _observer.waitFor(ReferenceRegistrationEvent.class, ReferenceUnregistrationEvent.class);
+        Assert.assertTrue(_observer.referenceRegistrationCalled);
         Assert.assertTrue(_observer.referenceUnregistrationCalled);
     }
 
@@ -108,8 +122,11 @@ public class EventsTest {
             .addEventObserver(_observer, ServiceUnregistrationEvent.class);
         
         Service service = _domain.registerService(new QName("test"), new InOutService(), new BaseHandler());
-        Assert.assertTrue(_observer.serviceRegistrationCalled);
         service.unregister();
+        
+        _observer.waitFor(ServiceRegistrationEvent.class, ServiceUnregistrationEvent.class);
+        
+        Assert.assertTrue(_observer.serviceRegistrationCalled);
         Assert.assertTrue(_observer.serviceUnregistrationCalled);
     }
 }
@@ -126,6 +143,8 @@ class DummyObserver implements EventObserver {
     public boolean serviceRegistrationCalled;
     public boolean serviceUnregistrationCalled;
 
+    Set<Class<? extends EventObject>> processedEvents = new HashSet<Class<? extends EventObject>>();
+    
     public void notify(EventObject event) {
         if (event instanceof TransformerAddedEvent) {
             addTransformerCalled = true;
@@ -144,5 +163,29 @@ class DummyObserver implements EventObserver {
         } else if (event instanceof ServiceUnregistrationEvent) {
             serviceUnregistrationCalled = true;
         }
+        
+        
+        synchronized (this) {
+        	processedEvents.add(event.getClass());
+        	this.notifyAll();
+		}
+    }
+    
+    public void waitFor(Class<? extends EventObject> ...events) {
+    	Set<Class<? extends EventObject>> requiredSet = new HashSet<Class<? extends EventObject>>();
+    	Collections.addAll(requiredSet, events);
+    	
+    	while(processedEvents.containsAll(requiredSet) == false) {
+	    	synchronized (this) {
+				try {
+					this.wait();
+				} catch (InterruptedException e) {
+				}
+			}
+    	}
+    }
+    
+    public void clearProcessed() {
+    	processedEvents.clear();
     }
 }

@@ -31,6 +31,7 @@ import org.switchyard.HandlerException;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceReference;
 import org.switchyard.handlers.AddressingHandler;
+import org.switchyard.handlers.MonitoringHandler;
 import org.switchyard.handlers.PolicyHandler;
 import org.switchyard.handlers.SecurityHandler;
 import org.switchyard.handlers.TransactionHandler;
@@ -68,6 +69,7 @@ public class LocalExchangeBus implements ExchangeBus {
         // Build out the request and reply handler chains.
         _requestChain = new DefaultHandlerChain();
         _requestChain.addLast("addressing", new AddressingHandler(_domain));
+        _requestChain.addLast("monitoring", new MonitoringHandler(_domain.getEventPublisher(), true));
         _requestChain.addLast("transaction-pre-invoke", transactionHandler);
         _requestChain.addLast("security", securityHandler);
         _requestChain.addLast("generic-policy", new PolicyHandler());
@@ -82,6 +84,7 @@ public class LocalExchangeBus implements ExchangeBus {
         _replyChain.addLast("validation-before-transform", validateHandler);
         _replyChain.addLast("transformation", transformHandler);
         _replyChain.addLast("validation-after-transform", validateHandler);
+        _replyChain.addLast("monitoring", new MonitoringHandler(_domain.getEventPublisher()));
         _replyChain.addLast(HandlerChain.CONSUMER_HANDLER, new BaseHandler());
     }
 

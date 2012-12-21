@@ -19,24 +19,108 @@
 
 package org.switchyard.internal;
 
+import java.text.MessageFormat;
+import java.util.EventObject;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import junit.framework.Assert;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.switchyard.event.EventObserver;
 
 /**
- *  Unit tests for the EventManager class.
+ * Unit tests for the EventManager class.
  */
 public class EventManagerTest {
-    
-    private EventManager _manager;
-     
-    @Before
-    public void setUp() throws Exception {
-        _manager = new EventManager();
-    }
-    
-    @Test
-    public void testSomething() {
-    }
+
+	@Test
+	public void testEventManagerFactoryNotNull() {
+		Assert.assertNotNull(EventManagerFactory.getInstance());
+	}
+
+	@Test
+	public void testEventManagerNotNull() {
+		EventManagerFactory factory = EventManagerFactory.getInstance();
+
+		Assert.assertNotNull(factory.getEventManager());
+	}
+
+	@Test
+	public void testAsyncEventManagerPerformance() {
+		EventManager asynchronousEventManager = new EventManager();
+
+		EventObserverCounter eventObserCounter = new EventObserverCounter(450,
+				3);
+
+		asynchronousEventManager
+				.addObserver(eventObserCounter, MockEvent.class);
+
+		long start = System.currentTimeMillis();
+		for (int i = 0; i < 450; i++) {
+			asynchronousEventManager.publish(new MockEvent("test"));
+		}
+
+		long end = System.currentTimeMillis();
+
+		synchronized (eventObserCounter) {
+			try {
+				eventObserCounter.wait(500 * 10);
+			} catch (InterruptedException e) {
+				Assert.fail("wait was interrupted");
+			}
+
+			Assert.assertEquals(eventObserCounter.getObserverCall(), 450);
+		}
+
+		long endFinally = System.currentTimeMillis();
+
+		System.out.println(MessageFormat.format(
+				"publish events done in {0}ms, async processing done in {1}ms",
+				new Object[] { end - start, endFinally - start }));
+	}
+
+	public class EventObserverCounter implements EventObserver {
+
+		AtomicInteger observerCall = new AtomicInteger();
+		private int totalCount = 0;
+		private long processTime = 0;
+
+		public EventObserverCounter(int totalCount, long processTime) {
+			this.totalCount = totalCount;
+			this.processTime = processTime;
+		}
+
+		@Override
+		public void notify(EventObject event) {
+			int current = observerCall.incrementAndGet();
+			try {
+				Thread.sleep(processTime);
+			} catch (InterruptedException e) {
+			}
+
+			if (current >= totalCount) {
+				synchronized (this) {
+					this.notifyAll();
+				}
+			}
+		}
+
+		public int getObserverCall() {
+			return observerCall.get();
+		}
+	}
+
+	public class MockEvent extends EventObject {
+
+		public MockEvent(Object source) {
+			super(source);
+			// TODO Auto-generated constructor stub
+		}
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+	}
 }
