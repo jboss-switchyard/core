@@ -30,6 +30,7 @@ import org.switchyard.Exchange;
 import org.switchyard.Message;
 import org.switchyard.Property;
 import org.switchyard.Scope;
+import org.switchyard.exception.SwitchYardException;
 
 /**
  * Transformation sequence/pipeline.
@@ -134,8 +135,9 @@ public final class TransformSequence implements Serializable {
                     LOGGER.debug("Transformed Message (" + System.identityHashCode(message) + ") from '" + transformer.getFrom() + "' to '" + transformer.getTo() + "' using transformer type '" + transformer.getClass().getName() + "'.");
                 }
             } else {
-                LOGGER.warn("Transformer '" + transformer.getClass().getName() + "' returned a null transformation result.  Check input payload matches requirements of the Transformer implementation.");
-                break;
+                String msg ="Transformer '" + transformer.getClass().getName() + "' returned a null transformation result when transforming from type '" + from + "' to type '" + to + "'. Check input payload matches requirements of the Transformer implementation.";
+                LOGGER.error(msg);
+                throw new SwitchYardException(msg);
             }
         }
     }
