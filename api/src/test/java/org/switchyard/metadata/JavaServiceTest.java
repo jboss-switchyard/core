@@ -39,6 +39,9 @@ public class JavaServiceTest {
     @Test
     public void testJavaInterfaceAsService() throws Exception {
         JavaService js = JavaService.fromClass(JavaInterface.class);
+        
+        Assert.assertEquals(JavaInterface.class.getName(), js.getName());
+        
         // There should be two operations
         Assert.assertEquals(2, js.getOperations().size());
         
@@ -59,6 +62,9 @@ public class JavaServiceTest {
     @Test
     public void testJavaClassAsService() throws Exception {
         JavaService js = JavaService.fromClass(JavaClassOnly.class);
+
+        Assert.assertEquals(JavaClassOnly.class.getName(), js.getName());
+        
         // There should be one operation
         Assert.assertEquals(1, js.getOperations().size());
         // meh() is InOnly
@@ -69,6 +75,9 @@ public class JavaServiceTest {
     @Test
     public void testJavaClassImplementsInterfaceAsService() throws Exception {
         JavaService js = JavaService.fromClass(JavaClassImplementsInterface.class);
+
+        Assert.assertEquals(JavaClassImplementsInterface.class.getName(), js.getName());
+
         // There should be one operation
         Assert.assertEquals(3, js.getOperations().size());
         // meh() is InOnly
@@ -79,6 +88,9 @@ public class JavaServiceTest {
     @Test
     public void testJavaClassExtendsClass() throws Exception {
         JavaService js = JavaService.fromClass(JavaClassExtendsClass.class);
+
+        Assert.assertEquals(JavaClassExtendsClass.class.getName(), js.getName());
+
         // There should be one operation
         Assert.assertEquals(1, js.getOperations().size());
         // meh() is InOnly

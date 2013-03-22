@@ -31,6 +31,8 @@ public class BaseService implements ServiceInterface {
     
     // The interface type
     private String _type;
+    // The name
+    private String _name;
     // The interface operations
     private Set<ServiceOperation> _operations;
     
@@ -49,7 +51,17 @@ public class BaseService implements ServiceInterface {
      * @param operations interface operations
      */
     public BaseService(Set<ServiceOperation> operations) {
-        this(operations, ServiceInterface.DEFAULT_TYPE);
+        this(null, operations, ServiceInterface.DEFAULT_TYPE);
+    }
+    
+    /**
+     * Create a new ServiceInterface with the specified operations.  The default
+     * interface type, ServiceInterface.DEFAULT_TYPE, is assumed.
+     * @param name interface name
+     * @param operations interface operations
+     */
+    public BaseService(String name, Set<ServiceOperation> operations) {
+        this(name, operations, ServiceInterface.DEFAULT_TYPE);
     }
     
     /**
@@ -65,12 +77,14 @@ public class BaseService implements ServiceInterface {
     
     /**
      * Create a new ServiceInterface with the specified operations and type.
+     * @param name interface name
      * @param operations interface operations
      * @param type interface type
      */
-    public BaseService(Set<ServiceOperation> operations, String type) {
+    public BaseService(String name, Set<ServiceOperation> operations, String type) {
         _operations = operations;
         _type = type;
+        _name = name;
     }
 
     /**
@@ -109,16 +123,30 @@ public class BaseService implements ServiceInterface {
         return _type;
     }
 
+    /**
+     * @return name
+     * @see ServiceInterface
+     */
+    @Override
+    public String getName() {
+        return _name;
+    }
+
     @Override
     public String toString() {
-        return "BaseServiceInterface [type=" + _type + ", operations=" + _operations + "]";
+        return "BaseServiceInterface [name=" + _name + ", type=" + _type + ", operations=" + _operations + "]";
     }
     
     protected void setType(String type) {
         _type = type;
     }
 
+    protected void setName(String name) {
+        _name = name;
+    }
+
     protected void setOperations(Set<ServiceOperation> operations) {
         _operations = operations;
     }
+
 }

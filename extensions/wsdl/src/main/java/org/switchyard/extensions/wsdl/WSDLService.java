@@ -53,11 +53,12 @@ public final class WSDLService extends BaseService {
      * Private constructor for creating a new ServiceInterface.  Clients of the API
      * should use fromWSDL() to create a ServiceInterface from a WSDL.
      * 
+     * @param name interface name
      * @param operations list of operations on the service interface
      * @param wsdlLocation the WSDL location used to derive the interface
      */
-    private WSDLService(final Set<ServiceOperation> operations, final String wsdlLocation) {
-        super(operations, TYPE);
+    private WSDLService(String name, final Set<ServiceOperation> operations, final String wsdlLocation) {
+        super(name, operations, TYPE);
         _wsdlLocation = wsdlLocation;
     }
 
@@ -97,7 +98,8 @@ public final class WSDLService extends BaseService {
     public static WSDLService fromWSDL(final String wsdlLocation, final String portName) throws WSDLReaderException {
         WSDLReader reader = new WSDLReader();
         HashSet<ServiceOperation> ops = reader.readWSDL(wsdlLocation, portName);
-        return new WSDLService(ops, wsdlLocation);
+        javax.xml.namespace.QName portType = reader.getPortType(wsdlLocation, portName);
+        return new WSDLService(portType.toString(), ops, wsdlLocation);
     }
 
     /**

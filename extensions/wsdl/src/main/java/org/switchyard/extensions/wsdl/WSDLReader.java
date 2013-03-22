@@ -116,6 +116,45 @@ public class WSDLReader {
     }
 
     /**
+     * Obtains the port type, associated with the supplied port name,
+     * from the WSDL located at the URI.
+     *
+     * @param wsdlURI a URI (can be a filename or URL) pointing to a WSDL XML definition.
+     * @param portName the port name to match with
+     * @return the port type.
+     * @throws WSDLReaderException if the wsdl cannot be read or is improper
+     */
+    public QName getPortType(final String wsdlURI, final String portName) throws WSDLReaderException {
+        try {
+            LOGGER.trace("Retrieving document at '" + wsdlURI + "'");
+
+            URL url = getURL(wsdlURI);
+            InputStream inputStream = url.openStream();
+            InputSource inputSource = new InputSource(inputStream);
+            inputSource.setSystemId(url.toString());
+            Document doc = XMLHelper.getDocument(inputSource);
+
+            inputStream.close();
+
+            Element defEl = doc.getDocumentElement();
+            Map<String, String> namespaces = parseNamespaces(defEl);
+            Map<QName, QName> parts = getParts(defEl, namespaces);
+            Element portType = getPortType(defEl, portName);
+            if (portType == null) {
+                throw new WSDLReaderException("Unable to find portType with name " + portName);
+            }
+
+            return new QName(defEl.getAttribute("targetNamespace"), portType.getAttribute("name"));
+        } catch (IOException e) {
+            throw new WSDLReaderException("Unable to resolve WSDL document at " + wsdlURI, e);
+        } catch (ParserConfigurationException pce) {
+            throw new WSDLReaderException(pce);
+        } catch (SAXException se) {
+            throw new WSDLReaderException(se);
+        }
+    }
+
+    /**
      * Parse a WSDL definition for a given port name.
      *
      * @param defEl the definition element.
