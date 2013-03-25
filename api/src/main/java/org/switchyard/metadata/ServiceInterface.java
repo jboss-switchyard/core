@@ -49,6 +49,14 @@ public interface ServiceInterface {
     String getType();
     
     /**
+     * The fully qualified name of the service interface. The format will be
+     * dependent upon the interface type, e.g. wsdl will use a QName format,
+     * java will use the dot notation, etc.
+     * @return The name
+     */
+    String getName();
+    
+    /**
      * The set of operations available on this service.
      * @return A Set containing operations available on this service.  If the
      * interface contains no operations, the returned Set will be empty and not

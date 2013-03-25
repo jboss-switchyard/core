@@ -71,7 +71,7 @@ public final class JavaService extends BaseService {
      * @param serviceInterface the java class used to derive the interface
      */
     private JavaService(Set<ServiceOperation> operations, Class<?> serviceInterface) {
-        super(operations, TYPE);
+        super(serviceInterface.getName(), operations, TYPE);
         _serviceInterface = serviceInterface;
     }
     

@@ -39,16 +39,17 @@ public class RemoteInterface extends BaseService {
      * Create a new RemoteInterface with no operations.
      */
     public RemoteInterface() {
-        super(new HashSet<ServiceOperation>(), TYPE);
+        super(null, new HashSet<ServiceOperation>(), TYPE);
     }
     
     /**
      * Create a new RemoteInterface with the specified operation and type.
+     * @param name the interface name
      * @param operations the operation set
      * @param type the interface type
      */
-    public RemoteInterface(Set<ServiceOperation> operations, String type) {
-        super(operations, type);
+    public RemoteInterface(String name, Set<ServiceOperation> operations, String type) {
+        super(name, operations, type);
     }
     
     /**
@@ -57,7 +58,7 @@ public class RemoteInterface extends BaseService {
      * @return RemoteInterface representation of the specified contract
      */
     public static RemoteInterface fromInterface(ServiceInterface contract) {
-        return new RemoteInterface(contract.getOperations(), TYPE);
+        return new RemoteInterface(contract.getName(), contract.getOperations(), TYPE);
     }
     
 }
