@@ -33,7 +33,7 @@ import org.switchyard.event.EventPublisher;
 /**
  * Handles registration and publication of events in a ServiceDomain.
  */
-public class EventManager implements EventPublisher {
+public class EventManager implements EventPublisher, EventManagerMBean {
 
     private static Logger _logger = Logger.getLogger(EventManager.class);
     
@@ -72,6 +72,18 @@ public class EventManager implements EventPublisher {
             return _observers.get(event);
         } else {
             return Collections.emptyList();
+        }
+    }
+    
+    /**
+     * Add an observer to be notified about the occurrance of the supplied events.
+     * 
+     * @param observer The observer
+     * @param events The list of event types of interest
+     */
+    public void addObserver(EventObserver observer, java.util.List<Class<? extends EventObject>> events) {
+        for (Class<? extends EventObject> event : events) {
+            addObserver(observer, event);
         }
     }
     
