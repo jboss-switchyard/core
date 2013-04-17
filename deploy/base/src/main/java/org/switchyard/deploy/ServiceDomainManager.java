@@ -19,9 +19,12 @@
 
 package org.switchyard.deploy;
 
+import java.lang.management.ManagementFactory;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
@@ -64,6 +67,11 @@ import org.switchyard.validate.ValidatorRegistry;
 public class ServiceDomainManager {
 
     /**
+     * The EventManager JMX object name.
+     */
+    public static final String SWITCHYARD_OBJECTNAME_EVENT_MANAGER = "switchyard:name=EventManager";
+
+    /**
      * Root domain property.
      */
     public static final QName ROOT_DOMAIN = new QName("org.switchyard.domains.root");
@@ -79,7 +87,41 @@ public class ServiceDomainManager {
      * Constructs a new ServiceDomainManager.
      */
     public ServiceDomainManager() {
-         
+        init();
+    }
+    
+    /**
+     * Initialize the service domain manager.
+     */
+    protected void init() {
+        // Register the EventManager as an MBean
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer(); 
+        ObjectName objname=null;
+        
+        try {
+            objname = new ObjectName(SWITCHYARD_OBJECTNAME_EVENT_MANAGER);
+            
+            mbs.registerMBean(_eventManager, objname);
+            
+            if (_log.isDebugEnabled()) {
+                _log.debug("Registered EventManager as an MBean");
+            }
+        } catch (javax.management.InstanceAlreadyExistsException iaee) {
+            try {
+                mbs.unregisterMBean(objname);
+                
+                mbs.registerMBean(_eventManager, objname);
+                                
+                if (_log.isDebugEnabled()) {
+                    _log.debug("Re-registered EventManager as an MBean");
+                }
+            } catch (Exception e2) {
+                _log.error("Failed to re-register EventManager as MBean", e2);                
+            }
+            
+        } catch (Exception e) {
+            _log.error("Failed to register EventManager as MBean", e);
+        }
     }
     
     /**

@@ -19,6 +19,11 @@
 
 package org.switchyard.deploy;
 
+import java.lang.management.ManagementFactory;
+import java.util.EventObject;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import javax.xml.namespace.QName;
 
 import org.junit.Assert;
@@ -26,6 +31,7 @@ import org.junit.Test;
 import org.switchyard.ServiceDomain;
 import org.switchyard.config.model.ModelPuller;
 import org.switchyard.config.model.switchyard.SwitchYardModel;
+import org.switchyard.event.EventObserver;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -41,5 +47,86 @@ public class ServiceDomainManagerTest {
                 new QName("test"), switchyard);
         
         Assert.assertEquals(2, domain.getHandlers().size());
+    }
+    
+    @Test
+    public void testRegisteredEventManagerMBean() {
+        ServiceDomainManager sdm=new ServiceDomainManager();
+        
+        TestEventObserver observer=new TestEventObserver();
+        
+        // Register listener via EventManagerMBean
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer(); 
+        ObjectName objname=null;
+        
+        try {
+            objname = new ObjectName(ServiceDomainManager.SWITCHYARD_OBJECTNAME_EVENT_MANAGER);
+            
+            java.util.List<Class<?>> eventTypes=new java.util.ArrayList<Class<?>>();
+            eventTypes.add(TestEvent.class);               
+            
+            Object[] params={observer, eventTypes};
+            
+            String[] types={EventObserver.class.getName(), java.util.List.class.getName()};
+            
+            mbs.invoke(objname, "addObserver", params, types);
+        } catch (Exception e) {
+            Assert.fail("Failed to register event observer via MBean: "+e);
+        }
+
+        TestEvent te=new TestEvent();
+        
+        sdm.getEventManager().publish(te);
+        
+        // Check received by the event observer
+        if (observer.getEvents().size() != 1) {
+            Assert.fail("Expecting 1 event, but got: "+observer.getEvents().size());
+        }
+        
+        if (observer.getEvents().get(0) != te) {
+            Assert.fail("Unexpected event: "+observer.getEvents().get(0));
+        }
+        
+        // Make sure can unregister through MBean
+        try {            
+            Object[] params={observer};
+            
+            String[] types={EventObserver.class.getName()};
+            
+            mbs.invoke(objname, "removeObserver", params, types);
+        } catch (Exception e) {
+            Assert.fail("Failed to register event observer via MBean: "+e);
+        }
+
+        TestEvent te2=new TestEvent();
+        
+        sdm.getEventManager().publish(te2);
+        
+        // Should still only be a single event received
+        if (observer.getEvents().size() != 1) {
+            Assert.fail("Still only expecting 1 event, but got: "+observer.getEvents().size());
+        }
+    }
+    
+    public class TestEvent extends java.util.EventObject {
+        
+        private static final long serialVersionUID = 1L;
+
+        public TestEvent() {
+            super("TestEvent");
+        }
+    }
+    public class TestEventObserver implements EventObserver {
+
+        private java.util.List<EventObject> _events=new java.util.ArrayList<EventObject>();
+        
+        @Override
+        public void notify(EventObject event) {
+            _events.add(event);
+        }
+        
+        public java.util.List<EventObject> getEvents() {
+            return (_events);
+        }
     }
 }
