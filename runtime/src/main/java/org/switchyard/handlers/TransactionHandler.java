@@ -42,6 +42,10 @@ import org.switchyard.policy.TransactionPolicy;
  */
 public class TransactionHandler implements ExchangeHandler {
     
+    /** A boolean flag indicates if the transaction should be rolled back or not on fault. true by default. */
+    public static final String ROLLBACK_ON_FAULT_PROPERTY =
+            "org.switchyard.exchange.transaction.rollbackOnFault";
+    
     private static final String JNDI_TRANSACTION_MANAGER = "java:jboss/TransactionManager";
     private static final String SUSPENDED_TRANSACTION_PROPERTY = 
             "org.switchyard.exchange.transaction.suspended";
@@ -79,6 +83,7 @@ public class TransactionHandler implements ExchangeHandler {
             // OUT phase in IN_OUT exchange or 2nd invocation in IN_ONLY exchange
             handleAfter(exchange);
         } else {
+            exchange.getContext().setProperty(ROLLBACK_ON_FAULT_PROPERTY,  Boolean.TRUE, Scope.EXCHANGE).addLabels(BehaviorLabel.TRANSIENT.label());
             exchange.getContext().setProperty(BEFORE_INVOKED_PROPERTY, Boolean.TRUE, Scope.EXCHANGE).addLabels(BehaviorLabel.TRANSIENT.label());
             handleBefore(exchange);
         }
@@ -87,10 +92,12 @@ public class TransactionHandler implements ExchangeHandler {
     @Override
     public void handleFault(Exchange exchange) {
         try {
-            Transaction transaction = (Transaction)
-                    exchange.getContext().getPropertyValue(INITIATED_TRANSACTION_PROPERTY);
-            if (transaction != null) {
-                transaction.setRollbackOnly();
+            Property rollbackOnFault = exchange.getContext().getProperty(ROLLBACK_ON_FAULT_PROPERTY);
+            if (rollbackOnFault == null || rollbackOnFault.getValue() == null || Boolean.class.cast(rollbackOnFault.getValue())) {
+                Transaction transaction = getCurrentTransaction();
+                if (transaction != null) {
+                    transaction.setRollbackOnly();
+                }
             }
             handleAfter(exchange);
         } catch (Exception e) {

@@ -106,6 +106,7 @@ public class CamelExchangeBusRouteBuilder extends RouteBuilder {
 
         OnExceptionDefinition onException = new OnExceptionDefinition(Throwable.class);
         onException.processRef(ERROR_HANDLING.name());
+        onException.processRef(TRANSACTION_HANDLER.name());
         onException.addOutput(createFilterDefinition());
         // register exception closure
         definition.addOutput(onException);
