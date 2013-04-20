@@ -140,7 +140,7 @@ public final class SecurityContext {
         if (exchange instanceof SecurityExchange) {
             return ((SecurityExchange)exchange).getSecurityContext();
         }
-        throw new IllegalArgumentException("Exchange: " + exchange + " is not a SecurityExchange!");
+        throw BaseSecurityMessages.MESSAGES.notASecurityExchange(exchange.toString());
     }
 
 }

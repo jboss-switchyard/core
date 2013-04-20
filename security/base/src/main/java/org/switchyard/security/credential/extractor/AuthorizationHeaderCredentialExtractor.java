@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.switchyard.common.codec.Base64;
 import org.switchyard.common.lang.Strings;
+import org.switchyard.security.BaseSecurityLogger;
 import org.switchyard.security.credential.Credential;
 import org.switchyard.security.credential.NameCredential;
 import org.switchyard.security.credential.PasswordCredential;
@@ -60,12 +61,12 @@ public class AuthorizationHeaderCredentialExtractor implements CredentialExtract
             try {
                 charset = Charset.forName(charsetName);
             } catch (Throwable t) {
-                LOGGER.error("charsetName [" + charsetName + "] + is illegal or unsupported; using platform-default");
+                BaseSecurityLogger.ROOT_LOGGER.charSetNameIllegal(charsetName);
                 charset = Charset.defaultCharset();
             }
             _charset = charset;
         } else {
-            LOGGER.warn("charsetName is null; using platform-default");
+            BaseSecurityLogger.ROOT_LOGGER.charSetNull();
             _charset = Charset.defaultCharset();
         }
     }
@@ -78,7 +79,7 @@ public class AuthorizationHeaderCredentialExtractor implements CredentialExtract
         if (charset != null) {
             _charset = charset;
         } else {
-            LOGGER.warn("charset is null; using platform-default");
+            BaseSecurityLogger.ROOT_LOGGER.charSetNull();
             _charset = Charset.defaultCharset();
         }
     }

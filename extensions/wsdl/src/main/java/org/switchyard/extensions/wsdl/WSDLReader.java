@@ -86,7 +86,7 @@ public class WSDLReader {
         Map<QName, QName> parts = getParts(defEl, namespaces);
         Element portType = getPortType(defEl, portName);
         if (portType == null) {
-            throw new WSDLReaderException("Unable to find portType with name " + portName);
+            throw WSDLExtensionsMessages.MESSAGES.unableFindPort(portName);
         }
         HashSet<ServiceOperation> ops = new HashSet<ServiceOperation>();
         List<Element> operations = getOperations(portType);
@@ -120,7 +120,7 @@ public class WSDLReader {
             return doc.getDocumentElement();
 
         } catch (IOException e) {
-            throw new WSDLReaderException("Unable to resolve WSDL document at " + wsdlURI, e);
+            throw WSDLExtensionsMessages.MESSAGES.unableResolveWSDL(wsdlURI, e);
         } catch (ParserConfigurationException pce) {
             throw new WSDLReaderException(pce);
         } catch (SAXException se) {
@@ -192,7 +192,7 @@ public class WSDLReader {
             Element msgEl = (Element) messages.item(i);
             NodeList partEls = msgEl.getElementsByTagNameNS(PART.getNamespaceURI(), PART.getLocalPart());
             if (partEls.getLength() != 1) {
-                throw new WSDLReaderException("Service operations on a WSDL interface must have exactly one parameter.");
+                throw WSDLExtensionsMessages.MESSAGES.wsdlInterfaceNeedsOneParameter();
             }
             Element partEl = (Element) partEls.item(0);
             parts.put(getQName(msgEl.getAttribute(ATTR_NAME), namespaces), getQName(partEl.getAttribute(ATTR_ELEMENT), namespaces));

@@ -33,6 +33,8 @@ import org.apache.camel.util.ExchangeHelper;
 import org.apache.log4j.Logger;
 import org.switchyard.HandlerException;
 import org.switchyard.bus.camel.CamelExchange;
+import org.switchyard.bus.camel.BusLogger;
+import org.switchyard.bus.camel.BusMessages;
 import org.switchyard.bus.camel.ErrorListener;
 import org.switchyard.common.lang.Strings;
 
@@ -92,10 +94,7 @@ public class FaultProcessor extends DelegateAsyncProcessor {
         } else {
             // exception thrown during handling FAULT state cannot be forwarded
             // anywhere, because we already have problem to handle
-            _logger.error("Unexpected exception thrown during handling FAULT response. "
-                + "This exception can not be handled, thus it's marked as handled and only logged. "
-                + "If you don't want see messages like this consider handling "
-                + "exceptions in your handler logic", throwable);
+            BusLogger.ROOT_LOGGER.exceptionDuringFaultResponse(throwable);
             ExchangeHelper.setFailureHandled(camel);
         }
     }
@@ -127,7 +126,7 @@ public class FaultProcessor extends DelegateAsyncProcessor {
                 try {
                     entry.getValue().notify(exchange, exception);
                 } catch (Exception e) {
-                    _logger.error("Error listener " + entry.getKey() + " failed to handle exception " + exception.getClass());
+                    BusLogger.ROOT_LOGGER.listenerFailedHandleException(entry.getKey(), exception.getClass());
                 }
             }
         }
@@ -142,7 +141,7 @@ public class FaultProcessor extends DelegateAsyncProcessor {
 
     @Override
     public String toString() {
-        return "FaultProcessor [" + getProcessor() + "]";
+        return BusMessages.MESSAGES.faultProcessorString(getProcessor());
     }
 
 }

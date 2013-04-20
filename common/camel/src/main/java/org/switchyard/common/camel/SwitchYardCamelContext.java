@@ -79,7 +79,7 @@ public class SwitchYardCamelContext extends DefaultCamelContext {
             setInjector(new CdiInjector(getInjector()));
             getManagementStrategy().addEventNotifier(new CamelEventBridge());
         } else {
-            _logger.warn("CDI environment not detected, disabling Camel CDI integration");
+            CommonCamelLogger.ROOT_LOGGER.cdiNotDetected();
         }
     }
 

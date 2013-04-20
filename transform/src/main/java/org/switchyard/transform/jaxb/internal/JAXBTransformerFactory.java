@@ -24,6 +24,7 @@ import org.switchyard.common.type.Classes;
 import org.switchyard.common.xml.QNameUtil;
 import org.switchyard.exception.SwitchYardException;
 import org.switchyard.metadata.java.JavaService;
+import org.switchyard.transform.TransformMessages;
 import org.switchyard.transform.Transformer;
 import org.switchyard.transform.TransformerFactory;
 import org.switchyard.transform.config.model.JAXBTransformModel;
@@ -168,8 +169,7 @@ public class JAXBTransformerFactory implements TransformerFactory<JAXBTransformM
         StringBuilder messageBuilder = new StringBuilder();
         Method[] factoryMethods = objectFactory.getDeclaredMethods();
 
-        messageBuilder.append("JAXB Type '" + type.getName() + "' does not have a JAXBElement factory method defined in " + objectFactory.getName()
-                + ".  The supported JAXBElement factory methods are for types:");
+        messageBuilder.append(TransformMessages.MESSAGES.noJAXBElementFactoryDefined(type.getName(), objectFactory.getName()));
 
         for (Method factoryMethod : factoryMethods) {
             XmlElementDecl xmlElementDecl = factoryMethod.getAnnotation(XmlElementDecl.class);
@@ -191,16 +191,16 @@ public class JAXBTransformerFactory implements TransformerFactory<JAXBTransformM
     private static JavaTransformType toJavaTransformType(QName fromType, QName toType) {
         if (QNameUtil.isJavaMessageType(fromType)) {
             if (QNameUtil.isJavaMessageType(toType)) {
-                throw new SwitchYardException("Invalid JAXB Transformer configuration.  The 'from' and 'to' transformation types are both Java types.  Exactly one must be a Java type.");
+                throw TransformMessages.MESSAGES.bothJavaTypes();
             }
             return JavaTransformType.JAVA2XML;
         } else if (QNameUtil.isJavaMessageType(toType)) {
             if (QNameUtil.isJavaMessageType(fromType)) {
-                throw new SwitchYardException("Invalid JAXB Transformer configuration.  The 'from' and 'to' transformation types are both Java types.  Exactly one must be a Java type.");
+                throw TransformMessages.MESSAGES.bothJavaTypes();
             }
             return JavaTransformType.XML2JAVA;
         } else {
-            throw new SwitchYardException("Invalid JAXB Transformer configuration.  Neither 'from' or 'to' transformation types is a Java type.  Exactly one must be a Java type.");
+            throw TransformMessages.MESSAGES.neitherJavaType();
         }
     }
 

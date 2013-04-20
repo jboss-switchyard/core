@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.camel.Processor;
 import org.switchyard.ExchangeHandler;
 import org.switchyard.ServiceDomain;
+import org.switchyard.bus.camel.BusMessages;
 import org.switchyard.handlers.AddressingHandler;
 import org.switchyard.handlers.PolicyHandler;
 import org.switchyard.handlers.SecurityHandler;
@@ -137,7 +138,7 @@ public enum Processors {
      * @return Processor instance.
      */
     public Processor create(ServiceDomain domain) {
-        throw new AbstractMethodError("Method must be overriden");
+        throw BusMessages.MESSAGES.methodMustBeOverridden();
     }
 
     /**

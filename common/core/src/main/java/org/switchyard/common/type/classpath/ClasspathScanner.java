@@ -20,6 +20,7 @@
 package org.switchyard.common.type.classpath;
 
 import org.apache.log4j.Logger;
+import org.switchyard.common.CommonCoreLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,7 +76,7 @@ public class ClasspathScanner {
                 handleArchive(file);
             }
         } else {
-            _logger.warn("Unknown Classpath URL File '" +  file.getAbsolutePath() + "'.");
+            CommonCoreLogger.ROOT_LOGGER.unknownClasspathURL(file.getAbsolutePath());
         }
     }
 
