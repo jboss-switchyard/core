@@ -72,7 +72,8 @@ public class WSDLServiceTest {
         try {
             WSDLService.fromWSDL("wsdl.porttype(HelloWebService)");
         } catch (WSDLReaderException e) {
-            Assert.assertEquals("Invalid WSDL interface wsdl.porttype(HelloWebService)", e.getMessage());
+            boolean exceptionMatches = e.getMessage().contains("SWITCHYARD012804");
+            Assert.assertTrue(exceptionMatches);
         }
     }
 
@@ -81,7 +82,8 @@ public class WSDLServiceTest {
         try {
             WSDLService.fromWSDL("HelloWebService.wsdl#(HelloWebService)");
         } catch (WSDLReaderException e) {
-            Assert.assertEquals("Invalid WSDL interface part HelloWebService.wsdl#(HelloWebService)", e.getMessage());
+            boolean exceptionMatches = e.getMessage().contains("SWITCHYARD012803");
+            Assert.assertTrue(exceptionMatches);
         }
     }
 
@@ -90,7 +92,8 @@ public class WSDLServiceTest {
         try {
             WSDLService.fromWSDL("HelloWebService.wsdl", "hello");
         } catch (WSDLReaderException e) {
-            Assert.assertEquals("Unable to find portType with name hello", e.getMessage());
+            boolean exceptionMatches = e.getMessage().contains("SWITCHYARD012800");
+            Assert.assertTrue(exceptionMatches);
         }
     }
 
@@ -99,7 +102,8 @@ public class WSDLServiceTest {
         try {
             WSDLService.fromWSDL("unknown.wsdl", "hello");
         } catch (WSDLReaderException e) {
-            Assert.assertEquals("Unable to resolve WSDL document at unknown.wsdl", e.getMessage());
+            boolean exceptionMatches = e.getMessage().contains("SWITCHYARD012802");
+            Assert.assertTrue(exceptionMatches);
         }
     }
 
@@ -108,7 +112,8 @@ public class WSDLServiceTest {
         try {
             WSDLService.fromWSDL("HelloWebService2.wsdl", "HelloWebService");
         } catch (WSDLReaderException e) {
-            Assert.assertEquals("Service operations on a WSDL interface must have exactly one parameter.", e.getMessage());
+            boolean exceptionMatches = e.getMessage().contains("SWITCHYARD012801");
+            Assert.assertTrue(exceptionMatches);
         }
     }
 }
