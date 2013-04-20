@@ -20,7 +20,6 @@ package org.switchyard.security.jboss;
 
 import javax.security.auth.Subject;
 
-import org.apache.log4j.Logger;
 import org.jboss.security.SecurityContextAssociation;
 import org.switchyard.ServiceSecurity;
 import org.switchyard.security.JaasSecurityProvider;
@@ -32,8 +31,6 @@ import org.switchyard.security.SecurityContext;
  * @author David Ward &lt;<a href="mailto:dward@jboss.org">dward@jboss.org</a>&gt; &copy; 2013 Red Hat Inc.
  */
 public class JBossJaasSecurityProvider extends JaasSecurityProvider {
-
-    private static final Logger LOGGER = Logger.getLogger(JBossJaasSecurityProvider.class);
 
     static {
         // Here to trigger fallback usage of the JaasSecurityProvider in the static initializer
@@ -67,7 +64,7 @@ public class JBossJaasSecurityProvider extends JaasSecurityProvider {
                 }
                 return true;
             } else {
-                LOGGER.warn(String.format("SwitchYard security domain (%s) does not match JBoss security domain (%s).", securityDomain, jb_securityDomain));
+                JBossSecurityLogger.ROOT_LOGGER.switchyardDomainNotMatchJBossDomain(securityDomain, jb_securityDomain);
             }
         }
         return false;

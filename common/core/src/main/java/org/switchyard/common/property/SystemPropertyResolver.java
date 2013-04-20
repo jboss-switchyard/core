@@ -21,6 +21,7 @@ package org.switchyard.common.property;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.switchyard.common.CommonCoreLogger;
 
 /**
  * Resolves properties from System Properties.
@@ -37,7 +38,7 @@ public final class SystemPropertyResolver extends PropertiesPropertyResolver {
         try {
             systemProperties = System.getProperties();
         } catch (SecurityException se) {
-            LOGGER.error("SecurityException while getting System Properties; will default to empty Properties", se);
+            CommonCoreLogger.ROOT_LOGGER.exceptionSystemProperties(se);
             systemProperties = new Properties();
         }
         INSTANCE = new SystemPropertyResolver(systemProperties);

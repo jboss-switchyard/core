@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.switchyard.APIMessages;
 import org.switchyard.policy.Policy.PolicyType;
 
 /**
@@ -54,7 +55,7 @@ public final class PolicyFactory {
                 return p;
             }
         }
-        throw new Exception("Invalid policy name: '" + name + "' doesn't exist.");
+        throw APIMessages.MESSAGES.invalidPolicyName(name);
     }
     
     /**

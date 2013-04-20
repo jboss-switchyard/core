@@ -31,6 +31,7 @@ import org.switchyard.common.xml.QNameUtil;
 import org.switchyard.config.model.Scannable;
 import org.switchyard.exception.SwitchYardException;
 import org.switchyard.transform.BaseTransformer;
+import org.switchyard.transform.TransformMessages;
 
 /**
  * JAXB Unmarshalling transformer.
@@ -61,7 +62,7 @@ public class JAXBUnmarshalTransformer<F, T> extends BaseTransformer<Message, Mes
                 _jaxbContext = JAXBContext.newInstance(QNameUtil.toJavaMessageType(to));
             }
         } catch (JAXBException e) {
-            throw new SwitchYardException("Failed to create JAXBContext for '" + to + "'.", e);
+            throw TransformMessages.MESSAGES.failedToCreateJAXBContext(to.toString(), e);
         }
     }
 
@@ -72,7 +73,7 @@ public class JAXBUnmarshalTransformer<F, T> extends BaseTransformer<Message, Mes
         try {
             unmarshaller = _jaxbContext.createUnmarshaller();
         } catch (JAXBException e) {
-            throw new SwitchYardException("Failed to create Unmarshaller for '" + getTo() + "'.", e);
+            throw TransformMessages.MESSAGES.failedToCreateMarshaller(getTo().toString(), e);
         }
 
         try {
@@ -84,7 +85,7 @@ public class JAXBUnmarshalTransformer<F, T> extends BaseTransformer<Message, Mes
                 message.setContent(unmarshalledObject);
             }
         } catch (JAXBException e) {
-            throw new SwitchYardException("Failed to unmarshall for '" + getTo() + "'.", e);
+            throw TransformMessages.MESSAGES.failedToUnmarshallForType(getTo().toString(), e);
         }
 
         return message;

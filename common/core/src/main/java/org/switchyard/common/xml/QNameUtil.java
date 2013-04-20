@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
+import org.switchyard.common.CommonCoreMessages;
 import org.switchyard.common.type.Classes;
 
 /**
@@ -70,7 +71,7 @@ public final class QNameUtil {
      */
     public static Class<?> toJavaMessageType(QName name) {
         if (!isJavaMessageType(name)) {
-            throw new RuntimeException("Invalid call.  Not a Java message type.  Use isJavaMessageType before calling this method.");
+            throw CommonCoreMessages.MESSAGES.invalidCall();
         }
 
         String className = name.getLocalPart().substring(JAVA_TYPE_PREFIX.length());

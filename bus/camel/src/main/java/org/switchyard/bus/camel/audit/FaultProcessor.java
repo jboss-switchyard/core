@@ -27,6 +27,13 @@ import org.apache.camel.Processor;
 import org.apache.camel.processor.DelegateAsyncProcessor;
 import org.apache.log4j.Logger;
 import org.switchyard.bus.camel.CamelExchange;
+<<<<<<< HEAD
+=======
+import org.switchyard.bus.camel.BusLogger;
+import org.switchyard.bus.camel.BusMessages;
+import org.switchyard.bus.camel.ErrorListener;
+import org.switchyard.common.lang.Strings;
+>>>>>>> SWITCHYARD-1320
 
 /**
  * This processor catches exceptions from camel thrown during handling fault replies
@@ -72,17 +79,56 @@ public class FaultProcessor extends DelegateAsyncProcessor {
      * @param exchange SwitchYard exchange related to exception.
      */
     protected void handle(Throwable throwable, Exchange exchange) {
+      
         // exception thrown during handling FAULT state cannot be forwarded
         // anywhere, because we already have problem to handle
-        _logger.error("Unexpected exception thrown during handling FAULT response. "
-            + "This exception can not be handled, thus it's marked as handled and only logged. "
-            + "If you don't want see messages like this consider handling "
-            + "exceptions in your handler logic", throwable);
+        BusLogger.ROOT_LOGGER.exceptionDuringFaultResponse(throwable);
+    }
+
+    protected void dumpExceptionContents(Throwable throwable) {
+        if (_logger.isDebugEnabled()) {
+            String message = "Caught exception of type %s with message: %s";
+            String causeTrace = "";
+
+            if (throwable.getCause() != null) {
+                String causedBy = "\n%sCaused by exception of type %s, message: %s";
+                Throwable cause = throwable.getCause();
+                int depth = 0;
+                while (cause != null) {
+                    causeTrace += String.format(causedBy, Strings.repeat("  ", ++depth), cause.getClass().getName(), cause.getMessage());
+                    cause = cause.getCause();
+                }
+            }
+
+            _logger.debug(String.format(message, throwable.getClass().getName(), throwable.getMessage()) + causeTrace, throwable);
+        }
+
+    }
+
+    protected void notifyListeners(CamelContext context, org.switchyard.Exchange exchange, Throwable exception) {
+        Map<String, ErrorListener> listeners = context.getRegistry().lookupByType(ErrorListener.class);
+        if (listeners != null && listeners.size() > 0) {
+            for (Entry<String, ErrorListener> entry : listeners.entrySet()) {
+                try {
+                    entry.getValue().notify(exchange, exception);
+                } catch (Exception e) {
+                    BusLogger.ROOT_LOGGER.listenerFailedHandleException(entry.getKey(), exception.getClass());
+                }
+            }
+        }
+    }
+
+    private Throwable detectHandlerException(Throwable throwable) {
+        if (throwable instanceof HandlerException) {
+            return (HandlerException) throwable;
+        }
+        return new HandlerException(throwable);
+>>>>>>> SWITCHYARD-1320
     }
 
     @Override
     public String toString() {
-        return "FaultProcessor [" + getProcessor() + "]";
+        return BusMessages.MESSAGES.faultProcessorString(getProcessor());
     }
 
 }

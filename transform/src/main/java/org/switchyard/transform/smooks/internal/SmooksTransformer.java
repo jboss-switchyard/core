@@ -26,8 +26,8 @@ import org.milyn.payload.Exports;
 import org.milyn.payload.JavaResult;
 import org.milyn.payload.StringResult;
 import org.switchyard.config.model.Scannable;
-import org.switchyard.exception.SwitchYardException;
 import org.switchyard.transform.BaseTransformer;
+import org.switchyard.transform.TransformMessages;
 import org.switchyard.transform.config.model.SmooksTransformModel;
 
 import javax.xml.namespace.QName;
@@ -101,7 +101,7 @@ public class SmooksTransformer extends BaseTransformer {
             return;
         }
         if (exports.getExports().size() != 1) {
-            throw new SwitchYardException("Invalid Smooks configuration file.  Must define an <core:exports> section with a single <core:export>.  See Smooks User Guide.");
+            throw TransformMessages.MESSAGES.smooksConfigurationNoExports();
         }
 
         _export = exports.getExports().iterator().next();
@@ -114,7 +114,7 @@ public class SmooksTransformer extends BaseTransformer {
             return;
         }
 
-        throw new SwitchYardException("Unsupported Smooks <core:export> type '" + exportType.getName() + "'.  Only supports StringResult or JavaResult.");
+        throw TransformMessages.MESSAGES.unsupportedSmooksExport(exportType.getName());
     }
 
     private Result newResultInstance() {
@@ -122,7 +122,7 @@ public class SmooksTransformer extends BaseTransformer {
         try {
             return (Result) resultType.newInstance();
         } catch (Exception e) {
-            throw new SwitchYardException("Unexpected exception while creating an instance of Result type '" + resultType.getName() + "'.", e);
+            throw TransformMessages.MESSAGES.unsupportedExceptionCreatingResult(resultType.getName(), e);
         }
     }
 
