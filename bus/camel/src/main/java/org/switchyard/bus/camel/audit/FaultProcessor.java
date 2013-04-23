@@ -31,6 +31,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.processor.DelegateAsyncProcessor;
 import org.apache.camel.util.ExchangeHelper;
 import org.apache.log4j.Logger;
+import org.switchyard.ExchangePattern;
 import org.switchyard.ExchangeState;
 import org.switchyard.HandlerException;
 import org.switchyard.bus.camel.CamelHelper;
@@ -82,7 +83,7 @@ public class FaultProcessor extends DelegateAsyncProcessor {
      */
     protected void handle(Throwable throwable, Exchange camel, org.switchyard.Exchange exchange) {
         if (ExchangeState.OK == exchange.getState()) {
-            dumpExceptionContents(throwable);
+            dumpExceptionContents(throwable, exchange.getContract().getConsumerOperation().getExchangePattern());
             notifyListeners(camel.getContext(), exchange, throwable);
             Throwable content = detectHandlerException(throwable);
             exchange.sendFault(exchange.createMessage().setContent(content));
@@ -97,24 +98,25 @@ public class FaultProcessor extends DelegateAsyncProcessor {
         }
     }
 
-    protected void dumpExceptionContents(Throwable throwable) {
-        if (_logger.isDebugEnabled()) {
-            String message = "Caught exception of type %s with message: %s";
-            String causeTrace = "";
+    protected void dumpExceptionContents(Throwable throwable, ExchangePattern pattern) {
+        String message = String.format("Caught exception of type %s with message: %s", throwable.getClass().getName(), throwable.getMessage());
+        String causeTrace = "";
 
-            if (throwable.getCause() != null) {
-                String causedBy = "\n%sCaused by exception of type %s, message: %s";
-                Throwable cause = throwable.getCause();
-                int depth = 0;
-                while (cause != null) {
-                    causeTrace += String.format(causedBy, Strings.repeat("  ", ++depth), cause.getClass().getName(), cause.getMessage());
-                    cause = cause.getCause();
-                }
+        if (throwable.getCause() != null) {
+            String causedBy = "\n%sCaused by exception of type %s, message: %s";
+            Throwable cause = throwable.getCause();
+            int depth = 0;
+            while (cause != null) {
+                causeTrace += String.format(causedBy, Strings.repeat("  ", ++depth), cause.getClass().getName(), cause.getMessage());
+                cause = cause.getCause();
             }
-
-            _logger.debug(String.format(message, throwable.getClass().getName(), throwable.getMessage()) + causeTrace, throwable);
         }
 
+        if (pattern == ExchangePattern.IN_ONLY) {
+            _logger.error(message + causeTrace, throwable);
+        } else {
+            _logger.debug(message + causeTrace, throwable);
+        }
     }
 
     protected void notifyListeners(CamelContext context, org.switchyard.Exchange exchange, Throwable exception) {
