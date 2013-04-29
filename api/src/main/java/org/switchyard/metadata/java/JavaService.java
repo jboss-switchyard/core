@@ -26,10 +26,10 @@ import java.util.Set;
 
 import javax.xml.namespace.QName;
 
+import org.switchyard.APIMessages;
 import org.switchyard.annotations.DefaultType;
 import org.switchyard.annotations.OperationTypes;
 import org.switchyard.common.type.Classes;
-import org.switchyard.exception.SwitchYardException;
 import org.switchyard.metadata.BaseService;
 import org.switchyard.metadata.InOnlyOperation;
 import org.switchyard.metadata.InOutOperation;
@@ -91,8 +91,7 @@ public final class JavaService extends BaseService {
                 // parameter which maps to the input message
                 Class<?>[] params = m.getParameterTypes();
                 if (params.length > 1) {
-                    throw new RuntimeException(
-                            "Service operations on a Java interface must have exactly one parameter.");
+                    throw APIMessages.MESSAGES.serviceOpNeedOneParamater();
                 }
 
                 // Create the appropriate service operation and add it to the list
@@ -238,7 +237,7 @@ public final class JavaService extends BaseService {
                 return null;
             }
             if (exceptions.length > 1) {
-                throw new SwitchYardException("Service operations on a Java interface can only throw one type of exception.");
+                throw APIMessages.MESSAGES.serviceOpOnlyOneParameter();
             }
 
             if (_methodTypeNames != null && _methodTypeNames.fault().length() != 0) {

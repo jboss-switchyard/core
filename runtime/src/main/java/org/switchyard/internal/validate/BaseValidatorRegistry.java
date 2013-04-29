@@ -36,6 +36,7 @@ import org.switchyard.common.xml.QNameUtil;
 import org.switchyard.event.EventPublisher;
 import org.switchyard.event.ValidatorAddedEvent;
 import org.switchyard.event.ValidatorRemovedEvent;
+import org.switchyard.runtime.RuntimeMessages;
 import org.switchyard.validate.Validator;
 import org.switchyard.validate.ValidatorRegistry;
 
@@ -176,7 +177,7 @@ public class BaseValidatorRegistry implements ValidatorRegistry {
         if (_log.isDebugEnabled()) {
             StringBuilder messageBuilder = new StringBuilder();
 
-            messageBuilder.append("Multiple possible fallback validators available:");
+            messageBuilder.append(RuntimeMessages.MESSAGES.multipleFallbackValidatorsAvailable());
             for (JavaSourceFallbackValidator t : fallbackValidates) {
                 messageBuilder.append("\n\t- name '" + t.getValidator().getName() + "'");
             }

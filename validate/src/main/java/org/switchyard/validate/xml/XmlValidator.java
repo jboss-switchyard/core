@@ -46,6 +46,8 @@ import org.switchyard.common.type.Classes;
 import org.switchyard.config.model.Scannable;
 import org.switchyard.exception.SwitchYardException;
 import org.switchyard.validate.BaseValidator;
+import org.switchyard.validate.ValidateLogger;
+import org.switchyard.validate.ValidateMessages;
 import org.switchyard.validate.ValidationResult;
 import org.switchyard.validate.config.model.FileEntryModel;
 import org.switchyard.validate.config.model.XmlSchemaType;
@@ -87,7 +89,7 @@ public class XmlValidator extends BaseValidator<Message> {
 
         _schemaType = model.getSchemaType();
         if (_schemaType == null) {
-            throw new SwitchYardException("Could not instantiate XmlValidator: schemaType must be specified.");
+            throw ValidateMessages.MESSAGES.couldNotInstantiateXmlValidator();
         }
         
         switch(_schemaType) {
@@ -101,8 +103,8 @@ public class XmlValidator extends BaseValidator<Message> {
             _schemaTypeUri = XMLConstants.RELAXNG_NS_URI;
             break;
         default:
-            throw new SwitchYardException("Could not instantiate XmlValidator: schemaType '" + _schemaType + "' is invalid."
-                    + "It must be the one of " + XmlSchemaType.values() + ".");
+            throw ValidateMessages.MESSAGES.couldNotInstantiateXmlValidatorBadSchemaType(_schemaType.toString(),
+                    XmlSchemaType.values().toString());
         }
         
         _failOnWarning = model.failOnWarning();
@@ -134,7 +136,7 @@ public class XmlValidator extends BaseValidator<Message> {
                 if (located != null) {
                     foundCatalogs.add(located.toString());
                 } else {
-                    LOGGER.warn("schema catalog " + entry.getFile() + " could not be located. ingoring");
+                    ValidateLogger.ROOT_LOGGER.schemaCatalogNotLocated(entry.getFile());
                 }
             }
             if (foundCatalogs.size() > 0) {
@@ -175,7 +177,7 @@ public class XmlValidator extends BaseValidator<Message> {
         } else {
             // setup for XML Schema or Relax NG validation
             if (_schemaConfig == null) {
-                throw new SwitchYardException("schema file must be specified for " + _schemaType + " validation.");
+                throw ValidateMessages.MESSAGES.schemaFileMustBeSpecified(_schemaType.toString());
             }
             
             SchemaFactory schemaFactory = SchemaFactory.newInstance(_schemaTypeUri);
@@ -190,12 +192,12 @@ public class XmlValidator extends BaseValidator<Message> {
                     _schemaFileNames.add(located.toString());
                     foundSchemas.add(new StreamSource(located.toExternalForm()));
                 } else {
-                    LOGGER.warn("schema file " + entry.getFile() + " could not be located. ignoring");
+                    ValidateLogger.ROOT_LOGGER.schemaFileNotLocated(entry.getFile());
                 }
             }
 
             if (foundSchemas.size() == 0) {
-                throw new SwitchYardException("no valid schema file was found");
+                throw ValidateMessages.MESSAGES.noValidSchemaFileFound();
             }
             
             try {
@@ -327,8 +329,9 @@ public class XmlValidator extends BaseValidator<Message> {
                 _validationFailed = true;
                 _errors.add(e);
             } else {
-                StringBuffer buf = new StringBuffer("Warning during validation: ");
-                LOGGER.warn(buf.append(formatParsedConfigs()).append(": ").append(e.getMessage()).toString());
+                StringBuffer warning = new StringBuffer();
+                warning.append(formatParsedConfigs()).append(": ").append(e.getMessage());
+                ValidateLogger.ROOT_LOGGER.warningDuringValidation(warning.toString());
             }
         }
         

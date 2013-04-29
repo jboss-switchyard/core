@@ -72,7 +72,7 @@ public class SynchronousInOutHandler implements ExchangeHandler {
             } catch (InterruptedException e) {
                 synchronized (this) {
                     _responseQueue = null;
-                    throw new DeliveryException("Unexpected interrupt while waiting on OUT Exchange message.", e);
+                    throw APIMessages.MESSAGES.unexpectedInterruptOutExchange();
                 }
             }
 
@@ -84,7 +84,7 @@ public class SynchronousInOutHandler implements ExchangeHandler {
                         outExchange = _responseQueue.poll();
                     } else {
                         _responseQueue = null;
-                        throw new DeliveryException("Timed out waiting on OUT Exchange message.");
+                        throw APIMessages.MESSAGES.timeoutOutExchange();
                     }
                 }
             }
@@ -116,7 +116,7 @@ public class SynchronousInOutHandler implements ExchangeHandler {
             try {
                 _responseQueue.put(exchange);
             } catch (InterruptedException e) {
-                throw new IllegalStateException("Unexpected Interrupt exception.", e);
+                throw APIMessages.MESSAGES.unexpectedInterrupt();
             }
         }
     }
