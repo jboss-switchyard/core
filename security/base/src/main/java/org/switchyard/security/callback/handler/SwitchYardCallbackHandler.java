@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import org.switchyard.security.BaseSecurityMessages;
 import org.switchyard.security.credential.Credential;
 
 /**
@@ -62,12 +63,12 @@ public abstract class SwitchYardCallbackHandler implements CallbackHandler {
         Map<String, String> properties = getProperties();
         if (properties == null) {
             if (required) {
-                throw new IllegalStateException("properties not set");
+                throw BaseSecurityMessages.MESSAGES.propertiesNotSet();
             }
         } else {
             String value = properties.get(name);
             if (value == null && required) {
-                throw new IllegalStateException("property [" + name + "] not set");
+                throw BaseSecurityMessages.MESSAGES.propertyNotSet(name);
             }
             return value;
         }

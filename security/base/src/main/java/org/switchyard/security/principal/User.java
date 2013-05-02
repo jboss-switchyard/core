@@ -21,6 +21,8 @@ package org.switchyard.security.principal;
 import java.io.Serializable;
 import java.security.Principal;
 
+import org.switchyard.security.BaseSecurityMessages;
+
 /**
  * User.
  *
@@ -38,7 +40,7 @@ public class User implements Principal, Serializable {
      */
     public User(String name) {
         if (name == null) {
-            throw new IllegalArgumentException("User name cannot be null");
+            throw BaseSecurityMessages.MESSAGES.userNameCannotBeNull();
         }
         _name = name;
     }

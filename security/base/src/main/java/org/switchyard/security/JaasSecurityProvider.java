@@ -70,7 +70,7 @@ public class JaasSecurityProvider extends SecurityProvider {
             new LoginContext(securityDomain, subject, ch).login();
             success = true;
         } catch (LoginException le) {
-            LOGGER.error("authenticate LoginException: " + le.getMessage(), le);
+            BaseSecurityLogger.ROOT_LOGGER.authenticateLoginException(le.getMessage(), le);
         }
         return success;
     }

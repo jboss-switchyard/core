@@ -37,6 +37,7 @@ import org.switchyard.handlers.SecurityHandler;
 import org.switchyard.handlers.TransactionHandler;
 import org.switchyard.handlers.TransformHandler;
 import org.switchyard.handlers.ValidateHandler;
+import org.switchyard.runtime.RuntimeMessages;
 import org.switchyard.spi.Dispatcher;
 import org.switchyard.spi.ExchangeBus;
 
@@ -149,7 +150,7 @@ class LocalDispatcher implements Dispatcher {
             _replyChain.handle(exchange);
             break;
         default:
-            throw new IllegalStateException("Invalid phase for dispatch: " + exchange.getPhase());
+            throw RuntimeMessages.MESSAGES.invalidPhaseForDispatch(exchange.getPhase().toString());
         }
     }
 

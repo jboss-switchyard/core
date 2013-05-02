@@ -106,14 +106,14 @@ public class SwitchYard {
             configStream = SwitchYard.class.getResourceAsStream(AbstractDeployment.SWITCHYARD_XML);
 
             if (configStream == null) {
-                System.out.println("Usage: " + SwitchYard.class.getName() + " path-to-switchyard-config");
+                System.out.println(BaseDeployMessages.MESSAGES.usagePath(SwitchYard.class.getName()));
                 System.exit(1);
             }
         } else {
             File configFile = new File(args[0]);
 
             if (!configFile.isFile()) {
-                System.out.println("'" + args[0] + "' is not a valid SwitchYard configuration file.");
+                System.out.println(BaseDeployMessages.MESSAGES.notValidConfigFile(args[0]));
                 System.exit(1);
             }
 

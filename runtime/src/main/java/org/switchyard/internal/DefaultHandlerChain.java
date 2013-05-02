@@ -30,6 +30,7 @@ import org.switchyard.ExchangeState;
 import org.switchyard.HandlerChain;
 import org.switchyard.HandlerException;
 import org.switchyard.Message;
+import org.switchyard.runtime.RuntimeLogger;
 
 /**
  * Default handler chain.
@@ -136,7 +137,7 @@ public class DefaultHandlerChain implements HandlerChain {
                 }
                 ref.getHandler().handleFault(exchange);
             } catch (Exception e) {
-                _logger.warn("Handler '" + ref.getName() + "' failed to handle fault.", e);
+                RuntimeLogger.ROOT_LOGGER.handlerFailedHandleFault(ref.getName(), e);
             }
         }
     }

@@ -21,7 +21,7 @@ package org.switchyard.transform.smooks.internal;
 
 import org.milyn.Smooks;
 import org.milyn.javabean.binding.model.ModelSet;
-import org.switchyard.exception.SwitchYardException;
+import org.switchyard.transform.TransformMessages;
 import org.switchyard.transform.Transformer;
 import org.switchyard.transform.TransformerFactory;
 import org.switchyard.transform.config.model.SmooksTransformModel;
@@ -48,16 +48,16 @@ public class SmooksTransformFactory implements TransformerFactory<SmooksTransfor
         QName to = model.getTo();
 
         if (transformType == null || transformType.trim().length() == 0) {
-            throw new SwitchYardException("Invalid Smooks configuration model.  null or empty 'type' specification.");
+            throw TransformMessages.MESSAGES.invalidSmooksConfigurationModelNullType();
         }
         if (config == null || config.trim().length() == 0) {
-            throw new SwitchYardException("Invalid Smooks configuration model.  null or empty 'config' specification.");
+            throw TransformMessages.MESSAGES.invalidSmooksConfigurationModelNullConfig();
         }
         if (from == null) {
-            throw new SwitchYardException("Invalid Smooks configuration model.  null or 'from' specification.");
+            throw TransformMessages.MESSAGES.invalidSmooksConfigurationModelNullFrom();
         }
         if (to == null) {
-            throw new SwitchYardException("Invalid Smooks configuration model.  null or 'to' specification.");
+            throw TransformMessages.MESSAGES.invalidSmooksConfigurationModelNullTo();
         }
 
         SmooksTransformType transformationType = SmooksTransformType.valueOf(transformType);
@@ -67,7 +67,7 @@ public class SmooksTransformFactory implements TransformerFactory<SmooksTransfor
             smooks = new Smooks(config);
             smooks.createExecutionContext();
         } catch (Exception e) {
-            throw new SwitchYardException("Failed to create Smooks instance for config '" + config + "'.", e);
+            throw TransformMessages.MESSAGES.failedToCreateSmooksInstance(config, e);
         }
 
         Transformer transformer;
@@ -79,7 +79,7 @@ public class SmooksTransformFactory implements TransformerFactory<SmooksTransfor
         } else if (transformationType == SmooksTransformType.SMOOKS) {
             transformer = new SmooksTransformer(from, to, smooks, model);
         } else {
-            throw new SwitchYardException("Unhandled Smooks transformation type '" + transformationType + "'.");
+            throw TransformMessages.MESSAGES.unhandledSmooksTransformationType(transformationType.toString());
         }
 
         transformer.setFrom(model.getFrom());
@@ -93,7 +93,7 @@ public class SmooksTransformFactory implements TransformerFactory<SmooksTransfor
         if (beanModel != null && !beanModel.getModels().isEmpty()) {
             return new XMLBindingTransformer(from, to, smooks, beanModel, direction);
         } else {
-            throw new SwitchYardException("Invalid " + direction + " binding configuration.  No <jb:bean> configurations found.");
+            throw TransformMessages.MESSAGES.invalidBindingConfiguration(direction.toString());
         }
     }
 }

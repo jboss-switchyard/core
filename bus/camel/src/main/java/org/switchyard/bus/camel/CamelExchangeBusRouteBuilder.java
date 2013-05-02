@@ -45,8 +45,11 @@ import org.apache.camel.spi.InterceptStrategy;
 import org.switchyard.ExchangePattern;
 import org.switchyard.bus.camel.audit.AuditInterceptStrategy;
 import org.switchyard.bus.camel.audit.FaultInterceptStrategy;
+<<<<<<< HEAD
 import org.switchyard.common.camel.SwitchYardCamelContext;
 import org.switchyard.exception.SwitchYardException;
+=======
+>>>>>>> SWITCHYARD-1320
 import org.switchyard.metadata.ServiceOperation;
 
 /**
@@ -94,7 +97,7 @@ public class CamelExchangeBusRouteBuilder extends RouteBuilder {
         } else if (handlers.size() == 1) {
             definition.errorHandler(handlers.values().iterator().next());
         } else {
-            throw new SwitchYardException("Only one exception handler can be defined. Found " + handlers.keySet());
+            throw BusMessages.MESSAGES.maxOneExceptionHandler(handlers.keySet());
         }
 
         // add default intercept strategy using @Audit annotation
