@@ -24,6 +24,7 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import org.switchyard.ServiceDomain;
+import org.switchyard.adapter.AdapterRegistryLoader;
 import org.switchyard.common.type.Classes;
 import org.switchyard.config.model.switchyard.SwitchYardModel;
 import org.switchyard.deploy.Activator;
@@ -54,6 +55,10 @@ public abstract class AbstractDeployment {
      * The Service Domain.
      */
     private ServiceDomain _serviceDomain;
+    /**
+     * Adapter registry loaded for the deployment.
+     */
+    private AdapterRegistryLoader _adapterRegistryLoader;
     /**
      * Transform registry loaded for the deployment.
      */
@@ -133,6 +138,7 @@ public abstract class AbstractDeployment {
         
         _serviceDomain = appServiceDomain;
         _serviceDomain.getProperties().put(CLASSLOADER_PROPERTY, Classes.getTCCL());
+        _adapterRegistryLoader = new AdapterRegistryLoader(appServiceDomain.getAdapterRegistry());
         _transformerRegistryLoader = new TransformerRegistryLoader(appServiceDomain.getTransformerRegistry());
         _transformerRegistryLoader.loadOOTBTransforms();
         
@@ -163,6 +169,15 @@ public abstract class AbstractDeployment {
         } else {
             return _parentDeployment.getDomain();
         }
+    }
+    
+    /**
+     * Get the {@link AdapterRegistryLoader} acciciated with the deployment.
+     * 
+     * @return The AdapterRegistryLoader instance.
+     */
+    public AdapterRegistryLoader getAdapterRegistryLoader() {
+        return _adapterRegistryLoader;
     }
 
     /**

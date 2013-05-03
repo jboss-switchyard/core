@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.switchyard</groupId>
+		<artifactId>switchyard-core-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>switchyard-adapter</artifactId>
+	<name>SwitchYard: Adapter</name>
+	<description>The SwitchYard Adapter library.</description>
+	<url>http://switchyard.org</url>
+	<dependencies>
+		<dependency>
+			<groupId>org.switchyard</groupId>
+			<artifactId>switchyard-config</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.switchyard</groupId>
+			<artifactId>switchyard-api</artifactId>
+		</dependency>
+		<!-- test -->
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<repositories>
+		<repository>
+			<id>jboss-public-repository</id>
+			<name>JBoss Public Maven Repository</name>
+			<url>http://repository.jboss.org/nexus/content/groups/public</url>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>jboss-public-repository</id>
+			<name>JBoss Public Maven Repository</name>
+			<url>http://repository.jboss.org/nexus/content/groups/public</url>
+		</pluginRepository>
+	</pluginRepositories>
+</project>

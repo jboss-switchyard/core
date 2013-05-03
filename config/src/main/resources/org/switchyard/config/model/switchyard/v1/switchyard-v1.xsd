@@ -30,6 +30,7 @@ MA  02110-1301, USA.
         <sequence>
            <element ref="sca:composite" minOccurs="0" maxOccurs="1"/>
            <element ref="swyd:transforms" minOccurs="0" maxOccurs="1"/>
+           <element ref="swyd:adapters" minOccurs="0" maxOccurs="1" />
            <element ref="swyd:validates" minOccurs="0" maxOccurs="1"/>
            <element ref="swyd:domain" minOccurs="0" maxOccurs="1"/>
            <element ref="swyd:artifacts" minOccurs="0" maxOccurs="1"/>
@@ -142,6 +143,19 @@ MA  02110-1301, USA.
                 </attribute>
             </extension>
         </complexContent>
+    </complexType>
+    
+    <element name="adapters" type="swyd:AdaptersType"/>
+    <complexType name="AdaptersType">
+        <sequence>
+            <element ref="swyd:adapt" minOccurs="0" maxOccurs="unbounded"/>
+        </sequence>
+    </complexType>
+    
+    <element name="adapt" type="swyd:AdaptType" abstract="true"/>
+    <complexType name="AdaptType" abstract="false">
+        <attribute name="from" type="string" use="required"/>
+        <attribute name="to" type="string" use="required"/>
     </complexType>
 
     <element name="transforms" type="swyd:TransformsType"/>

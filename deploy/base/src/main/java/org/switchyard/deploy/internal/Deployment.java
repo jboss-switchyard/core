@@ -36,6 +36,7 @@ import org.switchyard.Service;
 import org.switchyard.ServiceReference;
 import org.switchyard.common.type.Classes;
 import org.switchyard.config.model.ModelPuller;
+import org.switchyard.config.model.adapter.AdaptersModel;
 import org.switchyard.config.model.composite.BindingModel;
 import org.switchyard.config.model.composite.ComponentImplementationModel;
 import org.switchyard.config.model.composite.ComponentModel;
@@ -110,6 +111,7 @@ public class Deployment extends AbstractDeployment {
     protected void doInit(List<Activator> activators) {
         _log.debug("Initializing deployment " + getName());
         // create a new domain and load transformer , validator and activator instances for lifecycle
+        registerAdapters();
         registerTransformers();
         registerValidators();
         if (activators != null) {
@@ -243,6 +245,12 @@ public class Deployment extends AbstractDeployment {
                     + " does not included an implementation definition.");
         }
         return findActivator(component.getImplementation().getType());
+    }
+    
+    private void registerAdapters() {
+        _log.debug("Registering configured Adapters for deployment " + getName());
+        AdaptersModel adapters = getConfig().getAdapters();
+        getAdapterRegistryLoader().registerAdapters(adapters);
     }
 
     private void registerTransformers() {
