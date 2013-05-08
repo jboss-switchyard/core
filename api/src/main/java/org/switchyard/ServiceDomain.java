@@ -25,6 +25,7 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import org.switchyard.adapter.AdapterRegistry;
 import org.switchyard.event.EventObserver;
 import org.switchyard.event.EventPublisher;
 import org.switchyard.metadata.Registrant;
@@ -142,6 +143,12 @@ public interface ServiceDomain {
      * @return service security instance
      */
     public ServiceSecurity getServiceSecurity();
+    
+    /**
+     * Returns a reference to the adapter registry for this domain.
+     * @return adapter registry instance
+     */
+    AdapterRegistry getAdapterRegistry();
     
     /**
      * Returns a reference to the transformer registry for this domain.

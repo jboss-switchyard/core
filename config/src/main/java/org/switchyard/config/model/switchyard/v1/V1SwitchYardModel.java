@@ -26,6 +26,7 @@ import org.switchyard.common.property.SystemAndTestPropertyResolver;
 import org.switchyard.config.Configuration;
 import org.switchyard.config.model.BaseNamedModel;
 import org.switchyard.config.model.Descriptor;
+import org.switchyard.config.model.adapter.AdaptersModel;
 import org.switchyard.config.model.composite.CompositeModel;
 import org.switchyard.config.model.domain.DomainModel;
 import org.switchyard.config.model.property.PropertiesModel;
@@ -43,6 +44,7 @@ public class V1SwitchYardModel extends BaseNamedModel implements SwitchYardModel
 
     private CompositeModel _composite;
     private ArtifactsModel _artifacts;
+    private AdaptersModel _adapters;
     private TransformsModel _transforms;
     private ValidatesModel _validates;
     private DomainModel _domain;
@@ -85,6 +87,27 @@ public class V1SwitchYardModel extends BaseNamedModel implements SwitchYardModel
     public SwitchYardModel setComposite(CompositeModel composite) {
         setChildModel(composite);
         _composite = composite;
+        return this;
+    }
+
+    /** 
+     * {@inheritDoc}
+     */
+    @Override
+    public AdaptersModel getAdapters() {
+        if (_adapters == null) {
+            _adapters = (AdaptersModel) getFirstChildModelStartsWith(AdaptersModel.ADAPTERS);
+        }
+        return _adapters;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SwitchYardModel setAdapters(AdaptersModel adapters) {
+        setChildModel(adapters);
+        _adapters = adapters;
         return this;
     }
 
