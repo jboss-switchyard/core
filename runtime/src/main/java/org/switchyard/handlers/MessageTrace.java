@@ -57,11 +57,14 @@ public class MessageTrace implements ExchangeHandler {
         }
     }
 
-    String createTrace(Exchange exchange) {
+    String createTrace(Exchange exchange) {        
         StringBuilder summary = new StringBuilder()
             .append(indent(0) + "------- Begin Message Trace -------")
-            .append(indent(0) + "Service -> " + exchange.getConsumer().getName())
+            .append(indent(0) + "Consumer -> " + exchange.getConsumer().getName())
+            .append(indent(0) + "Provider -> " + ((exchange.getProvider() == null) ? "[unassigned]" : exchange.getProvider().getName()))
             .append(indent(0) + "Operation -> " + exchange.getContract().getConsumerOperation().getName())
+            .append(indent(0) + "MEP -> " 
+                + ((exchange.getContract().getConsumerOperation().getExchangePattern() == null) ? "[unassigned]" : exchange.getContract().getConsumerOperation().getExchangePattern()))
             .append(indent(0) + "Phase -> " + exchange.getPhase())
             .append(indent(0) + "State -> " + exchange.getState());
         
