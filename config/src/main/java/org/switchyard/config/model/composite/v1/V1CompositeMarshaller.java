@@ -99,7 +99,7 @@ public class V1CompositeMarshaller extends BaseMarshaller {
         } else if (name.equals(PropertyModel.PROPERTY)) {
             return new V1PropertyModel(config,desc);
         } else if (name.equals(ExtensionsModel.EXTENSIONS)) {
-        	return new V1ExtensionsModel(config, desc);
+            return new V1ExtensionsModel(config, desc);
         }
         
         return null;

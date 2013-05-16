@@ -156,7 +156,7 @@ public class Deployment extends AbstractDeployment {
         }
     }
 
-	/**
+    /**
      * Stops the deployment.  All services are unregistered and the appropriate
      * activators are triggered.
      */
@@ -472,8 +472,8 @@ public class Deployment extends AbstractDeployment {
                 for (CompositeServiceModel compositeService : getConfig().getComposite().getServices()) {
                     ComponentServiceModel componentService = compositeService.getComponentService();
                     if (componentService != null && componentService.equals(service)) {
-                    	Adapter adapter = createAdapter(compositeService);
-                    	svc.setAdapter(adapter);
+                        Adapter adapter = createAdapter(compositeService);
+                        svc.setAdapter(adapter);
                         // avoid duplicates
                         if (!service.getQName().equals(compositeService.getQName())) {
                             validateServiceRegistration(compositeService.getQName());
@@ -498,17 +498,18 @@ public class Deployment extends AbstractDeployment {
         }
     }
 
-	private Adapter createAdapter(CompositeServiceModel compositeService) {
-		if (compositeService == null)
-			return null;
-		ExtensionsModel extensions = compositeService.getExtensionsModel();
-		if ((extensions != null) && extensions.hasAdapterModel()) {
-			return AdapterUtil.newAdapter(extensions.getAdapterModel());
-		}
-		return null;
-	}
+    private Adapter createAdapter(CompositeServiceModel compositeService) {
+        if (compositeService == null) {
+            return null;
+        }
+        ExtensionsModel extensions = compositeService.getExtensionsModel();
+        if ((extensions != null) && extensions.hasAdapterModel()) {
+            return AdapterUtil.newAdapter(extensions.getAdapterModel());
+        }
+        return null;
+    }
 
-	private void deployServiceBindings() {
+    private void deployServiceBindings() {
         _log.debug("Deploying service bindings for deployment " + getName());
         // activate bindings for each service
         for (CompositeServiceModel service : getConfig().getComposite().getServices()) {

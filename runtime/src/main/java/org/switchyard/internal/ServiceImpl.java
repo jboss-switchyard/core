@@ -46,7 +46,7 @@ public class ServiceImpl implements Service {
     private ExchangeHandler _providerHandler;
     private List<Policy> _requires;
     private Registrant _providerMetadata;
-	private Adapter _adapter;
+    private Adapter _adapter;
     
     /**
      * Creates a new Service instance representing a service provider.
@@ -130,7 +130,7 @@ public class ServiceImpl implements Service {
     
     @Override
     public Adapter getAdapter() {
-    	return _adapter;
+        return _adapter;
     }
     
     /**
@@ -155,13 +155,13 @@ public class ServiceImpl implements Service {
     
     @Override
     public Service setAdapter(Adapter adapter) {
-    	_adapter = adapter;
-    	return this;
+        _adapter = adapter;
+        return this;
     }
     
     @Override
     public boolean hasAdapter() {
-    	return _adapter != null;
+        return _adapter != null;
     }
 
     @Override

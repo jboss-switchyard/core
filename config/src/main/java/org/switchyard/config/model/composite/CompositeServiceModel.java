@@ -99,8 +99,17 @@ public interface CompositeServiceModel extends NamedModel {
      */
     public CompositeServiceModel setInterface(InterfaceModel interfaze);
     
+    /**
+     * Set the child extensions model. 
+     * @param extensionsModel child extensions model
+     * @return this this CompositeServiceModel (useful for chaining)
+     */
     public CompositeServiceModel setExtensions(ExtensionsModel extensionsModel);
     
+    /**
+     * Indicates if a service extension is available. 
+     * @return true if a service extension is available, otherwise false
+     */
     public boolean hasExtensionsModel();
 
 }

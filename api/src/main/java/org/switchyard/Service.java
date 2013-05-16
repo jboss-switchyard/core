@@ -74,9 +74,23 @@ public interface Service {
      */
     Registrant getProviderMetadata();
     
+    /**
+     * Indicates if an adapter is available.
+     * @see Adapter
+     * @return true if an adapter is available, otherwise false
+     */
     boolean hasAdapter();
     
+    /**
+     * Set the adapter for the service.
+     * @param adapter the adapter to set
+     * @return this Service (useful for chaining)
+     */
     Service setAdapter(Adapter adapter);
     
+    /**
+     * Get the adapter registered for the service.
+     * @return The adapter registered for the service
+     */
     Adapter getAdapter();
 }

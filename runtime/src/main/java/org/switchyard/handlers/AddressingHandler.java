@@ -71,11 +71,11 @@ public class AddressingHandler extends BaseHandler {
         ServiceOperation providerOp = service.getInterface().getOperation(consumerOp.getName());
         
         if (providerOp == null && service.hasAdapter()) {
-       		providerOp = invokeAdapter(service, consumerOp.getName());
+               providerOp = invokeAdapter(service, consumerOp.getName());
         }
         if (providerOp == null) {
-        	// try for a default operation
-        	if (service.getInterface().getOperations().size() == 1) {
+            // try for a default operation
+            if (service.getInterface().getOperations().size() == 1) {
                 providerOp = service.getInterface().getOperations().iterator().next();
             } else {
                 throw new HandlerException("Operation " + consumerOp.getName()
@@ -89,14 +89,14 @@ public class AddressingHandler extends BaseHandler {
         }
     }
 
-	private ServiceOperation invokeAdapter(Service service, String consumerOp) throws HandlerException {
-		Adapter adapter = service.getAdapter();
-		// verify that the operation exists in the adapted service contract
-		if (adapter.getServiceInterface().getOperation(consumerOp) != null) {
-			return adapter.lookup(consumerOp, service.getInterface());
-		}
-		throw new HandlerException("Operation " + consumerOp
+    private ServiceOperation invokeAdapter(Service service, String consumerOp) throws HandlerException {
+        Adapter adapter = service.getAdapter();
+        // verify that the operation exists in the adapted service contract
+        if (adapter.getServiceInterface().getOperation(consumerOp) != null) {
+            return adapter.lookup(consumerOp, service.getInterface());
+        }
+        throw new HandlerException("Operation " + consumerOp
                 + " is not included in service interface: " + adapter.getServiceInterface());
-	} 
+    } 
 
 }

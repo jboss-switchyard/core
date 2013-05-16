@@ -47,19 +47,24 @@ import org.switchyard.metadata.java.JavaService;
 public final class AdapterUtil {
     private AdapterUtil() {}
 
-	public static Adapter newAdapter(AdapterModel adapterModel) {
-		if (adapterModel instanceof JavaAdapterModel) {
-			JavaAdapterModel jAdapterModel = (JavaAdapterModel) adapterModel;
-			Class<?> clazz = loadClass(jAdapterModel.getClazz());
-			if (clazz == null) {
-				throw new SwitchYardException("Failed to load Adapter class '" + clazz + "'.");
-			}
-			return createAdapter(clazz, adapterModel.getInterfaceModel());
-		}
-		return null;
-	}
+    /**
+     * Create a new adapter based on an adapter model.
+     * @param adapterModel the adapter's model used to create the adapter
+     * @return instance of an adapter based on the data from the adapter's model
+     */
+    public static Adapter newAdapter(AdapterModel adapterModel) {
+        if (adapterModel instanceof JavaAdapterModel) {
+            JavaAdapterModel jAdapterModel = (JavaAdapterModel) adapterModel;
+            Class<?> clazz = loadClass(jAdapterModel.getClazz());
+            if (clazz == null) {
+                throw new SwitchYardException("Failed to load Adapter class '" + clazz + "'.");
+            }
+            return createAdapter(clazz, adapterModel.getInterfaceModel());
+        }
+        return null;
+    }
 
-	private static ServiceInterface createServiceInterface(InterfaceModel intfModel) {
+    private static ServiceInterface createServiceInterface(InterfaceModel intfModel) {
         if (isJavaInterface(intfModel.getType())) {
             String interfaceClass = intfModel.getInterface();
             Class<?> serviceInterfaceType = loadClass(interfaceClass);
@@ -87,9 +92,9 @@ public final class AdapterUtil {
             }
         }
         throw new SwitchYardException("Failed to create Service interface from model '" + intfModel + "'.");
-	}
-	
-	// Checks for invalid input/output/fault combinations on ESB interfaces.
+    }
+    
+    // Checks for invalid input/output/fault combinations on ESB interfaces.
     private static void validateEsbInterface(EsbInterfaceModel esbIntf)  {
         if (esbIntf.getInputType() == null) {
             throw new SwitchYardException("inputType required on ESB interface definition: " + esbIntf);
@@ -104,31 +109,32 @@ public final class AdapterUtil {
         return InterfaceModel.JAVA.equals(type);
     }
 
-	private static Class<?> loadClass(String clazz) {
-		return Classes.forName(clazz);
-	}
+    private static Class<?> loadClass(String clazz) {
+        return Classes.forName(clazz);
+    }
 
-	private static Method getAdapterMethod(Class<?> clazz) {
-		if (!isAdapter(clazz)) {
-			throw new SwitchYardException("Invalid Adapter class '" + clazz + "'.");	
-		}
-		for (Method publicMethod : clazz.getMethods()) {
-			if (isAdapterMethod(publicMethod)) {
-				return publicMethod;
-			}
-		}
-		throw new SwitchYardException("Failed to locate Adapter method in class '" + clazz + "'.");
-	}
+    private static Method getAdapterMethod(Class<?> clazz) {
+        if (!isAdapter(clazz)) {
+            throw new SwitchYardException("Invalid Adapter class '" + clazz + "'.");    
+        }
+        for (Method publicMethod : clazz.getMethods()) {
+            if (isAdapterMethod(publicMethod)) {
+                return publicMethod;
+            }
+        }
+        throw new SwitchYardException("Failed to locate Adapter method in class '" + clazz + "'.");
+    }
 
-	private static boolean isAdapterMethod(Method publicMethod) {
-		Class<?> returnType = publicMethod.getReturnType();
-		Class<?>[] parameterTypes = publicMethod.getParameterTypes();
-		
-		if (parameterTypes.length != 2)
-			return false;
-		return ServiceOperation.class.equals(returnType) && String.class.equals(parameterTypes[0]) && ServiceInterface.class.equals(parameterTypes[1]);
-	}
-	
+    private static boolean isAdapterMethod(Method publicMethod) {
+        Class<?> returnType = publicMethod.getReturnType();
+        Class<?>[] parameterTypes = publicMethod.getParameterTypes();
+        
+        if (parameterTypes.length != 2) {
+            return false;
+        }
+        return ServiceOperation.class.equals(returnType) && String.class.equals(parameterTypes[0]) && ServiceInterface.class.equals(parameterTypes[1]);
+    }
+    
     static boolean isAdapter(Class<?> clazz) {
         if (clazz.isInterface()) {
             return false;
@@ -159,49 +165,51 @@ public final class AdapterUtil {
     }
 
     private static Adapter createAdapter(Class<?> clazz, InterfaceModel interfaceModel) {
-    	ServiceInterface serviceInterface = createServiceInterface(interfaceModel);
-    	Object instance = newInstance(clazz);
-    	Adapter adapter = null;
-    	if (instance instanceof Adapter) {
-    		adapter = (Adapter) instance;
-    	} else {
-    		adapter = createAnnotatedAdapter(instance, interfaceModel);
-    	}
-    	adapter.setServiceInterface(serviceInterface);
-    	return adapter;
+        ServiceInterface serviceInterface = createServiceInterface(interfaceModel);
+        Object instance = newInstance(clazz);
+        Adapter adapter = null;
+        if (instance instanceof Adapter) {
+            adapter = (Adapter) instance;
+        } else {
+            adapter = createAnnotatedAdapter(instance, interfaceModel);
+        }
+        adapter.setServiceInterface(serviceInterface);
+        return adapter;
     }
 
-	private static Object newInstance(Class<?> clazz) {
-		try {
-			return clazz.newInstance();
-		} catch (Exception e) {
-			throw new SwitchYardException("Error constructing Adapter instance of type '" + clazz + "'.  Class must have a public default constructor.", e);
-		}
-	}
+    private static Object newInstance(Class<?> clazz) {
+        try {
+            return clazz.newInstance();
+        } catch (Exception e) {
+            throw new SwitchYardException("Error constructing Adapter instance of type '" + clazz + "'.  Class must have a public default constructor.", e);
+        }
+    }
 
     private static Adapter createAnnotatedAdapter(final Object instance, InterfaceModel interfaceModel) {
-    	if (!InterfaceModel.JAVA.equals(interfaceModel.getType())) {
-    		throw new SwitchYardException("Annotated Adapters only supported for Java interfaces: " + interfaceModel + ".");
-    	}
-    	final Method adapterMethod = getAdapterMethod(instance.getClass());
-    	org.switchyard.annotations.Adapter adapter = adapterMethod.getAnnotation(org.switchyard.annotations.Adapter.class);
-    	if (adapter == null) {
-    		throw new SwitchYardException("Failed to locate Adapter annotation method: " + instance.getClass() + ".");
-    	}
-    	return new BaseAdapter() {
-			@Override
-			public ServiceOperation lookup(String consumerOperation, ServiceInterface targetInterface) {
-				Object[] parameters = new Object[] { consumerOperation, targetInterface };
-				try {
-					return (ServiceOperation) adapterMethod.invoke(instance, parameters);
-				} catch (IllegalAccessException e) {
-					throw new SwitchYardException("Invokation of adpater method " + adapterMethod + " failed.", e);
-				} catch (IllegalArgumentException e) {
-					throw new SwitchYardException("Invokation of adpater method " + adapterMethod + " failed.", e);
-				} catch (InvocationTargetException e) {
-					throw new SwitchYardException("Invokation of adpater method " + adapterMethod + " failed.", e);
-				}
-			}
-		};
+        if (!InterfaceModel.JAVA.equals(interfaceModel.getType())) {
+            throw new SwitchYardException("Annotated Adapters only supported for Java interfaces: " + interfaceModel + ".");
+        }
+        final Method adapterMethod = getAdapterMethod(instance.getClass());
+        org.switchyard.annotations.Adapter adapter = adapterMethod.getAnnotation(org.switchyard.annotations.Adapter.class);
+        if (adapter == null) {
+            throw new SwitchYardException("Failed to locate Adapter annotation method: " + instance.getClass() + ".");
+        }
+        return new BaseAdapter() {
+            @Override
+            public ServiceOperation lookup(String consumerOperation, ServiceInterface targetInterface) {
+                Object[] parameters = new Object[] {
+                        consumerOperation, targetInterface 
+                    };
+                try {
+                    return (ServiceOperation) adapterMethod.invoke(instance, parameters);
+                } catch (IllegalAccessException e) {
+                    throw new SwitchYardException("Invokation of adpater method " + adapterMethod + " failed.", e);
+                } catch (IllegalArgumentException e) {
+                    throw new SwitchYardException("Invokation of adpater method " + adapterMethod + " failed.", e);
+                } catch (InvocationTargetException e) {
+                    throw new SwitchYardException("Invokation of adpater method " + adapterMethod + " failed.", e);
+                }
+            }
+        };
     }
 }

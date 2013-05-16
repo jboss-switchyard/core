@@ -49,7 +49,7 @@ public class V1CompositeServiceModel extends BaseNamedModel implements Composite
 
     private List<BindingModel> _bindings = new ArrayList<BindingModel>();
     private InterfaceModel _interface;
-	private ExtensionsModel _extensionsModel;
+    private ExtensionsModel _extensionsModel;
 
     /**
      * Constructs a new V1CompositeServiceModel.
@@ -73,18 +73,18 @@ public class V1CompositeServiceModel extends BaseNamedModel implements Composite
         }
         List<Configuration> configs = config.getChildren(ExtensionsModel.EXTENSIONS);
         for (Configuration extensions_config : configs) {
-        	ExtensionsModel extensionsModel = (ExtensionsModel) readModel(extensions_config);
-        	if (extensionsModel != null) {
-        		_extensionsModel = extensionsModel;
-        		break;
-        	}
-		}
-       	
+            ExtensionsModel extensionsModel = (ExtensionsModel) readModel(extensions_config);
+            if (extensionsModel != null) {
+                _extensionsModel = extensionsModel;
+                break;
+            }
+        }
+           
     }
     
     @Override
     public ExtensionsModel getExtensionsModel() {
-    	return _extensionsModel;
+        return _extensionsModel;
     }
 
     /**
@@ -211,13 +211,13 @@ public class V1CompositeServiceModel extends BaseNamedModel implements Composite
     
     @Override
     public CompositeServiceModel setExtensions(ExtensionsModel extensionsModel) {
-    	setChildModel(extensionsModel);
-    	_extensionsModel = extensionsModel;
-    	return this;
+        setChildModel(extensionsModel);
+        _extensionsModel = extensionsModel;
+        return this;
     }
     
     @Override
     public boolean hasExtensionsModel() {
-    	return _extensionsModel != null;
+        return _extensionsModel != null;
     }
 }

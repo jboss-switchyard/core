@@ -152,10 +152,10 @@ public class ServiceReferenceImpl implements ServiceReference {
     }
 
     private ServiceOperation getOperation(String operation) {
-		return _interface.getOperation(operation);
-	}
+        return _interface.getOperation(operation);
+    }
 
-	@Override
+    @Override
     public ServiceInterface getInterface() {
         return _interface;
     }
