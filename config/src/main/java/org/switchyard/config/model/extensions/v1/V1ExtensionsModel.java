@@ -16,9 +16,8 @@ public class V1ExtensionsModel extends BaseNamedModel implements ExtensionsModel
 
         // only one adapter is supported
         for (Configuration adater_config : config.getChildrenStartsWith(AdapterModel.ADAPTER)) {
-        	AdapterModel adapter = (AdapterModel)readModel(adater_config);
-            if (adapter != null) {
-            	_adapterModel = adapter;
+        	_adapterModel = (AdapterModel)readModel(adater_config);
+            if (_adapterModel != null) {
             	break;
             }
 		}

@@ -472,13 +472,15 @@ public class Deployment extends AbstractDeployment {
                 for (CompositeServiceModel compositeService : getConfig().getComposite().getServices()) {
                     ComponentServiceModel componentService = compositeService.getComponentService();
                     if (componentService != null && componentService.equals(service)) {
-                    	svc.setAdapter(createAdapter(compositeService));
+                    	Adapter adapter = createAdapter(compositeService);
+                    	svc.setAdapter(adapter);
                         // avoid duplicates
                         if (!service.getQName().equals(compositeService.getQName())) {
                             validateServiceRegistration(compositeService.getQName());
                             
                             Service promotedService = getDomain().registerService(
                                     compositeService.getQName(), serviceIntf, handler);
+                            promotedService.setAdapter(adapter);
                             activation.addPromotion(promotedService);
                         }
                     }
