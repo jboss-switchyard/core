@@ -39,6 +39,7 @@ import org.switchyard.label.BehaviorLabel;
 import org.switchyard.metadata.BaseExchangeContract;
 import org.switchyard.metadata.ServiceOperation;
 import org.switchyard.runtime.event.ExchangeCompletionEvent;
+import org.switchyard.runtime.event.ExchangeInitiatedEvent;
 import org.switchyard.security.SecurityContext;
 import org.switchyard.security.SecurityExchange;
 
@@ -216,9 +217,18 @@ public class CamelExchange implements SecurityExchange {
     }
 
     private void sendInternal() {
+        ServiceDomain domain = ((SwitchYardCamelContext) _exchange.getContext()).getServiceDomain();
+        
+        // Publish exchange initiation event
+        if (ExchangePhase.IN.equals(getPhase())) {
+            _exchange.setProperty(ExchangeInitiatedEvent.EXCHANGE_INITIATED_TIME + ".start", Long.toString(System.nanoTime()));
+            domain.getEventPublisher().publish(new ExchangeInitiatedEvent(this));
+        }
+        
         _exchange.getProperty(DISPATCHER, ExchangeDispatcher.class).dispatch(this);
+        
         if (isDone()) {
-            ServiceDomain domain = ((SwitchYardCamelContext) _exchange.getContext()).getServiceDomain();
+         // Publish exchange completion event
             long duration = System.nanoTime() - _exchange.getProperty(ExchangeCompletionEvent.EXCHANGE_DURATION + ".start", 0, Long.class);
             getContext().setProperty(ExchangeCompletionEvent.EXCHANGE_DURATION, TimeUnit.NANOSECONDS.toMillis(duration))
                 .addLabels(BehaviorLabel.TRANSIENT.label());
