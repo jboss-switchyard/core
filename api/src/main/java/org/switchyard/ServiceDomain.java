@@ -25,7 +25,6 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import org.switchyard.adapter.AdapterRegistry;
 import org.switchyard.event.EventObserver;
 import org.switchyard.event.EventPublisher;
 import org.switchyard.metadata.Registrant;
@@ -39,7 +38,7 @@ import org.switchyard.validate.ValidatorRegistry;
  * resources, configuration, and policy definitions.  The ServiceDomain
  * interface is used by software components to provide and/or consume
  * services.  These software components include protocol gateways, service
- * containers, translation engines, adapters, orchestration and routing
+ * containers, translation engines, orchestration and routing
  * engines.
  */
 public interface ServiceDomain {
@@ -143,12 +142,6 @@ public interface ServiceDomain {
      * @return service security instance
      */
     public ServiceSecurity getServiceSecurity();
-    
-    /**
-     * Returns a reference to the adapter registry for this domain.
-     * @return adapter registry instance
-     */
-    AdapterRegistry getAdapterRegistry();
     
     /**
      * Returns a reference to the transformer registry for this domain.

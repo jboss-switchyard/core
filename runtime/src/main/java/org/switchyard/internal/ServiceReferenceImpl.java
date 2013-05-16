@@ -129,7 +129,7 @@ public class ServiceReferenceImpl implements ServiceReference {
 
     @Override
     public Exchange createExchange(String operation, ExchangeHandler handler) {
-        ServiceOperation op = _interface.getOperation(operation);
+        ServiceOperation op = getOperation(operation);
         if (op == null) {
             // try for a default operation
             if (ServiceInterface.DEFAULT_TYPE.equals(_interface.getType())) {
@@ -151,7 +151,11 @@ public class ServiceReferenceImpl implements ServiceReference {
         return ex;
     }
 
-    @Override
+    private ServiceOperation getOperation(String operation) {
+		return _interface.getOperation(operation);
+	}
+
+	@Override
     public ServiceInterface getInterface() {
         return _interface;
     }

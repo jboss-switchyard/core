@@ -34,9 +34,10 @@ import javax.xml.namespace.QName;
 import org.apache.log4j.Logger;
 import org.switchyard.Service;
 import org.switchyard.ServiceReference;
+import org.switchyard.adapter.Adapter;
+import org.switchyard.adapter.AdapterUtil;
 import org.switchyard.common.type.Classes;
 import org.switchyard.config.model.ModelPuller;
-import org.switchyard.config.model.adapter.AdaptersModel;
 import org.switchyard.config.model.composite.BindingModel;
 import org.switchyard.config.model.composite.ComponentImplementationModel;
 import org.switchyard.config.model.composite.ComponentModel;
@@ -46,6 +47,7 @@ import org.switchyard.config.model.composite.CompositeModel;
 import org.switchyard.config.model.composite.CompositeReferenceModel;
 import org.switchyard.config.model.composite.CompositeServiceModel;
 import org.switchyard.config.model.composite.InterfaceModel;
+import org.switchyard.config.model.extensions.ExtensionsModel;
 import org.switchyard.config.model.switchyard.EsbInterfaceModel;
 import org.switchyard.config.model.switchyard.SwitchYardModel;
 import org.switchyard.config.model.transform.TransformsModel;
@@ -111,7 +113,6 @@ public class Deployment extends AbstractDeployment {
     protected void doInit(List<Activator> activators) {
         _log.debug("Initializing deployment " + getName());
         // create a new domain and load transformer , validator and activator instances for lifecycle
-        registerAdapters();
         registerTransformers();
         registerValidators();
         if (activators != null) {
@@ -155,7 +156,7 @@ public class Deployment extends AbstractDeployment {
         }
     }
 
-    /**
+	/**
      * Stops the deployment.  All services are unregistered and the appropriate
      * activators are triggered.
      */
@@ -247,12 +248,6 @@ public class Deployment extends AbstractDeployment {
         return findActivator(component.getImplementation().getType());
     }
     
-    private void registerAdapters() {
-        _log.debug("Registering configured Adapters for deployment " + getName());
-        AdaptersModel adapters = getConfig().getAdapters();
-        getAdapterRegistryLoader().registerAdapters(adapters);
-    }
-
     private void registerTransformers() {
         _log.debug("Registering configured Transformers for deployment " + getName());
         TransformsModel transforms = getConfig().getTransforms();
@@ -477,9 +472,11 @@ public class Deployment extends AbstractDeployment {
                 for (CompositeServiceModel compositeService : getConfig().getComposite().getServices()) {
                     ComponentServiceModel componentService = compositeService.getComponentService();
                     if (componentService != null && componentService.equals(service)) {
+                    	svc.setAdapter(createAdapter(compositeService));
                         // avoid duplicates
                         if (!service.getQName().equals(compositeService.getQName())) {
                             validateServiceRegistration(compositeService.getQName());
+                            
                             Service promotedService = getDomain().registerService(
                                     compositeService.getQName(), serviceIntf, handler);
                             activation.addPromotion(promotedService);
@@ -499,7 +496,17 @@ public class Deployment extends AbstractDeployment {
         }
     }
 
-    private void deployServiceBindings() {
+	private Adapter createAdapter(CompositeServiceModel compositeService) {
+		if (compositeService == null)
+			return null;
+		ExtensionsModel extensions = compositeService.getExtensionsModel();
+		if ((extensions != null) && extensions.hasAdapterModel()) {
+			return AdapterUtil.newAdapter(extensions.getAdapterModel());
+		}
+		return null;
+	}
+
+	private void deployServiceBindings() {
         _log.debug("Deploying service bindings for deployment " + getName());
         // activate bindings for each service
         for (CompositeServiceModel service : getConfig().getComposite().getServices()) {

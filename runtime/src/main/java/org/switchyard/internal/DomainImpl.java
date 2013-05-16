@@ -36,7 +36,6 @@ import org.switchyard.Service;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceReference;
 import org.switchyard.ServiceSecurity;
-import org.switchyard.adapter.AdapterRegistry;
 import org.switchyard.event.DomainShutdownEvent;
 import org.switchyard.event.DomainStartupEvent;
 import org.switchyard.event.EventObserver;
@@ -44,7 +43,6 @@ import org.switchyard.event.EventPublisher;
 import org.switchyard.event.ReferenceRegistrationEvent;
 import org.switchyard.event.ReferenceUnregistrationEvent;
 import org.switchyard.event.ServiceRegistrationEvent;
-import org.switchyard.internal.adapter.BaseAdapterRegistry;
 import org.switchyard.internal.transform.BaseTransformerRegistry;
 import org.switchyard.internal.validate.BaseValidatorRegistry;
 import org.switchyard.metadata.InOutService;
@@ -69,7 +67,6 @@ public class DomainImpl implements ServiceDomain {
     private EventManager _eventManager;
     private ServiceRegistry _registry;
     private ExchangeBus _exchangeBus;
-    private AdapterRegistry _adapterRegistry;
     private TransformerRegistry _transformerRegistry;
     private ValidatorRegistry _validatorRegistry;
     private List<ExchangeHandler> _userHandlers = new LinkedList<ExchangeHandler>();
@@ -86,7 +83,6 @@ public class DomainImpl implements ServiceDomain {
             new DefaultServiceSecurity(),
             new DefaultServiceRegistry(),
             new LocalExchangeBus(),
-            new BaseAdapterRegistry(),
             new BaseTransformerRegistry(),
             new BaseValidatorRegistry(),
             new EventManager());
@@ -101,7 +97,6 @@ public class DomainImpl implements ServiceDomain {
      * @param security service security
      * @param registry registry
      * @param exchangeBus message exchange bus
-     * @param adapterRegistry adapterRegistry
      * @param transformerRegistry transformerRegistry
      * @param validatorRegistry validatorRegistry
      * @param eventManager event manager
@@ -110,7 +105,6 @@ public class DomainImpl implements ServiceDomain {
             ServiceSecurity security,
             ServiceRegistry registry,
             ExchangeBus exchangeBus,
-            AdapterRegistry adapterRegistry,
             TransformerRegistry transformerRegistry,
             ValidatorRegistry validatorRegistry,
             EventManager eventManager) {
@@ -119,7 +113,6 @@ public class DomainImpl implements ServiceDomain {
         _security = security;
         _registry = registry;
         _exchangeBus  = exchangeBus;
-        _adapterRegistry = adapterRegistry;
         _transformerRegistry = transformerRegistry;
         _validatorRegistry = validatorRegistry;
         _eventManager = eventManager;
@@ -205,11 +198,6 @@ public class DomainImpl implements ServiceDomain {
     @Override
     public ServiceSecurity getServiceSecurity() {
         return _security;
-    }
-    
-    @Override
-    public AdapterRegistry getAdapterRegistry() {
-        return _adapterRegistry;
     }
     
     @Override

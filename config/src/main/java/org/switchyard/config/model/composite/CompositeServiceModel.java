@@ -21,6 +21,7 @@ package org.switchyard.config.model.composite;
 import java.util.List;
 
 import org.switchyard.config.model.NamedModel;
+import org.switchyard.config.model.extensions.ExtensionsModel;
 
 /**
  * The "composite/service" model.
@@ -52,7 +53,13 @@ public interface CompositeServiceModel extends NamedModel {
      * @return the child component service model
      */
     public ComponentServiceModel getComponentService();
-
+    
+    /**
+     * Gets the child extensions model.
+     * @return the child extensions model
+     */
+    public ExtensionsModel getExtensionsModel();
+    
     /**
      * Gets the promote attribute.
      * @return the promote attribute
@@ -91,5 +98,9 @@ public interface CompositeServiceModel extends NamedModel {
      * @return this CompositeServiceModel (useful for chaining)
      */
     public CompositeServiceModel setInterface(InterfaceModel interfaze);
+    
+    public CompositeServiceModel setExtensions(ExtensionsModel extensionsModel);
+    
+    public boolean hasExtensionsModel();
 
 }

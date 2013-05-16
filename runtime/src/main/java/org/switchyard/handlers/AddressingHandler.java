@@ -20,21 +20,14 @@ package org.switchyard.handlers;
 
 import java.util.List;
 
-import javax.xml.namespace.QName;
-
 import org.switchyard.BaseHandler;
 import org.switchyard.Exchange;
 import org.switchyard.ExchangePhase;
 import org.switchyard.HandlerException;
 import org.switchyard.Service;
 import org.switchyard.ServiceDomain;
-import org.switchyard.ServiceReference;
-import org.switchyard.adapter.AdapterRegistry;
-import org.switchyard.addressing.ServiceResolver;
-import org.switchyard.addressing.resolvers.AdapterServiceResolver;
-import org.switchyard.addressing.resolvers.DefaultServiceResolver;
+import org.switchyard.adapter.Adapter;
 import org.switchyard.exception.SwitchYardException;
-import org.switchyard.metadata.ExchangeContract;
 import org.switchyard.metadata.ServiceOperation;
 import org.switchyard.policy.Policy;
 import org.switchyard.policy.PolicyUtil;
@@ -45,9 +38,6 @@ import org.switchyard.policy.PolicyUtil;
 public class AddressingHandler extends BaseHandler {
     
     private ServiceDomain _domain;
-    private AdapterRegistry _adapterRegistry;
-    private DefaultServiceResolver _defaultResolver;
-    private AdapterServiceResolver _adapterResolver;
     
     /**
      * Create a new AddressingHandler for the specified domain.
@@ -55,9 +45,6 @@ public class AddressingHandler extends BaseHandler {
      */
     public AddressingHandler(ServiceDomain domain) {
         _domain = domain;
-        _adapterRegistry = domain.getAdapterRegistry();
-        _defaultResolver = new DefaultServiceResolver();
-        _adapterResolver = new AdapterServiceResolver(domain.getAdapterRegistry());
     }
 
     @Override
@@ -77,12 +64,24 @@ public class AddressingHandler extends BaseHandler {
             throw new SwitchYardException("No registered service found for " + exchange.getConsumer().getName());
         }
 
-        ServiceReference consumerService = exchange.getConsumer();
-        ExchangeContract exchangeContract = exchange.getContract();
-        ServiceResolver resolver = selectServiceResolver(consumerService.getName());
-        Service service = resolver.serviceLookup(_domain, consumerService);
-        ServiceOperation providerOp = resolver.getProviderOp(consumerService.getName(), service.getName(), exchangeContract.getConsumerOperation(), service.getInterface());
+        // At this stage, just pick the first service implementation we find and go with
+        // it. In the future, it would be nice if we could make this pluggable.
+        Service service = services.get(0);
+        ServiceOperation consumerOp = exchange.getContract().getConsumerOperation();
+        ServiceOperation providerOp = service.getInterface().getOperation(consumerOp.getName());
         
+        if (providerOp == null && service.hasAdapter()) {
+       		providerOp = invokeAdapter(service, consumerOp.getName());
+        }
+        if (providerOp == null) {
+        	// try for a default operation
+        	if (service.getInterface().getOperations().size() == 1) {
+                providerOp = service.getInterface().getOperations().iterator().next();
+            } else {
+                throw new HandlerException("Operation " + consumerOp.getName()
+                    + " is not included in interface for service: " + service.getName());
+            }
+        }
         // set provider contract and details on exchange
         exchange.provider(service, providerOp);
         for (Policy policy : service.getRequiredPolicies()) {
@@ -90,11 +89,14 @@ public class AddressingHandler extends BaseHandler {
         }
     }
 
-    private ServiceResolver selectServiceResolver(QName name) {
-        if (_adapterRegistry.hasAdapter(name)) {
-            return _adapterResolver;
-        }
-        return _defaultResolver;
-    }
+	private ServiceOperation invokeAdapter(Service service, String consumerOp) throws HandlerException {
+		Adapter adapter = service.getAdapter();
+		// verify that the operation exists in the adapted service contract
+		if (adapter.getServiceInterface().getOperation(consumerOp) != null) {
+			return adapter.lookup(consumerOp, service.getInterface());
+		}
+		throw new HandlerException("Operation " + consumerOp
+                + " is not included in service interface: " + adapter.getServiceInterface());
+	} 
 
 }

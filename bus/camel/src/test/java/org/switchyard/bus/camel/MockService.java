@@ -26,6 +26,7 @@ import javax.xml.namespace.QName;
 import org.switchyard.ExchangeHandler;
 import org.switchyard.Service;
 import org.switchyard.ServiceDomain;
+import org.switchyard.adapter.Adapter;
 import org.switchyard.metadata.InOnlyService;
 import org.switchyard.metadata.Registrant;
 import org.switchyard.metadata.ServiceInterface;
@@ -36,6 +37,7 @@ public class MockService implements Service {
     private QName _serviceName;
     private ServiceInterface _serviceInterface;
     private ExchangeHandler _handler;
+	private Adapter _adapter;
     
     public MockService(QName serviceName, ExchangeHandler handler) {
         this(serviceName, new InOnlyService(), handler);
@@ -75,6 +77,21 @@ public class MockService implements Service {
     @Override
     public ExchangeHandler getProviderHandler() {
         return _handler;
+    }
+    
+    @Override
+    public Service setAdapter(Adapter adapter) {
+    	_adapter = adapter;
+    	return this;
+    }
+    
+    public Adapter getAdapter() {
+    	return _adapter;
+    }
+    
+    @Override
+    public boolean hasAdapter() {
+    	return _adapter != null;
     }
 
     @Override

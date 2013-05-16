@@ -16,33 +16,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
  * MA  02110-1301, USA.
  */
-package org.switchyard.event;
+package org.switchyard.adapter.config.model;
 
-import java.util.EventObject;
-
-import org.switchyard.adapter.Adapter;
+import org.switchyard.config.model.extensions.adapter.AdapterModel;
 
 /**
- * Fired when an adapter is added to the domain.
+ * A "adapt.java" configuration model.
  * 
  * @author Christoph Gostner &lt;<a href="mailto:christoph.gostner@objectbay.com">christoph.gostner@objectbay.com</a>&gt; &copy; 2013 Objectbay
  */
-public class AdapterAddedEvent extends EventObject {
-    private static final long serialVersionUID = -6264437639353632902L;
+public interface JavaAdapterModel extends AdapterModel {
+    
+    /** The "java" name. */
+    public static final String JAVA = "java";
+
+    /** The "class" name. */
+    public static final String CLASS = "class";
 
     /**
-     * Creates a new AdapterAddedEvent.
-     * @param adapter the transformer that was added
+     * Gets the class attribute.
+     * 
+     * @return the class attribute
      */
-    public AdapterAddedEvent(Adapter adapter) {
-        super(adapter);
-    }
+    public String getClazz();
 
     /**
-     * Get the added adapter.
-     * @return added adapter
+     * Sets the class attribute.
+     * 
+     * @param clazz the class attribute
+     * @return this JavaAdaptModel (useful for chaining)
      */
-    public Adapter getTransformer() {
-        return (Adapter) getSource();
-    }
+    public JavaAdapterModel setClazz(String clazz);
+    
 }

@@ -39,8 +39,7 @@
         <module>common/camel</module>
         <module>config</module>
         <module>api</module>
-        <module>adapter</module>
-        <module>addressing</module>
+        
         <module>serial/base</module>
         <module>serial/jackson</module>
         <!--
@@ -49,6 +48,7 @@
         <module>security/base</module>
         <module>security/jboss</module>
         <module>extensions/wsdl</module>
+        <module>adapter</module>
         <module>transform</module>
         <module>validate</module>
         <module>runtime</module>

@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 import org.switchyard.ExchangeHandler;
 import org.switchyard.Service;
 import org.switchyard.ServiceDomain;
+import org.switchyard.adapter.Adapter;
 import org.switchyard.event.ServiceUnregistrationEvent;
 import org.switchyard.metadata.Registrant;
 import org.switchyard.metadata.ServiceInterface;
@@ -45,6 +46,7 @@ public class ServiceImpl implements Service {
     private ExchangeHandler _providerHandler;
     private List<Policy> _requires;
     private Registrant _providerMetadata;
+	private Adapter _adapter;
     
     /**
      * Creates a new Service instance representing a service provider.
@@ -126,6 +128,11 @@ public class ServiceImpl implements Service {
         return _providerMetadata;
     }
     
+    @Override
+    public Adapter getAdapter() {
+    	return _adapter;
+    }
+    
     /**
      * Sets the list of required policies for this service.
      * @param requires list of policies required
@@ -144,6 +151,17 @@ public class ServiceImpl implements Service {
     public ServiceImpl setProviderMetadata(Registrant provider) {
         _providerMetadata = provider;
         return this;
+    }
+    
+    @Override
+    public Service setAdapter(Adapter adapter) {
+    	_adapter = adapter;
+    	return this;
+    }
+    
+    @Override
+    public boolean hasAdapter() {
+    	return _adapter != null;
     }
 
     @Override

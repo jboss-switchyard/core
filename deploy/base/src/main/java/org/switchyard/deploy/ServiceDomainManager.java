@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 import org.switchyard.ExchangeHandler;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceSecurity;
-import org.switchyard.adapter.AdapterRegistry;
 import org.switchyard.bus.camel.CamelExchangeBus;
 import org.switchyard.common.camel.SwitchYardCamelContext;
 import org.switchyard.common.type.Classes;
@@ -42,7 +41,6 @@ import org.switchyard.internal.DefaultServiceRegistry;
 import org.switchyard.internal.DefaultServiceSecurity;
 import org.switchyard.internal.DomainImpl;
 import org.switchyard.internal.EventManager;
-import org.switchyard.internal.adapter.BaseAdapterRegistry;
 import org.switchyard.internal.transform.BaseTransformerRegistry;
 import org.switchyard.internal.validate.BaseValidatorRegistry;
 import org.switchyard.spi.ServiceRegistry;
@@ -102,7 +100,6 @@ public class ServiceDomainManager {
      */
     public ServiceDomain createDomain(QName domainName, SwitchYardModel switchyardConfig) {
         ServiceSecurity serviceSecurity = getServiceSecurity(switchyardConfig);
-        AdapterRegistry adapterRegistry = new BaseAdapterRegistry();
         TransformerRegistry transformerRegistry = new BaseTransformerRegistry();
         ValidatorRegistry validatorRegistry = new BaseValidatorRegistry();
 
@@ -110,7 +107,7 @@ public class ServiceDomainManager {
         CamelExchangeBus bus = new CamelExchangeBus(camelContext);
 
         DomainImpl domain = new DomainImpl(
-                domainName, serviceSecurity, _registry, bus, adapterRegistry, transformerRegistry, validatorRegistry, _eventManager);
+                domainName, serviceSecurity, _registry, bus, transformerRegistry, validatorRegistry, _eventManager);
         camelContext.setServiceDomain(domain);
 
         if (switchyardConfig != null) {

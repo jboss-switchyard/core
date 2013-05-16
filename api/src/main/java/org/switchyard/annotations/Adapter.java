@@ -32,14 +32,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 public @interface Adapter {
-
-    /**
+	/**
      * Adapt from service (QName).
      */
-    String from();
-
-    /**
-     * Adapt to service (QName).
-     */
-    String to();
+    String service();
+    
+    Class<?> contract();
 }

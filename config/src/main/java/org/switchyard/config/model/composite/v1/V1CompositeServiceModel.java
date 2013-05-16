@@ -36,6 +36,7 @@ import org.switchyard.config.model.composite.ComponentServiceModel;
 import org.switchyard.config.model.composite.CompositeModel;
 import org.switchyard.config.model.composite.CompositeServiceModel;
 import org.switchyard.config.model.composite.InterfaceModel;
+import org.switchyard.config.model.extensions.ExtensionsModel;
 
 /**
  * A version 1 CompositeServiceModel.
@@ -48,6 +49,7 @@ public class V1CompositeServiceModel extends BaseNamedModel implements Composite
 
     private List<BindingModel> _bindings = new ArrayList<BindingModel>();
     private InterfaceModel _interface;
+	private ExtensionsModel _extensionsModel;
 
     /**
      * Constructs a new V1CompositeServiceModel.
@@ -69,6 +71,20 @@ public class V1CompositeServiceModel extends BaseNamedModel implements Composite
                 _bindings.add(binding);
             }
         }
+        List<Configuration> configs = config.getChildren(ExtensionsModel.EXTENSIONS);
+        for (Configuration extensions_config : configs) {
+        	ExtensionsModel extensionsModel = (ExtensionsModel) readModel(extensions_config);
+        	if (extensionsModel != null) {
+        		_extensionsModel = extensionsModel;
+        		break;
+        	}
+		}
+       	
+    }
+    
+    @Override
+    public ExtensionsModel getExtensionsModel() {
+    	return _extensionsModel;
     }
 
     /**
@@ -191,5 +207,17 @@ public class V1CompositeServiceModel extends BaseNamedModel implements Composite
         setChildModel(interfaze);
         _interface = interfaze;
         return this;
+    }
+    
+    @Override
+    public CompositeServiceModel setExtensions(ExtensionsModel extensionsModel) {
+    	setChildModel(extensionsModel);
+    	_extensionsModel = extensionsModel;
+    	return this;
+    }
+    
+    @Override
+    public boolean hasExtensionsModel() {
+    	return _extensionsModel != null;
     }
 }

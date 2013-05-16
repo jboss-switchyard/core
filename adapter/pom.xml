@@ -21,6 +21,10 @@
 			<groupId>org.switchyard</groupId>
 			<artifactId>switchyard-api</artifactId>
 		</dependency>
+		<dependency>
+            <groupId>org.switchyard</groupId>
+            <artifactId>switchyard-extensions-wsdl</artifactId>
+        </dependency>
 		<!-- test -->
 		<dependency>
 			<groupId>org.mockito</groupId>

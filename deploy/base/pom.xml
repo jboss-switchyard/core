@@ -63,6 +63,11 @@
             <groupId>org.switchyard</groupId>
             <artifactId>switchyard-bus-camel</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.switchyard</groupId>
+            <artifactId>switchyard-adapter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- external dependencies -->
         <dependency>
             <groupId>log4j</groupId>

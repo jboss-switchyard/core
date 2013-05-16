@@ -18,8 +18,6 @@
  */
 package org.switchyard.adapter.config.model.adapters;
 
-import javax.xml.namespace.QName;
-
 import org.switchyard.adapter.BaseAdapter;
 import org.switchyard.metadata.ServiceInterface;
 import org.switchyard.metadata.ServiceOperation;
@@ -28,12 +26,6 @@ import org.switchyard.metadata.ServiceOperation;
  * @author Christoph Gostner &lt;<a href="mailto:christoph.gostner@objectbay.com">christoph.gostner@objectbay.com</a>&gt; &copy; 2013 Objectbay
  */
 public class V1toV2Adapter extends BaseAdapter {	
-	public static final QName FROM = QName.valueOf("{urn:org.switchyard.adapter.config.model}TestServiceV1");
-	public static final QName TO = QName.valueOf("{urn:org.switchyard.adapter.config.model}TestServiceV2");
-
-	public V1toV2Adapter() {
-		super(FROM, TO);
-	}
 
 	@Override
 	public ServiceOperation lookup(String consumerOperation, ServiceInterface targetInterface) {

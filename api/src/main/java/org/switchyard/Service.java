@@ -23,6 +23,7 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
+import org.switchyard.adapter.Adapter;
 import org.switchyard.metadata.Registrant;
 import org.switchyard.metadata.ServiceInterface;
 import org.switchyard.policy.Policy;
@@ -72,4 +73,10 @@ public interface Service {
      * @return provider metadata
      */
     Registrant getProviderMetadata();
+    
+    boolean hasAdapter();
+    
+    Service setAdapter(Adapter adapter);
+    
+    Adapter getAdapter();
 }

@@ -30,18 +30,23 @@ import org.switchyard.metadata.java.JavaService;
  */
 public class AnnoV1toV2Adapter {
 
-	@Adapter(from = "{urn:org.switchyard.adapter.config.model}TestServiceV1", to = "{urn:org.switchyard.adapter.config.model}TestServiceV2")
+//	@Adapter(from = "{urn:org.switchyard.adapter.config.model}TestServiceV1", to = "{urn:org.switchyard.adapter.config.model}TestServiceV2")
+//	public ServiceOperation lookup(String consumerOperation, ServiceInterface targetInterface) {
+//		return new BaseServiceOperation(ExchangePattern.IN_ONLY, "test", JavaService.toMessageType(Void.class), JavaService.toMessageType(String.class), null);
+//	}
+//	
+//	// Duplicate from not allowed -> AdapterRegistryLoaderTest#testRegisterAdaptersDuplicateFrom
+//	@Adapter(from = "{urn:org.switchyard.adapter.config.model}TestServiceV1", to = "{urn:org.switchyard.adapter.config.model}TestServiceV2")
+//	public ServiceOperation lookup2(String consumerOperation, ServiceInterface targetInterface) {
+//		return new BaseServiceOperation(ExchangePattern.IN_ONLY, "test", JavaService.toMessageType(Void.class), JavaService.toMessageType(String.class), null);
+//	}
+//	
+//	public ServiceOperation dummyLookup(String consumerOperation, ServiceInterface targetInterface) {
+//		return null;
+//	}
+	
+	@Adapter(service = "{urn:switchyard.adapter:1.0}TestServiceV2", contract = MockServiceContract.class)
 	public ServiceOperation lookup(String consumerOperation, ServiceInterface targetInterface) {
 		return new BaseServiceOperation(ExchangePattern.IN_ONLY, "test", JavaService.toMessageType(Void.class), JavaService.toMessageType(String.class), null);
-	}
-	
-	// Duplicate from not allowed -> AdapterRegistryLoaderTest#testRegisterAdaptersDuplicateFrom
-	@Adapter(from = "{urn:org.switchyard.adapter.config.model}TestServiceV1", to = "{urn:org.switchyard.adapter.config.model}TestServiceV2")
-	public ServiceOperation lookup2(String consumerOperation, ServiceInterface targetInterface) {
-		return new BaseServiceOperation(ExchangePattern.IN_ONLY, "test", JavaService.toMessageType(Void.class), JavaService.toMessageType(String.class), null);
-	}
-	
-	public ServiceOperation dummyLookup(String consumerOperation, ServiceInterface targetInterface) {
-		return null;
 	}
 }

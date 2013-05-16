@@ -25,15 +25,15 @@ MA  02110-1301, USA.
 
     <import namespace="urn:switchyard-config:switchyard:1.0"/>
 
-	<element name="adapt.java" type="adpter:JavaAdaptType" substitutionGroup="swyd:adapt" />
-	<complexType name="JavaAdaptType">
+	<element name="adapt.java" type="adpter:JavaAdapterType" substitutionGroup="swyd:adapter" />
+	<complexType name="JavaAdapterType">
 		<annotation>
             <documentation xml:lang="en">
                 Generic/Custom Java Adapter Configuration.
             </documentation>
         </annotation>
         <complexContent>
-        	<extension base="swyd:AdaptType">
+        	<extension base="swyd:AdapterType">
         		<attribute name="class" type="string" use="required">
                     <annotation>
                         <documentation xml:lang="en">

@@ -18,82 +18,64 @@
  */
 package org.switchyard.adapter;
 
-import java.util.List;
-
-import javax.xml.namespace.QName;
+import static org.junit.Assert.*;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.switchyard.metadata.ServiceInterface;
-import org.switchyard.metadata.ServiceOperation;
+import org.switchyard.adapter.config.model.adapters.AnnoV1toV2Adapter;
+import org.switchyard.adapter.config.model.adapters.MockServiceContract;
+import org.switchyard.adapter.config.model.adapters.NoAnnotationAdapter;
+import org.switchyard.adapter.config.model.adapters.V1toV2Adapter;
+import org.switchyard.adapter.config.model.v1.V1JavaAdapterModel;
+import org.switchyard.config.model.composite.InterfaceModel;
+import org.switchyard.config.model.composite.v1.V1InterfaceModel;
+import org.switchyard.exception.SwitchYardException;
+
 
 /**
  * @author Christoph Gostner &lt;<a href="mailto:christoph.gostner@objectbay.com">christoph.gostner@objectbay.com</a>&gt; &copy; 2013 Objectbay
  */
 public class AdapterUtilTest {
-	private static final QName TEST_SERVICE_V1 = QName.valueOf("{urn:org.switchyard.adapter.config.model}TestServiceV1");
-	private static final QName TEST_SERVICE_V2 = QName.valueOf("{urn:org.switchyard.adapter.config.model}TestServiceV2");
 	
-	@Test
-	public void testIsAdapter() {
-		Assert.assertTrue(AdapterUtil.isAdapter(TestAdapter.class));
-		Assert.assertTrue(AdapterUtil.isAdapter(AnnoTestAdapter.class));
-		
-		Assert.assertFalse(AdapterUtil.isAdapter(Adapter.class));		
-		Assert.assertFalse(AdapterUtil.isAdapter(org.switchyard.annotations.Adapter.class));
-		Assert.assertFalse(AdapterUtil.isAdapter(AbstractTestAdapter.class));
-		Assert.assertFalse(AdapterUtil.isAdapter(Object.class));
-		Assert.assertFalse(AdapterUtil.isAdapter(ConstructerTestAdapter.class));
+	private V1JavaAdapterModel model;
+
+	@Before
+	public void before() {
+		model = new V1JavaAdapterModel();
+		InterfaceModel interfaceModel = new V1InterfaceModel(InterfaceModel.JAVA);
+		interfaceModel.setInterface(MockServiceContract.class.getName());
+		model.setInterfaceModel(interfaceModel);
 	}
 	
 	@Test
-	public void testNewAdapter() {
-		List<Adapter> adapters = AdapterUtil.newAdapter(TestAdapter.class, TEST_SERVICE_V1, TEST_SERVICE_V2);
-		Assert.assertEquals(1, adapters.size());
-		Adapter adapter = adapters.get(0);
-		Assert.assertEquals(TEST_SERVICE_V1, adapter.getFrom());
-		Assert.assertEquals(TEST_SERVICE_V2, adapter.getTo());
+	public void testAnnotationBasedAdapter() {
+		model.setClazz(AnnoV1toV2Adapter.class.getName());
 		
-		adapters = AdapterUtil.newAdapter(AnnoTestAdapter.class, TEST_SERVICE_V1, TEST_SERVICE_V2);
-		Assert.assertEquals(1, adapters.size());
-		adapter = adapters.get(0);
-		Assert.assertEquals(TEST_SERVICE_V1, adapter.getFrom());
-		Assert.assertEquals(TEST_SERVICE_V2, adapter.getTo());
+		Adapter adapter = AdapterUtil.newAdapter(model);
+		assertNotNull(adapter);
+		assertNotNull(adapter.getServiceInterface());
 	}
 	
-	public static class TestAdapter extends BaseAdapter {
-		public TestAdapter() {
-			super(TEST_SERVICE_V1, TEST_SERVICE_V2);
-		}
-
-		@Override
-		public ServiceOperation lookup(String consumerOperation, ServiceInterface targetInterface) {
-			return null;
-		}
-	}
-
-	public static class AnnoTestAdapter {
+	@Test
+	public void testImplementationBasedAdapter() {
+		model.setClazz(V1toV2Adapter.class.getName());
 		
-		@org.switchyard.annotations.Adapter(from = "{urn:org.switchyard.adapter.config.model}TestServiceV1", to = "{urn:org.switchyard.adapter.config.model}TestServiceV2")
-		public ServiceOperation lookup(String consumerOperation, ServiceInterface targetInterface) {
-			return null;
-		}
+		Adapter adapter = AdapterUtil.newAdapter(model);
+		assertNotNull(adapter);
+		assertEquals(V1toV2Adapter.class, adapter.getClass());
+		assertNotNull(adapter.getServiceInterface());
 	}
 	
-	public abstract static class AbstractTestAdapter extends BaseAdapter {
-		public AbstractTestAdapter() {
-			super(null, null);
-		}
-	}
-	
-	public static class ConstructerTestAdapter extends BaseAdapter {
-		public ConstructerTestAdapter(QName from, QName to) {
-			super(from, to);
-		}
-
-		@Override
-		public ServiceOperation lookup(String consumerOperation, ServiceInterface targetInterface) {
-			return null;
+	@Test
+	public void testNoAnnotationFoundAdapter() { 
+		model.setClazz(NoAnnotationAdapter.class.getName());
+		
+		try {
+			AdapterUtil.newAdapter(model);
+			fail();
+		} catch (SwitchYardException e) {
+			Assert.assertEquals("Invalid Adapter class 'class org.switchyard.adapter.config.model.adapters.NoAnnotationAdapter'.", e.getMessage());
 		}
 	}
 }

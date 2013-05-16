@@ -19,7 +19,6 @@
 package org.switchyard.config.model.switchyard;
 
 import org.switchyard.config.model.NamedModel;
-import org.switchyard.config.model.adapter.AdaptersModel;
 import org.switchyard.config.model.composite.CompositeModel;
 import org.switchyard.config.model.domain.DomainModel;
 import org.switchyard.config.model.transform.TransformsModel;
@@ -50,21 +49,6 @@ public interface SwitchYardModel extends NamedModel {
      * @return this SwitchYardModel (useful for chaining)
      */
     public SwitchYardModel setComposite(CompositeModel composite);
-
-    /**
-     * Get the child adapters model.
-     * 
-     * @return the child adapters model.
-     */
-    public AdaptersModel getAdapters();
-    
-    /**
-     * Sets the child adapters model.
-     * 
-     * @param adapters the child adapters model.
-     * @return this SwitchYardModel (useful for chaining)
-     */
-    public SwitchYardModel setAdapters(AdaptersModel adapters);
 
     /**
      * Gets the child transforms model.

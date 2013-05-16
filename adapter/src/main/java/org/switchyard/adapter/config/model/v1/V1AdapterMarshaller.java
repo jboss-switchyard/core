@@ -18,12 +18,12 @@
  */
 package org.switchyard.adapter.config.model.v1;
 
-import org.switchyard.adapter.config.model.JavaAdaptModel;
+import org.switchyard.adapter.config.model.JavaAdapterModel;
 import org.switchyard.config.Configuration;
 import org.switchyard.config.model.BaseMarshaller;
 import org.switchyard.config.model.Descriptor;
 import org.switchyard.config.model.Model;
-import org.switchyard.config.model.adapter.AdaptModel;
+import org.switchyard.config.model.extensions.adapter.AdapterModel;
 
 /**
  * Marshalls adapter Models.
@@ -32,7 +32,7 @@ import org.switchyard.config.model.adapter.AdaptModel;
  */
 public class V1AdapterMarshaller extends BaseMarshaller {
     
-    private static final String ADAPT_JAVA = AdaptModel.ADAPT + "." + JavaAdaptModel.JAVA;
+    private static final String ADAPTER_JAVA = AdapterModel.ADAPTER + "." + JavaAdapterModel.JAVA;
 
     /**
      * Constructs a new V1AdapterMarshaller with the specified Descriptor.
@@ -51,8 +51,8 @@ public class V1AdapterMarshaller extends BaseMarshaller {
         String name = config.getName();
         Descriptor desc = getDescriptor();
 
-        if (name.equals(ADAPT_JAVA)) {
-            return new V1JavaAdaptModel(config, desc);
+        if (name.equals(ADAPTER_JAVA)) {
+            return new V1JavaAdapterModel(config, desc);
         }
         return null;
     }

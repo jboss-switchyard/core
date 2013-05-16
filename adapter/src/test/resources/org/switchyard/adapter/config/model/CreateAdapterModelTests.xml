@@ -21,11 +21,6 @@ MA  02110-1301, USA.
     <sca:composite name="switchyard.adapter.example" targetNamespace="urn:com.objectbay:switchyard.adapter:1.0.0">
         <sca:service name="TestServiceV2" promote="TestServiceBeanV2/TestServiceV2">
             <sca:interface.java interface="org.switchyard.adapter.config.model.ServiceContractV2" />
-            <extensions  xmlns="http://docs.oasis-open.org/ns/opencsa/sca/200912">
-                <adapter.java xmlns="urn:switchyard-config:adapter:1.0" class="org.switchyard.adapter.config.model.adapters.V1toV2Adapter">
-                    <interface.java xmlns="http://docs.oasis-open.org/ns/opencsa/sca/200912" interface="org.switchyard.adapter.config.model.ServiceContractV1" />
-                </adapter.java>
-            </extensions>
         </sca:service>
         
         <sca:component name="TestServiceBeanV2">

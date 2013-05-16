@@ -31,6 +31,8 @@ import org.switchyard.config.model.composite.CompositeModel;
 import org.switchyard.config.model.composite.CompositeServiceModel;
 import org.switchyard.config.model.composite.InterfaceModel;
 import org.switchyard.config.model.composite.SCABindingModel;
+import org.switchyard.config.model.extensions.ExtensionsModel;
+import org.switchyard.config.model.extensions.v1.V1ExtensionsModel;
 import org.switchyard.config.model.property.PropertyModel;
 import org.switchyard.config.model.property.v1.V1PropertyModel;
 
@@ -96,6 +98,8 @@ public class V1CompositeMarshaller extends BaseMarshaller {
             }
         } else if (name.equals(PropertyModel.PROPERTY)) {
             return new V1PropertyModel(config,desc);
+        } else if (name.equals(ExtensionsModel.EXTENSIONS)) {
+        	return new V1ExtensionsModel(config, desc);
         }
         
         return null;
