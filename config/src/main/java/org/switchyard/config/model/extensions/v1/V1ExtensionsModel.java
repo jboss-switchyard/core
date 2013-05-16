@@ -18,6 +18,8 @@
  */
 package org.switchyard.config.model.extensions.v1;
 
+import javax.xml.namespace.QName;
+
 import org.switchyard.config.Configuration;
 import org.switchyard.config.model.BaseNamedModel;
 import org.switchyard.config.model.Descriptor;
@@ -51,7 +53,11 @@ public class V1ExtensionsModel extends BaseNamedModel implements ExtensionsModel
         }
     }
 
-    @Override
+    public V1ExtensionsModel() {
+        super(new QName(ExtensionsModel.EXTENSIONS));
+	}
+
+	@Override
     public String getType() {
         return EXTENSIONS;
     }

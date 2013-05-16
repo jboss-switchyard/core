@@ -47,19 +47,19 @@ import org.switchyard.config.model.switchyard.SwitchYardModel;
  */
 public class AdapterModelTests {
 
-	private static final String XML = "/org/switchyard/adapter/config/model/AdapterModelTests.xml";
-	private static final String CREATE_XML = "/org/switchyard/adapter/config/model/CreateAdapterModelTests.xml";
-	
-	private ModelPuller<SwitchYardModel> _puller;
-	
-	@Before
+    private static final String XML = "/org/switchyard/adapter/config/model/AdapterModelTests.xml";
+    private static final String CREATE_XML = "/org/switchyard/adapter/config/model/CreateAdapterModelTests.xml";
+    
+    private ModelPuller<SwitchYardModel> _puller;
+    
+    @Before
     public void before() throws Exception {
         _puller = new ModelPuller<SwitchYardModel>();
     }
-	
-	@Test
+    
+    @Test
     public void testCreateInvalidEmptyModel() throws Exception {
-		String namespace = AdapterModel.DEFAULT_NAMESPACE;
+        String namespace = AdapterModel.DEFAULT_NAMESPACE;
         String name = AdapterModel.ADAPTER + '.' + JavaAdapterModel.JAVA;
         Model model = new ModelPuller<Model>().pull(XMLHelper.createQName(namespace, name));
         Assert.assertTrue(model instanceof JavaAdapterModel);
@@ -67,29 +67,29 @@ public class AdapterModelTests {
         Assert.assertEquals(new QName(namespace, name), model.getModelConfiguration().getQName());
         Assert.assertFalse(model.isModelValid());
     }
-	
-//	@Test
-//    public void testCreate() throws Exception {
-//		SwitchYardModel switchyard = _puller.pull(CREATE_XML, getClass());
-//		Assert.assertTrue(switchyard.isModelValid());
-//		
-//		InterfaceModel interfaceModel = new V1InterfaceModel(InterfaceModel.JAVA);
-//		interfaceModel.setInterface("org.switchyard.adapter.config.model.ServiceContractV1");
-//		JavaAdapterModel javaAdapter = new V1JavaAdapterModel();
-//		javaAdapter.setInterfaceModel(interfaceModel);
-//		javaAdapter.setClazz(V1toV2Adapter.class.getName());
-//		ExtensionsModel extensionsModel = new V1ExtensionsModel();
-//        extensionsModel.setAdapterModel(javaAdapter);
-//        switchyard.getComposite().getServices().get(0).setExtensions(extensionsModel);
-//
-//        String new_xml = switchyard.toString();
-//        String old_xml = new ModelPuller<SwitchYardModel>().pull(XML, getClass()).toString();
-//       	XMLUnit.setIgnoreWhitespace(true);
-//       	Diff diff = XMLUnit.compareXML(old_xml, new_xml);
-//       	Assert.assertTrue(diff.toString(), diff.identical());
-//    }
-	
-	@Test
+    
+    @Test
+    public void testCreate() throws Exception {
+        SwitchYardModel switchyard = _puller.pull(CREATE_XML, getClass());
+        Assert.assertTrue(switchyard.isModelValid());
+        
+        InterfaceModel interfaceModel = new V1InterfaceModel(InterfaceModel.JAVA);
+        interfaceModel.setInterface("org.switchyard.adapter.config.model.ServiceContractV1");
+        JavaAdapterModel javaAdapter = new V1JavaAdapterModel();
+        javaAdapter.setInterfaceModel(interfaceModel);
+        javaAdapter.setClazz(V1toV2Adapter.class.getName());
+        ExtensionsModel extensionsModel = new V1ExtensionsModel();
+        extensionsModel.setAdapterModel(javaAdapter);
+        switchyard.getComposite().getServices().get(0).setExtensions(extensionsModel);
+
+        String new_xml = switchyard.toString();
+        String old_xml = new ModelPuller<SwitchYardModel>().pull(XML, getClass()).toString();
+        XMLUnit.setIgnoreWhitespace(true);
+        Diff diff = XMLUnit.compareXML(old_xml, new_xml);
+        Assert.assertTrue(diff.toString(), diff.identical());
+    }
+    
+    @Test
     public void testRead() throws Exception {
         SwitchYardModel switchyard = _puller.pull(XML, getClass());
         List<CompositeServiceModel> serviceModels = switchyard.getComposite().getServices();
@@ -107,8 +107,8 @@ public class AdapterModelTests {
         JavaAdapterModel javaAdapterModel = (JavaAdapterModel) adapterModel;
         Assert.assertEquals(V1toV2Adapter.class.getName(), javaAdapterModel.getClazz());
     }
-	 
-	@Test
+     
+    @Test
     public void testWrite() throws Exception {
         String old_xml = new StringPuller().pull(XML, getClass());
         SwitchYardModel switchyard = _puller.pull(new StringReader(old_xml));
@@ -120,7 +120,7 @@ public class AdapterModelTests {
 
     @Test
     public void testValidation() throws Exception {
-    	SwitchYardModel switchyard = _puller.pull(XML, getClass());
+        SwitchYardModel switchyard = _puller.pull(XML, getClass());
         switchyard.assertModelValid();
     }
 }
