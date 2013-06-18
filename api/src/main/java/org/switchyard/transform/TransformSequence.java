@@ -209,8 +209,26 @@ public final class TransformSequence implements Serializable {
         }
 
         transformSequence.apply(message, registry);
+        
+        if (!assertTransformsApplied(exchange)) {
+            // find one level deep transform sequence
+            LOGGER.debug("No direct transformer found. Searching for indirect transformation possibilities");
+            if (get(exchange)._sequence.size() == 2) { 
+                transformSequence = registry.getTransformSequence(get(exchange)._sequence.get(0), get(exchange)._sequence.get(1));
+            }
+            if (transformSequence == null) {
+                LOGGER.debug("No one level deep indirect transformation possible");
+                return;
+            }
+            
+            // found indirect transform sequence
+            transformSequence.apply(message, registry);
+            
+            // Replacing the original transformSequence to an two-step Transform Sequence in the exchange
+            exchange.getContext().setProperty(TransformSequence.class.getName(), transformSequence);
+        }
     }
-
+    
     private void add(final QName typeName) {
         if (typeName == null) {
             throw new IllegalArgumentException("null 'typeName' arg passed.");

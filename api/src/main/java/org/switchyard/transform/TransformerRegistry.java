@@ -24,7 +24,7 @@ import javax.xml.namespace.QName;
 /**
  * Registry for transformers.
  */
-public interface TransformerRegistry {
+public interface TransformerRegistry extends TransformResolver {
 
     /**
      * Add a transformer.
@@ -57,11 +57,4 @@ public interface TransformerRegistry {
      */
     boolean hasTransformer(QName from, QName to);
 
-    /**
-     * Get a transformer.
-     * @param from from
-     * @param to to
-     * @return transformer
-     */
-    Transformer<?, ?> getTransformer(QName from, QName to);
 }

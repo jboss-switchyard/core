@@ -36,6 +36,7 @@ import org.switchyard.common.xml.QNameUtil;
 import org.switchyard.event.EventPublisher;
 import org.switchyard.event.TransformerAddedEvent;
 import org.switchyard.event.TransformerRemovedEvent;
+import org.switchyard.transform.TransformSequence;
 import org.switchyard.transform.Transformer;
 import org.switchyard.transform.TransformerRegistry;
 
@@ -121,6 +122,32 @@ public class BaseTransformerRegistry implements TransformerRegistry {
         }
 
         return transformer;
+    }
+
+    @Override
+    public TransformSequence getTransformSequence(QName from, QName to) {
+        ArrayList<Transformer<?,?>> fromMatches = new ArrayList<Transformer<?,?>>();
+        ArrayList<Transformer<?,?>> toMatches = new ArrayList<Transformer<?,?>>();
+        TransformSequence transformSequence = null;
+        
+        for (ConcurrentHashMap.Entry<NameKey, Transformer<?,?>> entry : _transformers.entrySet()) {
+            if (entry.getValue().getFrom().equals(from)) {
+                fromMatches.add(entry.getValue());
+            } else if (entry.getValue().getTo().equals(to)) {
+                toMatches.add(entry.getValue());
+            }            
+        }
+
+        // match 1st occurence of the first level of indirection (A->B,B->C instead of A->C)
+        for (Transformer<?,?> fromTransformer : fromMatches) {
+            for (Transformer<?,?> toTransformer : toMatches) {
+                if (fromTransformer.getTo().equals(toTransformer.getFrom())) {
+                    transformSequence = TransformSequence.from(fromTransformer.getFrom()).to(fromTransformer.getTo()).to(to);
+                    break;
+                }
+            }
+        }
+        return transformSequence;
     }
 
     @Override
