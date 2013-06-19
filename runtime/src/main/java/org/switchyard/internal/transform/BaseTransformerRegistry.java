@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EventObject;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +37,8 @@ import org.switchyard.common.xml.QNameUtil;
 import org.switchyard.event.EventPublisher;
 import org.switchyard.event.TransformerAddedEvent;
 import org.switchyard.event.TransformerRemovedEvent;
+import org.switchyard.transform.TransformResolver;
+import org.switchyard.transform.TransformSequence;
 import org.switchyard.transform.Transformer;
 import org.switchyard.transform.TransformerRegistry;
 
@@ -58,6 +61,7 @@ public class BaseTransformerRegistry implements TransformerRegistry {
         new ConcurrentHashMap<NameKey, Transformer<?,?>>();
 
     private EventPublisher _eventPublisher;
+    private TransformResolver _transformResolver = new BaseTransformResolver(this);
 
     /**
      * Constructor.
@@ -121,6 +125,11 @@ public class BaseTransformerRegistry implements TransformerRegistry {
         }
 
         return transformer;
+    }
+
+    @Override
+    public TransformSequence getTransformSequence(QName from, QName to) {        
+        return _transformResolver.resolveSequence(from, to);
     }
 
     @Override
@@ -198,6 +207,42 @@ public class BaseTransformerRegistry implements TransformerRegistry {
         return removed;
     }
     
+    @Override
+    public List<Transformer<?, ?>> getRegisteredTransformers() {
+        return new ArrayList<Transformer<?, ?>>(_transformers.values());
+    }
+    
+    @Override
+    public List<Transformer<?,?>> getTransformersFrom(QName type) {
+        List<Transformer<?,?>> transforms = new LinkedList<Transformer<?,?>>();
+        
+        for (NameKey key : _transformers.keySet()) {
+            if (key.getFrom() != null && key.getFrom().equals(type)) {
+                transforms.add(_transformers.get(key));
+            }
+        }
+        
+        return transforms;
+    }
+
+    @Override
+    public List<Transformer<?,?>> getTransformersTo(QName type) {
+        List<Transformer<?,?>> transforms = new LinkedList<Transformer<?,?>>();
+        
+        for (NameKey key : _transformers.keySet()) {
+            if (key.getTo() != null && key.getTo().equals(type)) {
+                transforms.add(_transformers.get(key));
+            }
+        }
+        
+        return transforms;
+    }
+
+    @Override
+    public void setTransfomResolver(TransformResolver resolver) {
+        this._transformResolver = resolver;        
+    }
+
     // Convenience method to guard against cases when an event publisher has 
     // not been set.
     private void publishEvent(EventObject event) {
