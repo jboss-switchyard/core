@@ -31,12 +31,14 @@ import java.util.Set;
 import org.switchyard.BaseHandler;
 import org.switchyard.Exchange;
 import org.switchyard.HandlerException;
+import org.switchyard.ProviderRegistry;
 import org.switchyard.Service;
 import org.switchyard.ServiceReference;
 import org.switchyard.ServiceSecurity;
 import org.switchyard.security.SecurityContext;
 import org.switchyard.security.credential.ConfidentialityCredential;
 import org.switchyard.security.credential.PrincipalCredential;
+import org.switchyard.security.spi.JaasSecurityProvider;
 import org.switchyard.security.spi.SecurityProvider;
 
 /**
@@ -52,7 +54,11 @@ public class SecurityHandler extends BaseHandler {
      * Constructs a SecurityHandler.
      */
     public SecurityHandler() {
-        _securityProvider = SecurityProvider.instance();
+        SecurityProvider provider = ProviderRegistry.getProvider(SecurityProvider.class);
+        if (provider == null) {
+            provider = new JaasSecurityProvider();
+        }
+        _securityProvider = provider;
     }
 
     /**
