@@ -83,7 +83,7 @@ public class DeploymentList extends OsgiCommandSupport {
             int maxStatusLen = 0;
 
             for (final SwitchyardEvent event : events) {
-                maxIdLen = java.lang.Math.max(maxNameLen, getId(event).length());
+                maxIdLen = java.lang.Math.max(maxIdLen, getId(event).length());
                 maxNameLen = java.lang.Math.max(maxNameLen, getName(event).length());
                 maxStatusLen = java.lang.Math.max(maxStatusLen, getStatus(event).length());
             }
