@@ -39,6 +39,9 @@
         <switchyard.osgi.private>
             org.switchyard.deploy.karaf
         </switchyard.osgi.private>
+
+        <version.camel>2.10.4</version.camel>
+        <version.cxf>2.6.8</version.cxf>
     </properties>
     <dependencies>
         <!-- internal dependencies -->

@@ -21,8 +21,14 @@ package org.switchyard.deploy.osgi.internal;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
+import org.osgi.framework.Filter;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.switchyard.ServiceDomain;
@@ -54,10 +60,12 @@ import org.w3c.dom.NodeList;
 import javax.xml.XMLConstants;
 import javax.xml.validation.Schema;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -79,6 +87,7 @@ public class SwitchyardContainerImpl extends SimpleExtension
 
     public enum State {
         Unknown,
+        WaitForCdi,
         WaitForNamespaceHandlers,
         WaitForComponents,
         Created,
@@ -100,6 +109,8 @@ public class SwitchyardContainerImpl extends SimpleExtension
     private final AtomicBoolean destroyed = new AtomicBoolean(false);
     private final ExecutorService executors;
     private ServiceRegistration<SwitchyardContainer> registration;
+    private ServiceTracker cdiContainerTracker;
+    private Object cdiContainer;
 
     public SwitchyardContainerImpl(SwitchyardExtender extender, Bundle bundle, ExecutorService executor) {
         super(bundle);
@@ -114,7 +125,7 @@ public class SwitchyardContainerImpl extends SimpleExtension
     }
 
     public void schedule() {
-        if (scheduled.compareAndSet(false, true)) {
+        if (scheduled.compareAndSet(false, true) && !destroyed.get()) {
             executors.submit(this);
         }
     }
@@ -145,16 +156,59 @@ public class SwitchyardContainerImpl extends SimpleExtension
                 switch (state) {
                     case Unknown: {
                         dispatch(SwitchyardEvent.CREATING);
-                        URL configUrl = getBundle().getResource(SwitchyardExtender.SWITCHYARD_XML);
-                        InputStream configStream = configUrl.openStream();
-                        try {
-                            xml = new ElementPuller().pull(configStream);
-                        } finally {
-                            configStream.close();
+                        boolean needsCdi = false;
+                        List<BundleWire> wires = bundle.adapt(BundleWiring.class).getRequiredWires("osgi.extender");
+                        for (BundleWire wire : wires) {
+                            String filterStr = wire.getRequirement().getDirectives().get("filter");
+                            Filter filter = FrameworkUtil.createFilter(filterStr);
+                            Dictionary<String, Object> props = new Hashtable<String, Object>();
+                            props.put("osgi.extender", "pax.cdi");
+                            needsCdi = filter.match(props);
                         }
-                        namespaces = findNamespaces(new HashSet<URI>(), xml);
-                        nhs = extender.getNamespaceHandlerRegistry().getNamespaceHandlers(namespaces, getBundle());
-                        nhs.addListener(this);
+                        if (needsCdi) {
+                            String filter = "(&(objectClass=org.ops4j.pax.cdi.spi.CdiContainer)(bundleId=" + bundle.getBundleId() + "))";
+                            cdiContainerTracker = new ServiceTracker(bundleContext, FrameworkUtil.createFilter(filter), new ServiceTrackerCustomizer() {
+                                @Override
+                                public Object addingService(ServiceReference reference) {
+                                    Object obj = bundleContext.getService(reference);
+                                    schedule();
+                                    return obj;
+                                }
+                                @Override
+                                public void modifiedService(ServiceReference reference, Object service) {
+                                }
+                                @Override
+                                public void removedService(ServiceReference reference, Object service) {
+                                    bundleContext.ungetService(reference);
+                                    enterGracePeriod();
+                                }
+                            });
+                            cdiContainerTracker.open();
+                        }
+                        state = State.WaitForCdi;
+                        break;
+                    }
+                    case WaitForCdi: {
+                        if (cdiContainerTracker != null) {
+                            cdiContainer = cdiContainerTracker.getService();
+                            if (cdiContainer == null) {
+                                String filter = "(&(objectClass=org.ops4j.pax.cdi.spi.CdiContainer)(bundleId=" + bundle.getBundleId() + "))";
+                                dispatch(SwitchyardEvent.GRACE_PERIOD, Collections.singleton(filter));
+                                return;
+                            }
+                        }
+                        if (nhs == null) {
+                            URL configUrl = getBundle().getResource(SwitchyardExtender.SWITCHYARD_XML);
+                            InputStream configStream = configUrl.openStream();
+                            try {
+                                xml = new ElementPuller().pull(configStream);
+                            } finally {
+                                configStream.close();
+                            }
+                            namespaces = findNamespaces(new HashSet<URI>(), xml);
+                            nhs = extender.getNamespaceHandlerRegistry().getNamespaceHandlers(namespaces, getBundle());
+                            nhs.addListener(this);
+                        }
                         state = State.WaitForNamespaceHandlers;
                         break;
                     }
@@ -226,15 +280,31 @@ public class SwitchyardContainerImpl extends SimpleExtension
                             dispatch(SwitchyardEvent.GRACE_PERIOD, missingTypes);
                             return;
                         }
-                        domain = extender.getDomainManager().createDomain(getBundleContext(), model.getQName(), model);
-                        List<Activator> activators = new ArrayList<Activator>();
-                        for (Component component : components) {
-                            activators.add(component.createActivator(domain));
-                        }
-                        deployment = new Deployment(model);
-                        deployment.init(domain, activators);
 
-                        deployment.start();
+                        ClassLoader oldTccl = Thread.currentThread().getContextClassLoader();
+                        ClassLoader newTccl = oldTccl;
+                        if (cdiContainer != null) {
+                            try {
+                                Method method = cdiContainer.getClass().getMethod("getContextClassLoader");
+                                newTccl = (ClassLoader) method.invoke(cdiContainer);
+                            } catch (Throwable t) {
+                                // Ignore
+                            }
+                        }
+                        try {
+                            Thread.currentThread().setContextClassLoader(newTccl);
+
+                            domain = extender.getDomainManager().createDomain(getBundleContext(), model.getQName(), model);
+                            List<Activator> activators = new ArrayList<Activator>();
+                            for (Component component : components) {
+                                activators.add(component.createActivator(domain));
+                            }
+                            deployment = new Deployment(model);
+                            deployment.init(domain, activators);
+                            deployment.start();
+                        } finally {
+                            Thread.currentThread().setContextClassLoader(oldTccl);
+                        }
                         // Register the BlueprintContainer in the OSGi registry
                         int bs = bundle.getState();
                         if (registration == null && (bs == Bundle.ACTIVE || bs == Bundle.STARTING)) {
@@ -277,6 +347,10 @@ public class SwitchyardContainerImpl extends SimpleExtension
             }
         } catch (Throwable t) {
             logger.debug("Error unregistering Switchyard container", t);
+        }
+        if (cdiContainerTracker != null) {
+            cdiContainerTracker.close();
+            cdiContainerTracker = null;
         }
         if (nhs != null) {
             nhs.removeListener(this);
@@ -361,7 +435,7 @@ public class SwitchyardContainerImpl extends SimpleExtension
             } catch (Exception e) {
                 logger.error("Error while stopping switchyard", e);
             }
-            state = State.WaitForNamespaceHandlers;
+            state = State.WaitForCdi;
             schedule();
         }
     }
