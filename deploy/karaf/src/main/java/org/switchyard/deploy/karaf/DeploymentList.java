@@ -32,8 +32,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  */
-@Command(scope = "switchyard", name = "list", description = "List switchyard applications.")
-public class ListCommand extends OsgiCommandSupport {
+@Command(scope = "switchyard", name = "deployment-list", description = "List switchyard deployments.")
+public class DeploymentList extends OsgiCommandSupport {
 
 
     private static final String ID_COLUMN_LABEL = "Id";

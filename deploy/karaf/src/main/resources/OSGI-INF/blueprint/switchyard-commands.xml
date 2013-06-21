@@ -23,8 +23,14 @@
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" default-activation="lazy">
 
     <command-bundle xmlns="http://karaf.apache.org/xmlns/shell/v1.0.0">
-        <command name="switchyard/list">
-            <action class="org.switchyard.deploy.karaf.ListCommand" />
+        <command name="switchyard/deployment-list">
+            <action class="org.switchyard.deploy.karaf.DeploymentList" />
+        </command>
+        <command name="switchyard/namespace-list">
+            <action class="org.switchyard.deploy.karaf.NamespaceList" />
+        </command>
+        <command name="switchyard/component-list">
+            <action class="org.switchyard.deploy.karaf.ComponentList" />
         </command>
     </command-bundle>
 
