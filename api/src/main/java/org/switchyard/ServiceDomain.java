@@ -153,6 +153,19 @@ public interface ServiceDomain {
     ServiceDomain addEventObserver(EventObserver observer, Class<? extends EventObject> eventType);
     
     /**
+     * Remove all event registrations for a given EventObserver instance.
+     * @param observer the observer to unregister
+     */
+    void removeObserver(EventObserver observer);
+
+    /**
+     * Remove an EventObserver from a specific event type.
+     * @param observer the EventObserver to unregister
+     * @param event the event to unregister
+     */
+    void removeObserverForEvent(EventObserver observer, Class<? extends EventObject> event);
+
+    /**
      * Returns the EventPublisher for this domain, which can be used to notify
      * event observers of activity.
      * @return event publisher

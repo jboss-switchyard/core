@@ -21,6 +21,7 @@ import org.junit.Ignore;
 import org.switchyard.admin.SwitchYard;
 import org.switchyard.config.model.ModelPuller;
 import org.switchyard.config.model.switchyard.SwitchYardModel;
+import org.switchyard.deploy.ServiceDomainManager;
 import org.switchyard.deploy.event.ApplicationDeployedEvent;
 import org.switchyard.deploy.event.ApplicationUndeployedEvent;
 import org.switchyard.deploy.internal.Deployment;
@@ -35,23 +36,27 @@ public class SwitchYardBuilderTestBase {
     protected SwitchYard _switchYard;
     protected Deployment _deployment;
     protected SwitchYardBuilder _builder;
+    protected ServiceDomainManager _domainManager;
 
     public SwitchYardBuilderTestBase() throws Exception {
-        _deployment = new MockDeployment(new ModelPuller<SwitchYardModel>().pull("switchyard.xml", getClass()), 
-            TEST_APP);
     }
 
     @Before
     public void setUp() throws Exception {
+        _domainManager = new ServiceDomainManager();
         _builder = new SwitchYardBuilder();
+        _builder.init(_domainManager);
         _switchYard = _builder.getSwitchYard();
-        _builder.notify(new ApplicationDeployedEvent(_deployment));
+        _deployment = new MockDeployment(new ModelPuller<SwitchYardModel>().pull("switchyard.xml", getClass()), 
+                TEST_APP, _domainManager);
+        _domainManager.getEventManager().publish(new ApplicationDeployedEvent(_deployment));
         //Thread.sleep(300 * 1000);
     }
     
     @After
     public void tearDown() {
-        _builder.notify(new ApplicationUndeployedEvent(_deployment));
+        _domainManager.getEventManager().publish(new ApplicationUndeployedEvent(_deployment));
+        _builder.destroy();
     }
 
 }

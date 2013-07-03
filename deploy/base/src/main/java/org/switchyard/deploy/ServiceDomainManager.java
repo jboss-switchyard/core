@@ -14,6 +14,7 @@
 
 package org.switchyard.deploy;
 
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -111,7 +112,7 @@ public class ServiceDomainManager {
         ServiceDomainSecurity serviceDomainSecurity = getServiceDomainSecurity(switchyardConfig);
 
         DomainImpl domain = new DomainImpl(
-                domainName, _registry, bus, transformerRegistry, validatorRegistry, _eventManager, serviceDomainSecurity);
+                domainName, _registry, bus, transformerRegistry, validatorRegistry, new DomainEventManager(), serviceDomainSecurity);
         camelContext.setServiceDomain(domain);
 
         // set properties on the domain
@@ -171,6 +172,14 @@ public class ServiceDomainManager {
             return null;
         } else {
             return config.getDomain().getProperties();
+        }
+    }
+    
+    private final class DomainEventManager extends EventManager {
+        @Override
+        public void publish(EventObject event) {
+            super.publish(event);
+            _eventManager.publish(event);
         }
     }
 }

@@ -14,29 +14,47 @@
 
 package org.switchyard.admin;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import javax.xml.namespace.QName;
 
 /**
  * Component
  * 
- * Represents a SwitchYard component registered with the SwitchYard runtime
- * (e.g. camel).
+ * Represents a SwitchYard component within an application.
  */
 public interface Component {
     /**
      * @return the name of this component.
      */
-    String getName();
+    QName getName();
 
     /**
-     * @return supported activation types, e.g. bean, soap, etc.
+     * @return implementation type, e.g. bean, bpm, etc.
      */
-    Set<String> getTypes();
+    String getType();
 
     /**
      * @return component properties.
      */
     Map<String,String> getProperties();
 
+    
+    /**
+     * @return the service provided by this component.
+     */
+    ComponentService getService();
+
+    /**
+     * @return the references contained by this component.
+     */
+    List<ComponentReference> getReferences();
+
+    /**
+     * @param componentReferenceName the name of a reference required by
+     *            this component.
+     * @return the requested reference, may be null
+     */
+    ComponentReference getReference(QName componentReferenceName);
 }

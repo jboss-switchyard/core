@@ -40,14 +40,6 @@ public interface SwitchYard extends MessageMetricsAware {
     List<Application> getApplications();
 
     /**
-     * List of implementation and gateway components currently installed in
-     * SwitchYard runtime.
-     * 
-     * @return list of SwitchYard components
-     */
-    List<Component> getComponents();
-
-    /**
      * List of services currently registered in the SwitchYard runtime.
      * 
      * @return list of SwitchYard services
@@ -60,16 +52,6 @@ public interface SwitchYard extends MessageMetricsAware {
      * @return list of SwitchYard references
      */
     List<Reference> getReferences();
-
-    /**
-     * Find a component with the specified name.
-     * 
-     * @param name
-     *            the name of the component.
-     * @return the component with the specified name; may be null if a component
-     *         with the specified name is not registered with the system.
-     */
-    Component getComponent(String name);
 
     /**
      * Find an application with the specified name.

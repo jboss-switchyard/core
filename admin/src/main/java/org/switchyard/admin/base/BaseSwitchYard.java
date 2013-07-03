@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentMap;
 import javax.xml.namespace.QName;
 
 import org.switchyard.admin.Application;
-import org.switchyard.admin.Component;
 import org.switchyard.admin.Reference;
 import org.switchyard.admin.Service;
 import org.switchyard.admin.SwitchYard;
@@ -43,7 +42,6 @@ public class BaseSwitchYard extends BaseMessageMetricsAware implements SwitchYar
 
     private final String _version;
     private ConcurrentMap<QName, Application> _applications = new ConcurrentHashMap<QName, Application>();
-    private ConcurrentMap<String, Component> _components = new ConcurrentHashMap<String, Component>();
     private List<Service> _services = Collections.synchronizedList(new LinkedList<Service>());
     private List<Reference> _references = Collections.synchronizedList(new LinkedList<Reference>());
     private Set<String> _socketBindingNames = Collections.synchronizedSet(new HashSet<String>());
@@ -98,33 +96,6 @@ public class BaseSwitchYard extends BaseMessageMetricsAware implements SwitchYar
             _references.removeAll(application.getReferences());
             _services.removeAll(application.getServices());
         }
-        return this;
-    }
-
-    @Override
-    public List<Component> getComponents() {
-        return new ArrayList<Component>(_components.values());
-    }
-
-    /**
-     * Add a component.
-     * 
-     * @param component component to add
-     * @return reference to this admin object
-     */
-    public BaseSwitchYard addComponent(Component component) {
-        _components.putIfAbsent(component.getName(), component);
-        return this;
-    }
-
-    /**
-     * Remove a component.
-     * 
-     * @param component component to remove
-     * @return reference to this admin object
-     */
-    public BaseSwitchYard removeComponent(Component component) {
-        _components.remove(component.getName());
         return this;
     }
 
@@ -188,11 +159,6 @@ public class BaseSwitchYard extends BaseMessageMetricsAware implements SwitchYar
     @Override
     public String getVersion() {
         return _version;
-    }
-
-    @Override
-    public Component getComponent(String name) {
-        return _components.get(name);
     }
 
     @Override

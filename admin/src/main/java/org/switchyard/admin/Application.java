@@ -62,6 +62,24 @@ public interface Application {
     public ComponentService getComponentService(QName componentServiceName);
 
     /**
+     * List of implementation and gateway components currently installed in
+     * SwitchYard runtime.
+     * 
+     * @return list of SwitchYard components
+     */
+    public List<Component> getComponents();
+
+    /**
+     * Find a component with the specified name.
+     * 
+     * @param name
+     *            the name of the component.
+     * @return the component with the specified name; may be null if a component
+     *         with the specified name is not registered with the system.
+     */
+    public Component getComponent(QName name);
+
+    /**
      * @return the transformers provided by this application
      */
     public List<Transformer> getTransformers();
