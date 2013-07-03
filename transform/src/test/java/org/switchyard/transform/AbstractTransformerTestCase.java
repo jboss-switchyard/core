@@ -55,7 +55,7 @@ public abstract class AbstractTransformerTestCase {
         TransformModel transformModel = transforms.getTransforms().get(0);
 
         if (transformModel == null) {
-            Assert.fail("No smooks config.");
+            Assert.fail("No smooks or dozer config.");
         }
         TransformerRegistryLoader trl = new TransformerRegistryLoader(new BaseTransformerRegistry());
         return trl.newTransformer(transformModel);
