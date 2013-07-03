@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 
 import org.apache.log4j.Logger;
+import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceSecurity;
 import org.switchyard.security.SecurityContext;
 
@@ -30,25 +31,7 @@ import org.switchyard.security.SecurityContext;
  *
  * @author David Ward &lt;<a href="mailto:dward@jboss.org">dward@jboss.org</a>&gt; &copy; 2013 Red Hat Inc.
  */
-public abstract class SecurityProvider {
-
-    private static final Logger LOGGER = Logger.getLogger(SecurityProvider.class);
-
-    private static final SecurityProvider INSTANCE;
-    static {
-        SecurityProvider instance;
-        try {
-            ServiceLoader<SecurityProvider> services = ServiceLoader.load(SecurityProvider.class, SecurityProvider.class.getClassLoader());
-            Iterator<SecurityProvider> iterator = services.iterator();
-            instance = iterator.hasNext() ? iterator.next() : null;
-        } catch (Throwable t) {
-            instance = null;
-        }
-        INSTANCE = instance != null ? instance : new JaasSecurityProvider();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Using SecurityProvider implementation: " + INSTANCE.getClass().getName());
-        }
-    }
+public interface SecurityProvider {
 
    /**
     * Authenticates the SecurityContext for the ServiceSecurity.
@@ -89,13 +72,5 @@ public abstract class SecurityProvider {
     * @return whether the clear was successful
     */
    public abstract boolean clear(ServiceSecurity serviceSecurity, SecurityContext securityContext);
-
-   /**
-    * Gets the singleton instance of the SecurityProvider.
-    * @return the singleton instance of the SecurityProvider
-    */
-   public static final SecurityProvider instance() {
-       return INSTANCE;
-   }
 
 }

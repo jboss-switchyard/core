@@ -58,6 +58,8 @@
         <module>deploy/base</module>
         <module>deploy/cdi</module>
         <module>deploy/webapp</module>
+        <module>deploy/osgi</module>
+        <module>deploy/karaf</module>
         <module>tools/maven/archetypes/application</module>
         <module>tools/forge/common</module>
         <module>tools/forge/plugin</module>

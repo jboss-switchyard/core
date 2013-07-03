@@ -34,11 +34,11 @@ import org.switchyard.internal.DomainImpl;
  */
 public class SwitchYardCamelContextLifecycleTest {
 
-    private SwitchYardCamelContext context;
+    private SwitchYardCamelContextImpl context;
 
     @Before
     public void setUp() {
-        context = new SwitchYardCamelContext();
+        context = new SwitchYardCamelContextImpl();
         context.setServiceDomain(new DomainImpl(new QName("urn:test-domain:camel")));
     }
 

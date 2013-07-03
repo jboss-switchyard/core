@@ -31,7 +31,7 @@ import org.switchyard.ExchangeHandler;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceSecurity;
 import org.switchyard.bus.camel.CamelExchangeBus;
-import org.switchyard.common.camel.SwitchYardCamelContext;
+import org.switchyard.common.camel.SwitchYardCamelContextImpl;
 import org.switchyard.common.type.Classes;
 import org.switchyard.config.model.domain.DomainModel;
 import org.switchyard.config.model.domain.HandlerModel;
@@ -105,7 +105,7 @@ public class ServiceDomainManager {
         TransformerRegistry transformerRegistry = new BaseTransformerRegistry();
         ValidatorRegistry validatorRegistry = new BaseValidatorRegistry();
 
-        SwitchYardCamelContext camelContext = new SwitchYardCamelContext();
+        SwitchYardCamelContextImpl camelContext = new SwitchYardCamelContextImpl();
         CamelExchangeBus bus = new CamelExchangeBus(camelContext);
 
         Map<String, ServiceSecurity> serviceSecurities = getServiceSecurities(switchyardConfig);
@@ -128,12 +128,20 @@ public class ServiceDomainManager {
     public EventManager getEventManager() {
         return _eventManager;
     }
-    
+
+    /**
+     * Return the shared ServiceRegistry used for all ServiceDomain instance.
+     * @return ServiceRegistry instance
+     */
+    public ServiceRegistry getRegistry() {
+        return _registry;
+    }
+
     /**
      * Looks for handler definitions in the switchyard config and attempts to 
      * create and add them to the domain's global handler chain.
      */
-    private List<ExchangeHandler> getDomainHandlers(DomainModel domain) {
+    protected List<ExchangeHandler> getDomainHandlers(DomainModel domain) {
         LinkedList<ExchangeHandler> handlers = new LinkedList<ExchangeHandler>();
         if (domain != null && domain.getHandlers() != null) {
             for (HandlerModel handlerConfig : domain.getHandlers().getHandlers()) {
@@ -157,7 +165,7 @@ public class ServiceDomainManager {
         return handlers;
     }
 
-    private Map<String, ServiceSecurity> getServiceSecurities(SwitchYardModel switchyard) {
+    protected Map<String, ServiceSecurity> getServiceSecurities(SwitchYardModel switchyard) {
         Map<String, ServiceSecurity> map = new HashMap<String, ServiceSecurity>();
         if (switchyard != null) {
             DomainModel domain = switchyard.getDomain();
