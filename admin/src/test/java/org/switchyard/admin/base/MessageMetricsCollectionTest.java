@@ -31,6 +31,7 @@ import org.switchyard.Exchange;
 import org.switchyard.ExchangeState;
 import org.switchyard.Property;
 import org.switchyard.admin.ComponentService;
+import org.switchyard.deploy.ComponentNames;
 import org.switchyard.runtime.event.ExchangeCompletionEvent;
 
 /**
@@ -41,6 +42,7 @@ public class MessageMetricsCollectionTest extends SwitchYardBuilderTestBase {
     private static final String OPERATION_NAME = "greet";
     private static final QName TEST_SERVICE = new QName("urn:m1app:example:1.0", "M1AppService");
     private static final QName TEST_PROMOTED_SERVICE = new QName("urn:m1app:example:1.0", "SimpleService");
+    private static final QName TEST_REFERENCE = ComponentNames.qualify(TEST_PROMOTED_SERVICE, new QName("urn:m1app:example:1.0", "anotherService"));
     private static final String TEST_GATEWAY = "_M1AppService_sca_1";
 
     public MessageMetricsCollectionTest() throws Exception {
@@ -81,6 +83,7 @@ public class MessageMetricsCollectionTest extends SwitchYardBuilderTestBase {
 
     private void defaultExpectations(Exchange ex) {
         when(ex.getProvider().getName()).thenReturn(TEST_SERVICE);
+        when(ex.getConsumer().getName()).thenReturn(TEST_REFERENCE);
         when(ex.getState()).thenReturn(ExchangeState.OK);
         Property property = mock(Property.class);
         when(property.getValue()).thenReturn(new Long(10));
