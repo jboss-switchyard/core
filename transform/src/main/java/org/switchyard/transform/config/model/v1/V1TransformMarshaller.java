@@ -19,11 +19,7 @@ import org.switchyard.config.model.BaseMarshaller;
 import org.switchyard.config.model.Descriptor;
 import org.switchyard.config.model.Model;
 import org.switchyard.config.model.transform.TransformModel;
-import org.switchyard.transform.config.model.JAXBTransformModel;
-import org.switchyard.transform.config.model.JSONTransformModel;
-import org.switchyard.transform.config.model.JavaTransformModel;
-import org.switchyard.transform.config.model.SmooksTransformModel;
-import org.switchyard.transform.config.model.XsltTransformModel;
+import org.switchyard.transform.config.model.*;
 
 /**
  * Marshalls transform Models.
@@ -34,6 +30,7 @@ public class V1TransformMarshaller extends BaseMarshaller {
 
     private static final String TRANSFORM_JAVA = TransformModel.TRANSFORM + "." + JavaTransformModel.JAVA;
     private static final String TRANSFORM_SMOOKS = TransformModel.TRANSFORM + "." + SmooksTransformModel.SMOOKS;
+    private static final String TRANSFORM_DOZER = TransformModel.TRANSFORM + "." + DozerTransformModel.DOZER;
     private static final String TRANSFORM_JSON = TransformModel.TRANSFORM + "." + JSONTransformModel.JSON;
     private static final String TRANSFORM_XSLT = TransformModel.TRANSFORM + "." + XsltTransformModel.XSLT;
     private static final String TRANSFORM_JAXB = TransformModel.TRANSFORM + "." + JAXBTransformModel.JAXB;
@@ -64,6 +61,8 @@ public class V1TransformMarshaller extends BaseMarshaller {
             return new V1XsltTransformModel(config, desc);
         } else if (name.equals(TRANSFORM_JAXB)) {
             return new V1JAXBTransformModel(config, desc);
+        } else if (name.equals(TRANSFORM_DOZER)) {
+            return new V1DozerTransformModel(config, desc);
         }
 
         return null;

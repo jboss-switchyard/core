@@ -66,6 +66,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>net.sf.dozer</groupId>
+            <artifactId>dozer</artifactId>
+        </dependency>
         <!-- external dependencies -->
         <dependency>
             <groupId>org.switchyard</groupId>
