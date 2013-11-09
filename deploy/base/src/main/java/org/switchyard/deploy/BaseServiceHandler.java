@@ -25,7 +25,7 @@ import org.switchyard.ServiceDomain;
  */
 public class BaseServiceHandler extends BaseHandler implements ServiceHandler {
 
-    private State _state = State.NONE;
+    private State _state = State.STOPPED;
 
     final private ServiceDomain _domain;
 
@@ -46,7 +46,7 @@ public class BaseServiceHandler extends BaseHandler implements ServiceHandler {
         if (_state == State.STARTED) {
             // already started
             return;
-        } else if (_state != State.NONE) {
+        } else if (_state != State.STOPPED) {
             throw BaseDeployMessages.MESSAGES.invalidHandlerState();
         }
         final ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
@@ -60,7 +60,7 @@ public class BaseServiceHandler extends BaseHandler implements ServiceHandler {
                 doStart();
                 setState(State.STARTED);
             } catch (RuntimeException e) {
-                setState(State.NONE);
+                setState(State.STOPPED);
                 throw e;
             }
         } finally {
@@ -73,7 +73,7 @@ public class BaseServiceHandler extends BaseHandler implements ServiceHandler {
 
     @Override
     public synchronized void stop() {
-        if (_state == State.NONE) {
+        if (_state == State.STOPPED) {
             // already stopped
             return;
         } else if (_state != State.STARTED) {
@@ -88,7 +88,7 @@ public class BaseServiceHandler extends BaseHandler implements ServiceHandler {
             setState(State.STOPPING);
             try {
                 doStop();
-                setState(State.NONE);
+                setState(State.STOPPED);
             } catch (RuntimeException e) {
                 setState(State.STARTED);
                 throw e;
