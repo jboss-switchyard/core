@@ -29,7 +29,7 @@ import org.switchyard.serial.graph.node.NodeBuilder;
  */
 @SuppressWarnings("serial")
 public final class Graph implements Serializable {
-
+    private final static long serialVersionUID = 1L;
     private Integer _root;
     private Map<Integer, Object> _references = new LinkedHashMap<Integer, Object>();
     private transient Queue<Runnable> _resolutions;
