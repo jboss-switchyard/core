@@ -25,7 +25,7 @@ import org.switchyard.security.credential.CertificateCredential;
 import org.switchyard.security.credential.ConfidentialityCredential;
 import org.switchyard.security.credential.Credential;
 import org.switchyard.security.credential.PrincipalCredential;
-import org.switchyard.security.principal.User;
+import org.switchyard.security.principal.UserPrincipal;
 
 /**
  * ServletRequestCredentialExtractor.
@@ -55,7 +55,7 @@ public class ServletRequestCredentialExtractor implements CredentialExtractor<Se
                 }
                 String remoteUser = request.getRemoteUser();
                 if (remoteUser != null) {
-                    credentials.add(new PrincipalCredential(new User(remoteUser), true));
+                    credentials.add(new PrincipalCredential(new UserPrincipal(remoteUser), true));
                 }
                 String charsetName = source.getCharacterEncoding();
                 AuthorizationHeaderCredentialExtractor ahce;
