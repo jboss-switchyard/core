@@ -26,6 +26,7 @@ import org.apache.camel.Exchange;
 import org.switchyard.Context;
 import org.switchyard.Message;
 import org.switchyard.common.camel.HandlerDataSource;
+import org.switchyard.common.camel.PrimitiveUnboxingUtil;
 import org.switchyard.common.camel.SwitchYardCamelContext;
 import org.switchyard.common.camel.SwitchYardMessage;
 import org.switchyard.label.BehaviorLabel;
@@ -97,6 +98,11 @@ public class CamelMessage extends SwitchYardMessage implements Message {
         if (transformedContent == null) {
             throw BusMessages.MESSAGES.transformerReturnedNull(body.getClass().getName(), type.getName(), transformer.getClass().getName());
         }
+
+        if (PrimitiveUnboxingUtil.isUnboxingException(type, transformedContent)) {
+            return PrimitiveUnboxingUtil.returnPrimitive(type, transformedContent);
+        }
+
         if (!type.isInstance(transformedContent)) {
             throw BusMessages.MESSAGES.transformerReturnedIncompatibleType(body.getClass().getName(), type.getName(), transformer.getClass().getName(), transformedContent.getClass().getName());
         }
