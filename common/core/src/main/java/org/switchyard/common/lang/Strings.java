@@ -78,15 +78,15 @@ public final class Strings {
      * @return The repeated String.
      */
     public static String repeat(String str, int repeatCount) {
-        String repeated = "";
+        StringBuffer repeated = new StringBuffer();
         if (str.isEmpty() || repeatCount <= 0) {
-            return repeated;
+            return repeated.toString();
         }
 
         do {
-            repeated += str;
+            repeated.append(str);
         } while (--repeatCount > 0);
-        return repeated;
+        return repeated.toString();
     }
 
     /**
