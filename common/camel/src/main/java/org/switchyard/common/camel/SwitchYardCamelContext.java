@@ -208,6 +208,12 @@ public class SwitchYardCamelContext extends DefaultCamelContext {
             timeout = DEFAULT_TIMEOUT;
         }
         getShutdownStrategy().setTimeout(timeout);
+        
+        if (_domain.getName() != null) {
+            // Need to replace colons to make a valid ObjectName
+            setName(_domain.getName().toString().replace(':', '-'));
+        }
+
     }
 
 }
