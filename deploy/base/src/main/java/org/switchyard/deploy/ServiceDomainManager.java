@@ -23,7 +23,7 @@ import org.switchyard.BaseDeployMessages;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceSecurity;
 import org.switchyard.bus.camel.CamelExchangeBus;
-import org.switchyard.common.camel.SwitchYardCamelContext;
+import org.switchyard.common.camel.SwitchYardCamelContextImpl;
 import org.switchyard.config.model.domain.DomainModel;
 import org.switchyard.config.model.domain.SecuritiesModel;
 import org.switchyard.config.model.domain.SecurityModel;
@@ -105,7 +105,7 @@ public class ServiceDomainManager {
         TransformerRegistry transformerRegistry = new BaseTransformerRegistry();
         ValidatorRegistry validatorRegistry = new BaseValidatorRegistry();
 
-        SwitchYardCamelContext camelContext = new SwitchYardCamelContext();
+        SwitchYardCamelContextImpl camelContext = new SwitchYardCamelContextImpl();
         CamelExchangeBus bus = new CamelExchangeBus(camelContext);
 
         ServiceDomainSecurity serviceDomainSecurity = getServiceDomainSecurity(switchyardConfig);
@@ -135,7 +135,15 @@ public class ServiceDomainManager {
         return _eventManager;
     }
     
-    private ServiceDomainSecurity getServiceDomainSecurity(SwitchYardModel switchyard) {
+    /**
+     * Return the shared ServiceRegistry used for all ServiceDomain instance.
+     * @return ServiceRegistry instance
+     */
+    public ServiceRegistry getRegistry() {
+        return _registry;
+    }
+
+    protected ServiceDomainSecurity getServiceDomainSecurity(SwitchYardModel switchyard) {
         Map<String, ServiceSecurity> serviceSecurities = new HashMap<String, ServiceSecurity>();
         if (switchyard != null) {
             DomainModel domain = switchyard.getDomain();
@@ -166,7 +174,7 @@ public class ServiceDomainManager {
         return new DefaultServiceDomainSecurity(serviceSecurities, _systemSecurity);
     }
     
-    private PropertiesModel getProperties(SwitchYardModel config) {
+    protected PropertiesModel getProperties(SwitchYardModel config) {
         if (config == null || config.getDomain() == null) {
             return null;
         } else {

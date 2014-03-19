@@ -38,6 +38,7 @@ import org.switchyard.Service;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceReference;
 import org.switchyard.common.camel.SwitchYardCamelContext;
+import org.switchyard.common.camel.SwitchYardCamelContextImpl;
 import org.switchyard.internal.ServiceReferenceImpl;
 import org.switchyard.metadata.InOnlyService;
 import org.switchyard.metadata.InOutService;
@@ -51,7 +52,7 @@ public class ExchangeDispatcherTest {
     private static final String REQUEST = "REQUEST";
 	private ServiceDomain _domain;
     private CamelExchangeBus _provider;
-    private SwitchYardCamelContext _camelContext;
+    private SwitchYardCamelContextImpl _camelContext;
 
     @Before
     public void setUp() throws Exception {
@@ -180,7 +181,7 @@ public class ExchangeDispatcherTest {
     }
     
     private void initDomain(ServiceDomain domain) throws Exception {
-        _camelContext = new SwitchYardCamelContext();
+        _camelContext = new SwitchYardCamelContextImpl();
         _camelContext.setServiceDomain(domain);
         _provider = new CamelExchangeBus(_camelContext);
         _provider.init(domain);

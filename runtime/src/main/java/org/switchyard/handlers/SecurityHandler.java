@@ -31,10 +31,12 @@ import org.switchyard.Service;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceReference;
 import org.switchyard.ServiceSecurity;
+import org.switchyard.common.util.ProviderRegistry;
 import org.switchyard.security.context.SecurityContext;
 import org.switchyard.security.context.SecurityContextManager;
 import org.switchyard.security.credential.ConfidentialityCredential;
 import org.switchyard.security.credential.PrincipalCredential;
+import org.switchyard.security.provider.JaasSecurityProvider;
 import org.switchyard.security.provider.SecurityProvider;
 
 /**
@@ -68,7 +70,11 @@ public class SecurityHandler extends BaseHandler {
      */
     public SecurityHandler(ServiceDomain serviceDomain, SecurityAction securityAction) {
         _securityContextManager = new SecurityContextManager(serviceDomain);
-        _securityProvider = SecurityProvider.instance();
+        SecurityProvider provider = ProviderRegistry.getProvider(SecurityProvider.class);
+        if (provider == null) {
+            provider = new JaasSecurityProvider();
+        }
+        _securityProvider = provider;
         _securityAction = securityAction;
     }
 
