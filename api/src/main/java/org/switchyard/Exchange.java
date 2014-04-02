@@ -169,4 +169,10 @@ public interface Exchange {
      * @return the consumer's exchange pattern or null if no consumer info is set on the exchange
      */
     ExchangePattern getPattern();
+
+    /**
+     * Get the exchange security.
+     * @return the exchange security
+     */
+    ExchangeSecurity getSecurity();
 }
