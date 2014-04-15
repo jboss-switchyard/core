@@ -31,6 +31,8 @@ import org.switchyard.Service;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceReference;
 import org.switchyard.ServiceSecurity;
+
+import org.switchyard.security.SecurityServices;
 import org.switchyard.security.context.SecurityContext;
 import org.switchyard.security.context.SecurityContextManager;
 import org.switchyard.security.credential.ConfidentialityCredential;
@@ -68,7 +70,7 @@ public class SecurityHandler extends BaseHandler {
      */
     public SecurityHandler(ServiceDomain serviceDomain, SecurityAction securityAction) {
         _securityContextManager = new SecurityContextManager(serviceDomain);
-        _securityProvider = SecurityProvider.instance();
+        _securityProvider = SecurityServices.getSecurityProvider();
         _securityAction = securityAction;
     }
 
