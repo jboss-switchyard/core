@@ -41,4 +41,18 @@ public interface RemoteRegistry {
      */
     public List<RemoteEndpoint> getEndpoints(QName serviceName);
     
+    
+    /**
+     * Returns the local endpoints for a given service if existing.
+     * @param serviceName name of the service
+     * @return endpoint
+     */
+    public RemoteEndpoint getLocalEndpoint(QName serviceName);
+
+    /**
+     * Returns true if there is local endpoints for a given service.
+     * @param serviceName name of the service
+     * @return true in case of existing local endpoint, false otherwise
+     */
+    public boolean hasLocalEndpoint(QName serviceName);
 }
