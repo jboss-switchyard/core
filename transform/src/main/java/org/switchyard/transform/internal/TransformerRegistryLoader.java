@@ -27,6 +27,7 @@ import java.util.Map;
 import org.jboss.logging.Logger;
 import org.switchyard.common.cdi.CDIUtil;
 import org.switchyard.common.type.Classes;
+import org.switchyard.config.model.Descriptor;
 import org.switchyard.config.model.ModelPuller;
 import org.switchyard.config.model.transform.TransformModel;
 import org.switchyard.config.model.transform.TransformsModel;
@@ -131,13 +132,23 @@ public class TransformerRegistryLoader {
             _transformerRegistry.removeTransformer(transformer);
         }
     }
-
+    
     /**
      * Load the out of the box transformers.
      * <p/>
      * Scans the classpath for {@link #TRANSFORMS_XML} runtime configuration resources.
      */
     public void loadOOTBTransforms() {
+        loadOOTBTransforms(null);
+    }
+
+    /**
+     * Load out of the box transformers using a specific config descriptor.
+     * <p/>
+     * Scans the classpath for {@link #TRANSFORMS_XML} runtime configuration resources.
+     * @param descriptor config descriptor to use when parsing the transform config model
+     */
+    public void loadOOTBTransforms(Descriptor descriptor) {
         try {
             List<URL> resources = Classes.getResources(TRANSFORMS_XML, getClass());
 
@@ -145,7 +156,8 @@ public class TransformerRegistryLoader {
                 InputStream configStream = resource.openStream();
 
                 try {
-                    TransformsModel transformsModel = new ModelPuller<TransformsModel>().pull(configStream);
+                    TransformsModel transformsModel = 
+                            new ModelPuller<TransformsModel>(descriptor).pull(configStream);
                     registerTransformers(transformsModel);
                 } catch (final DuplicateTransformerException e) {
                     _log.debug(e.getMessage());
