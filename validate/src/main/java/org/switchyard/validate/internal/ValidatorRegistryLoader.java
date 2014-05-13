@@ -23,12 +23,13 @@ import java.util.List;
 
 import org.jboss.logging.Logger;
 import org.switchyard.common.type.Classes;
+import org.switchyard.config.model.Descriptor;
 import org.switchyard.config.model.ModelPuller;
 import org.switchyard.config.model.validate.ValidateModel;
 import org.switchyard.config.model.validate.ValidatesModel;
+import org.switchyard.validate.ValidateMessages;
 import org.switchyard.validate.Validator;
 import org.switchyard.validate.ValidatorRegistry;
-import org.switchyard.validate.ValidateMessages;
 
 /**
  * {@link ValidatorRegistry} loader class.
@@ -110,13 +111,23 @@ public class ValidatorRegistryLoader {
             _validatorRegistry.removeValidator(validator);
         }
     }
-
+    
     /**
      * Load the out of the box validators.
      * <p/>
-     * Scans the classpath for {@link #VALIDATES_XML} runtime configuration resources.
+     * Scans the classpath for {@link #TRANSFORMS_XML} runtime configuration resources.
      */
     public void loadOOTBValidates() {
+        loadOOTBValidates(null);
+    }
+
+    /**
+     * Load the out of the box validators using a specific config descriptor.
+     * <p/>
+     * Scans the classpath for {@link #VALIDATES_XML} runtime configuration resources.
+     * @param descriptor config descriptor to use when parsing the validate config model
+     */
+    public void loadOOTBValidates(Descriptor descriptor) {
         try {
             List<URL> resources = Classes.getResources(VALIDATES_XML, getClass());
 

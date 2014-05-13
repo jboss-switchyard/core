@@ -20,6 +20,7 @@ import javax.xml.namespace.QName;
 
 import org.switchyard.ServiceDomain;
 import org.switchyard.common.type.Classes;
+import org.switchyard.config.model.Descriptor;
 import org.switchyard.config.model.switchyard.SwitchYardModel;
 import org.switchyard.deploy.Activator;
 import org.switchyard.deploy.Lifecycle;
@@ -130,11 +131,13 @@ public abstract class AbstractDeployment {
         
         _serviceDomain = appServiceDomain;
         _serviceDomain.setProperty(CLASSLOADER_PROPERTY, Classes.getTCCL());
+        
+        Descriptor descriptor = getConfig() != null ? getConfig().getModelDescriptor() : null;
         _transformerRegistryLoader = new TransformerRegistryLoader(appServiceDomain.getTransformerRegistry());
-        _transformerRegistryLoader.loadOOTBTransforms();
+        _transformerRegistryLoader.loadOOTBTransforms(descriptor);
         
         _validatorRegistryLoader = new ValidatorRegistryLoader(appServiceDomain.getValidatorRegistry());
-        _validatorRegistryLoader.loadOOTBValidates();
+        _validatorRegistryLoader.loadOOTBValidates(descriptor);
         
         doInit(activators);
     }
