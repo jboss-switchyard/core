@@ -15,7 +15,6 @@
         <feature>http</feature>
         <feature>switchyard-common-camel</feature>
         <bundle dependency='true'>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.xmlresolver/1.2_5</bundle>
-        <bundle>mvn:org.switchyard/switchyard-api/${project.version}</bundle>
         <bundle>mvn:org.switchyard/switchyard-common/${project.version}</bundle>
         <bundle>mvn:org.switchyard/switchyard-security/${project.version}</bundle>
         <bundle>mvn:org.switchyard/switchyard-config/${project.version}</bundle>
@@ -29,7 +28,6 @@
         <bundle>mvn:org.switchyard/switchyard-deploy/${project.version}</bundle>
         <bundle>mvn:org.switchyard/switchyard-deploy-osgi/${project.version}</bundle>
         <bundle>mvn:org.switchyard/switchyard-deploy-karaf/${project.version}</bundle>
-        <bundle>mvn:org.jboss.logging/jboss-logging/3.1.2.GA</bundle>
         <bundle>mvn:org.codehaus.jackson/jackson-core-asl/1.9.9</bundle>
         <bundle>mvn:org.codehaus.jackson/jackson-mapper-asl/1.9.9</bundle>
         <bundle>mvn:org.switchyard/switchyard-transform/${project.version}</bundle>
@@ -61,6 +59,9 @@
     
     <feature name="switchyard-common-camel" version="${project.version}" resolver="(obr)">
         <feature version="${project.version}">switchyard-cdi</feature>
+        <feature version="${version.org.apache.camel}">camel-spring</feature>
+        <bundle>mvn:org.switchyard/switchyard-api/${project.version}</bundle>
+        <bundle>mvn:org.jboss.logging/jboss-logging/3.1.2.GA</bundle>
         <bundle>mvn:org.switchyard/switchyard-common-camel/${project.version}</bundle>
     </feature>
     
