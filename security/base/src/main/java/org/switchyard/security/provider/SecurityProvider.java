@@ -13,8 +13,7 @@
  */
 package org.switchyard.security.provider;
 
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import java.security.PrivilegedExceptionAction;
 
 import org.switchyard.ServiceSecurity;
 import org.switchyard.security.BaseSecurityLogger;
@@ -25,45 +24,15 @@ import org.switchyard.security.context.SecurityContext;
  *
  * @author David Ward &lt;<a href="mailto:dward@jboss.org">dward@jboss.org</a>&gt; &copy; 2013 Red Hat Inc.
  */
-public abstract class SecurityProvider {
-
-    private static final SecurityProvider INSTANCE;
-    static {
-        SecurityProvider instance;
-        try {
-            ServiceLoader<SecurityProvider> services = ServiceLoader.load(SecurityProvider.class, SecurityProvider.class.getClassLoader());
-            Iterator<SecurityProvider> iterator = services.iterator();
-            instance = iterator.hasNext() ? iterator.next() : null;
-        } catch (Throwable t) {
-            instance = null;
-        }
-        INSTANCE = instance != null ? instance : new JaasSecurityProvider();
-        BaseSecurityLogger.ROOT_LOGGER.usingSecurityProviderImplementation(INSTANCE.getClass().getName());
-    }
+public interface SecurityProvider {
+   public boolean authenticate(ServiceSecurity serviceSecurity, SecurityContext securityContext);
 
    /**
-    * Authenticates the SecurityContext for the ServiceSecurity.
+    * Populates the SecurityContext with any existing (possibly container-specific) security information.
     * @param serviceSecurity the ServiceSecurity
     * @param securityContext the SecurityContext
-    * @return whether authentication was successful
     */
-   public abstract boolean authenticate(ServiceSecurity serviceSecurity, SecurityContext securityContext);
-
-   /**
-    * Propagates any existing container-specific (most likely thread-local) security information into the SecurityContext.
-    * @param serviceSecurity the ServiceSecurity
-    * @param securityContext the SecurityContext
-    * @return whether propagation was successful
-    */
-   public abstract boolean propagate(ServiceSecurity serviceSecurity, SecurityContext securityContext);
-
-   /**
-     * Adds the ServiceSecurity's runAs Role to the SecurityContext's Subject.
-     * @param serviceSecurity the ServiceSecurity
-     * @param securityContext the SecurityContext
-     * @return whether adding the runAs Role was successful
-    */
-   public abstract boolean addRunAs(ServiceSecurity serviceSecurity, SecurityContext securityContext);
+    public void populate(ServiceSecurity serviceSecurity, SecurityContext securityContext);
 
    /**
     * Checks if the Subject associated in the SecurityContext has at least one of the allowed roles in the ServiceSecurity.
@@ -71,15 +40,18 @@ public abstract class SecurityProvider {
     * @param securityContext the SecurityContext
     * @return whether the allowed roles check was successful
     */
-   public abstract boolean checkRolesAllowed(ServiceSecurity serviceSecurity, SecurityContext securityContext);
+   public boolean checkRolesAllowed(ServiceSecurity serviceSecurity, SecurityContext securityContext);
 
    /**
-    * Clears the SecurityContext and any underlying SecurityContextAssociation.
+    * Runs the PrivilegedExceptionAction with the SecurityContext according to the runAs for the ServiceSecurity.
     * @param serviceSecurity the ServiceSecurity
     * @param securityContext the SecurityContext
-    * @return whether the clear was successful
+    * @param action the PrivilegedExceptionAction
+    * @param <T> the return value type
+    * @return the return value
+    * @throws Exception if a problem occurs
     */
-   public abstract boolean clear(ServiceSecurity serviceSecurity, SecurityContext securityContext);
+   public <T> T runAs(ServiceSecurity serviceSecurity, SecurityContext securityContext, PrivilegedExceptionAction<T> action) throws Exception;
 
    /**
     * Gets the singleton instance of the SecurityProvider.
@@ -88,5 +60,12 @@ public abstract class SecurityProvider {
    public static final SecurityProvider instance() {
        return INSTANCE;
    }
+    
+    /**
+     * Clears the SecurityContext and any (possibly container-specific) association.
+     * @param serviceSecurity the ServiceSecurity
+     * @param securityContext the SecurityContext
+     */
+   public void clear(ServiceSecurity serviceSecurity, SecurityContext securityContext);
 
 }
