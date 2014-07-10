@@ -17,6 +17,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.beans.Transient;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -182,6 +183,9 @@ public final class AccessNode implements Node {
                 }
                 for (PropertyDescriptor desc : info.getPropertyDescriptors()) {
                     Method readMethod = desc.getReadMethod();
+                    if (readMethod.isAnnotationPresent(Transient.class)) {
+                        continue;
+                    }
                     if (((CoverageType.INCLUSIVE.equals(coverageType)
                             && readMethod.getAnnotation(Exclude.class) == null)
                             || (CoverageType.EXCLUSIVE.equals(coverageType)
@@ -221,22 +225,35 @@ public final class AccessNode implements Node {
                 }
                 break;
             case FIELD:
-                for (Field field : clazz.getDeclaredFields()) {
-                    if (((CoverageType.INCLUSIVE.equals(coverageType)
-                            && field.getAnnotation(Exclude.class) == null)
-                            || (CoverageType.EXCLUSIVE.equals(coverageType)
-                                    && field.getAnnotation(Include.class) != null))
-                                    && field.getAnnotation(Deprecated.class) == null
-                                    && !Modifier.isTransient(field.getModifiers())) {
-                        Access access = new FieldAccess(field);
-                        if (access.isReadable()) {
-                            accessList.add(access);
+                Class<?> cl = clazz;
+                while (cl != null && cl != Object.class) {
+                    for (Field field : cl.getDeclaredFields()) {
+                        if (Modifier.isTransient(field.getModifiers())) {
+                            continue;
+                        }
+                        if (((CoverageType.INCLUSIVE.equals(coverageType)
+                                && field.getAnnotation(Exclude.class) == null)
+                                || (CoverageType.EXCLUSIVE.equals(coverageType)
+                                        && field.getAnnotation(Include.class) != null))
+                                        && field.getAnnotation(Deprecated.class) == null) {
+                            Access access = new FieldAccess(field);
+                            if (access.isReadable()) {
+                                accessList.add(access);
+                            }
                         }
                     }
+                    cl = cl.getSuperclass();
                 }
                 break;
         }
         return accessList;
+    }
+
+    private AccessType getDefaultAccessType(Class<?> clazz) {
+        if (clazz.getPackage().getName().startsWith("org.switchyard")) {
+            return AccessType.BEAN;
+        }
+        return AccessType.FIELD;
     }
 
 }
