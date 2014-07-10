@@ -177,7 +177,11 @@ public final class ThrowableNode implements Node {
                 throwable = Construction.construct(throwableClass, parameterTypes, new Object[]{message});
             }
         } catch (Throwable t) {
-            throw SerialMessages.MESSAGES.couldNotInstantiateThrowable(throwableClass.getName());
+            if (throwableClass == null) {
+                return SerialMessages.MESSAGES.couldNotInstantiateThrowable("Unknown exception: " + message);
+            } else {
+                return SerialMessages.MESSAGES.couldNotInstantiateThrowable(throwableClass.getName() + ": " + message);
+            }
         }
         return throwable;
     }
