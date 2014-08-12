@@ -134,6 +134,55 @@ public class JBossSecurityProvider extends DefaultSecurityProvider {
         super.populate(serviceSecurity, securityContext);
     }
 
+    public void pushSubjectContext(final String domain) {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+            public Void run() {
+                org.jboss.security.SecurityContext oldSecurityContext = SecurityContextAssociation.getSecurityContext();
+                org.jboss.security.SecurityContext securityContext = createSecurityContext(domain);
+                setSecurityContextOnAssociation(securityContext);
+                securityContext.getUtil().createSubjectInfo(oldSecurityContext.getUtil().getUserPrincipal(), oldSecurityContext.getUtil().getCredential(), oldSecurityContext.getUtil().getSubject());
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Create a JBoss Security Context with the given security domain name
+     *
+     * @param domain the security domain name (such as "other" )
+     * @return an instanceof {@code SecurityContext}
+     */
+    private static org.jboss.security.SecurityContext createSecurityContext(final String domain) {
+        return AccessController.doPrivileged(new PrivilegedAction<org.jboss.security.SecurityContext>() {
+
+            @Override
+            public org.jboss.security.SecurityContext run() {
+                try {
+                    return SecurityContextFactory.createSecurityContext(domain);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+    }
+
+    /**
+     * Set the {@code SecurityContext} on the {@code SecurityContextAssociation}
+     *
+     * @param sc the security context
+     */
+    private static void setSecurityContextOnAssociation(final org.jboss.security.SecurityContext sc) {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+            @Override
+            public Void run() {
+                SecurityContextAssociation.setSecurityContext(sc);
+                return null;
+            }
+        });
+    }
+
     /**
     * Create new security context for the specified domain, transferring the
     * current subject, principal and credentials into the new domain.
