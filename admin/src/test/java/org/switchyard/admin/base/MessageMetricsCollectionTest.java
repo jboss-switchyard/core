@@ -25,6 +25,7 @@ import org.mockito.Mockito;
 import org.switchyard.Exchange;
 import org.switchyard.ExchangeState;
 import org.switchyard.Property;
+import org.switchyard.admin.ComponentReference;
 import org.switchyard.admin.ComponentService;
 import org.switchyard.deploy.ComponentNames;
 import org.switchyard.runtime.event.ExchangeCompletionEvent;
@@ -36,8 +37,9 @@ public class MessageMetricsCollectionTest extends SwitchYardBuilderTestBase {
 
     private static final String OPERATION_NAME = "greet";
     private static final QName TEST_SERVICE = new QName("urn:m1app:example:1.0", "M1AppService");
+    private static final QName TEST_ANOTHER_SERVICE = new QName("urn:m1app:example:1.0", "AnotherService");
     private static final QName TEST_PROMOTED_SERVICE = new QName("urn:m1app:example:1.0", "SimpleService");
-    private static final QName TEST_REFERENCE = ComponentNames.qualify(TEST_PROMOTED_SERVICE, new QName("urn:m1app:example:1.0", "anotherService"));
+    private static final QName TEST_ANOTHER_REFERENCE = ComponentNames.qualify(TEST_PROMOTED_SERVICE, TEST_ANOTHER_SERVICE);
     private static final String TEST_GATEWAY = "_M1AppService_sca_1";
 
     public MessageMetricsCollectionTest() throws Exception {
@@ -49,7 +51,7 @@ public class MessageMetricsCollectionTest extends SwitchYardBuilderTestBase {
         Exchange ex = createMock();
         defaultExpectations(ex);
 
-        _builder.notify(new ExchangeCompletionEvent(ex));
+        _deployment.getDomain().getEventPublisher().publish(new ExchangeCompletionEvent(ex));
 
         assertEquals(1, _switchYard.getMessageMetrics().getSuccessCount());
         assertEquals(10.0, _switchYard.getMessageMetrics().getAverageProcessingTime(), 0);
@@ -60,9 +62,10 @@ public class MessageMetricsCollectionTest extends SwitchYardBuilderTestBase {
         Exchange ex = createMock();
         defaultExpectations(ex);
 
-        Mockito.when(ex.getContract().getProviderOperation().getName()).thenReturn(OPERATION_NAME);
+        when(ex.getContext().getPropertyValue(ExchangeCompletionEvent.GATEWAY_NAME)).thenReturn(TEST_GATEWAY);
+        when(ex.getContract().getProviderOperation().getName()).thenReturn(OPERATION_NAME);
 
-        _builder.notify(new ExchangeCompletionEvent(ex));
+        _deployment.getDomain().getEventPublisher().publish(new ExchangeCompletionEvent(ex));
 
         assertEquals(1, _switchYard.getMessageMetrics().getSuccessCount());
         assertEquals(10.0, _switchYard.getMessageMetrics().getAverageProcessingTime(), 0);
@@ -72,17 +75,36 @@ public class MessageMetricsCollectionTest extends SwitchYardBuilderTestBase {
         assertEquals(10.0, _switchYard.getApplication(TEST_APP).getService(TEST_SERVICE).getGateway(TEST_GATEWAY).getMessageMetrics().getAverageProcessingTime(), 0);
     }
 
+    @Test
+    public void testComponentReferenceInvocation() {
+        Exchange ex = createMock();
+        defaultExpectations(ex);
+
+        when(ex.getConsumer().getName()).thenReturn(TEST_ANOTHER_REFERENCE);
+        when(ex.getProvider().getName()).thenReturn(TEST_ANOTHER_SERVICE);
+        when(ex.getContract().getProviderOperation().getName()).thenReturn(OPERATION_NAME);
+
+        _deployment.getDomain().getEventPublisher().publish(new ExchangeCompletionEvent(ex));
+
+        assertEquals(0, _switchYard.getMessageMetrics().getSuccessCount());
+        assertEquals(0, _switchYard.getMessageMetrics().getAverageProcessingTime(), 0);
+        ComponentService componentService = _switchYard.getApplication(TEST_APP).getComponentService(TEST_ANOTHER_SERVICE);
+        assertEquals(10.0, componentService.getMessageMetrics().getAverageProcessingTime(), 0);
+        assertEquals(10.0, componentService.getServiceOperation(OPERATION_NAME).getMessageMetrics().getAverageProcessingTime(), 0);
+        ComponentReference componentReference = _switchYard.getApplication(TEST_APP).getComponent(TEST_PROMOTED_SERVICE).getReference(TEST_ANOTHER_SERVICE);
+        assertEquals(10.0, componentReference.getMessageMetrics().getAverageProcessingTime(), 0);
+    }
+
     private Exchange createMock() {
         return mock(Exchange.class, Mockito.RETURNS_DEEP_STUBS);
     }
 
     private void defaultExpectations(Exchange ex) {
-        when(ex.getProvider().getName()).thenReturn(TEST_SERVICE);
-        when(ex.getConsumer().getName()).thenReturn(TEST_REFERENCE);
+        when(ex.getConsumer().getName()).thenReturn(TEST_SERVICE);
+        when(ex.getProvider().getName()).thenReturn(TEST_PROMOTED_SERVICE);
         when(ex.getState()).thenReturn(ExchangeState.OK);
         Property property = mock(Property.class);
         when(property.getValue()).thenReturn(new Long(10));
         when(ex.getContext().getProperty(ExchangeCompletionEvent.EXCHANGE_DURATION)).thenReturn(property);
-        when(ex.getContext().getPropertyValue(ExchangeCompletionEvent.GATEWAY_NAME)).thenReturn(TEST_GATEWAY);
     }
 }

@@ -18,10 +18,6 @@ import java.util.EventObject;
 import javax.xml.namespace.QName;
 
 import org.switchyard.Exchange;
-import org.switchyard.admin.Application;
-import org.switchyard.admin.ComponentReference;
-import org.switchyard.admin.Reference;
-import org.switchyard.admin.Service;
 import org.switchyard.admin.SwitchYard;
 import org.switchyard.admin.mbean.internal.LocalManagement;
 import org.switchyard.admin.mbean.internal.MBeans;
@@ -123,42 +119,22 @@ public class SwitchYardBuilder implements EventObserver {
     void applicationUndeployed(ApplicationUndeployedEvent event) {
         AbstractDeployment deployment = event.getDeployment();
         if (deployment.getName() != null) {
-            Application app = _switchYard.getApplication(deployment.getName());
+            BaseApplication app = (BaseApplication) _switchYard.getApplication(deployment.getName());
             if (app != null) {
                 MBeans.unregisterApplication(app);
                 _switchYard.removeApplication(deployment.getName());
+                app.dispose();
             }
         }
     }
     
     void exchangeCompleted(ExchangeCompletionEvent event) {
-        // Recording metrics at multiple levels at this point instead of
-        // aggregating them.
-        Exchange exchange = event.getExchange();
-        QName serviceName = exchange.getProvider().getName();
-        QName referenceName = ComponentNames.unqualify(exchange.getConsumer().getName());
-        for (Service service : _switchYard.getServices()) {
-            if (service.getName().equals(serviceName)) {
-                // 1 - the aggregate switchyard stats
-                _switchYard.recordMetrics(exchange);
-                
-                // 2 - service stats
-                service.recordMetrics(exchange);
-            }
-            // 3 - reference stats
-            // XXX: this looks like it lumps the stats into every component reference with a matching name
-            for (ComponentReference reference : service.getPromotedService().getReferences()) {
-                if (reference.getName().equals(referenceName)) {
-                    ((BaseComponentReference)reference).recordMetrics(exchange);
-                }
-            }
+        final Exchange exchange = event.getExchange();
+        final QName componentName = ComponentNames.comopnentName(exchange.getConsumer().getName());
+        if (componentName == null) {
+            // service gateway initiated exchange
+            _switchYard.recordMetrics(exchange);
         }
-        // 4 - reference stats
-        for (Reference reference : _switchYard.getReferences()) {
-            if (reference.getName().equals(referenceName)) {
-                reference.recordMetrics(exchange);
-                break;
-            }
-        }
+        // else - don't include internally generated exchanges
     }
 }

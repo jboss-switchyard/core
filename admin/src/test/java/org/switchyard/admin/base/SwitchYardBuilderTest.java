@@ -18,9 +18,12 @@ import javax.xml.namespace.QName;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.switchyard.ServiceDomain;
 import org.switchyard.config.model.ModelPuller;
 import org.switchyard.config.model.switchyard.SwitchYardModel;
+import org.switchyard.deploy.ServiceDomainManager;
 import org.switchyard.deploy.event.ApplicationDeployedEvent;
+import org.switchyard.deploy.event.ApplicationUndeployedEvent;
 import org.switchyard.deploy.internal.Deployment;
 
 public class SwitchYardBuilderTest extends SwitchYardBuilderTestBase {
@@ -48,25 +51,33 @@ public class SwitchYardBuilderTest extends SwitchYardBuilderTestBase {
     public void testNoComponentService() throws Exception{
         Deployment testDeployment = new MockDeployment(
                 new ModelPuller<SwitchYardModel>().pull("switchyard_multiappweb.xml", getClass()), 
-                QName.valueOf("{urn:switchyard-quickstart-demo:multiapp:0.1.0}web"));
-        SwitchYardBuilder builder = new SwitchYardBuilder();
-        builder.notify(new ApplicationDeployedEvent(testDeployment));
-        
-        Assert.assertEquals(1, builder.getSwitchYard().getApplications().size());
+                QName.valueOf("{urn:switchyard-quickstart-demo:multiapp:0.1.0}web"), _domainManager);
+        _domainManager.getEventManager().publish(new ApplicationDeployedEvent(testDeployment));
+        Assert.assertEquals(2, _builder.getSwitchYard().getApplications().size());
+        _domainManager.getEventManager().publish(new ApplicationUndeployedEvent(testDeployment));
+        Assert.assertEquals(1, _builder.getSwitchYard().getApplications().size());
     }
 
 }
 
 class MockDeployment extends Deployment {
+    private ServiceDomain _domain;
     private QName _name;
     
-    MockDeployment(SwitchYardModel config, QName name) {
+    MockDeployment(SwitchYardModel config, QName name, ServiceDomainManager sdm) {
         super(config);
         _name = name;
+        _domain = sdm.createDomain(name, config);
     }
     
     @Override
     public QName getName() {
         return _name;
     }
+
+    @Override
+    public ServiceDomain getDomain() {
+        return _domain;
+    }
+    
 }

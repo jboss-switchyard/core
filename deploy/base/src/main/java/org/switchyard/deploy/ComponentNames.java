@@ -73,4 +73,20 @@ public final class ComponentNames {
         }
         return refName;
     }
+
+    /**
+     * Return the qualified name of the component from the given service
+     * reference name, removing the name of the reference.
+     * 
+     * @param refName service reference name
+     * @return component name without reference name included; null if no
+     *         component prefix exists.
+     */
+    public static QName comopnentName(QName refName) {
+        if (refName.getLocalPart().contains("/")) {
+            String name = refName.getLocalPart().split("/")[0];
+            return new QName(refName.getNamespaceURI(), name);
+        }
+        return null;
+    }
 }

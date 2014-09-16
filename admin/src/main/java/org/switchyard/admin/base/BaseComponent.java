@@ -14,13 +14,16 @@
 
 package org.switchyard.admin.base;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import javax.xml.namespace.QName;
 
 import org.switchyard.admin.Component;
+import org.switchyard.admin.ComponentReference;
+import org.switchyard.admin.ComponentService;
 
 /**
  * BaseComponent
@@ -29,27 +32,27 @@ import org.switchyard.admin.Component;
  */
 public class BaseComponent implements Component {
 
-    private Map<String, String> _properties;
-    private String _name;
-    private Set<String> _types;
+    private final QName _name;
+    private final String _type;
+    private final ComponentService _service;
+    private final Map<QName, ComponentReference> _references;
+    private final Map<String, String> _properties;
 
     /**
      * Create a new BaseComponent.
      * 
      * @param name the name of the component.
-     * @param types the type of the component.
+     * @param type the type of the component.
+     * @param service the service provided by this component (may be null).
+     * @param references the references required by this component.
      * @param properties the configuration properties of this component.
      */
-    public BaseComponent(String name, Collection<String> types, Map<String, String> properties) {
+    public BaseComponent(QName name, String type, ComponentService service, Map<QName, ComponentReference> references, Map<String, String> properties) {
         _name = name;
-        _types = new HashSet<String>();
-        if (types != null) {
-            _types.addAll(types);
-        }
-        _properties = new HashMap<String, String>();
-        if (properties != null) {
-            _properties.putAll(properties);
-        }
+        _type = type;
+        _service = service;
+        _references = references;
+        _properties = properties;
     }
 
     @Override
@@ -58,12 +61,33 @@ public class BaseComponent implements Component {
     }
 
     @Override
-    public String getName() {
+    public QName getName() {
         return _name;
     }
 
     @Override
-    public Set<String> getTypes() {
-        return _types;
+    public String getType() {
+        return _type;
+    }
+
+    @Override
+    public ComponentService getService() {
+        return _service;
+    }
+
+    @Override
+    public List<ComponentReference> getReferences() {
+        if (_references == null) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<ComponentReference>(_references.values());
+    }
+
+    @Override
+    public ComponentReference getReference(QName componentReferenceName) {
+        if (_references == null) {
+            return null;
+        }
+        return _references.get(componentReferenceName);
     }
 }
