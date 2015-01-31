@@ -17,17 +17,25 @@ package org.switchyard.validate.internal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
 
 import org.jboss.logging.Logger;
+import org.switchyard.common.cdi.CDIUtil;
 import org.switchyard.common.type.Classes;
 import org.switchyard.config.model.ModelPuller;
 import org.switchyard.config.model.validate.ValidateModel;
 import org.switchyard.config.model.validate.ValidatesModel;
 import org.switchyard.validate.Validator;
 import org.switchyard.validate.ValidatorRegistry;
+import org.switchyard.validate.config.model.JavaValidateModel;
 
 /**
  * {@link ValidatorRegistry} loader class.
@@ -54,6 +62,8 @@ public class ValidatorRegistryLoader {
      */
     private ValidatorRegistry _validatorRegistry;
 
+    private List<CreationalContext<?>> _cdiCreationalContexts = new LinkedList<CreationalContext<?>>();
+
     /**
      * Public constructor.
      * @param validatorRegistry The registry instance.
@@ -77,7 +87,7 @@ public class ValidatorRegistryLoader {
 
         try {
             for (ValidateModel validateModel : validates.getValidates()) {
-                Collection<Validator<?>> validators = ValidatorUtil.newValidators(validateModel);
+                Collection<Validator<?>> validators = newValidators(validateModel);
 
                 for (Validator<?> validator : validators) {
                     if (_validatorRegistry.hasValidator(validator.getName())) {
@@ -102,12 +112,101 @@ public class ValidatorRegistryLoader {
     }
 
     /**
+     * Create a new {@link org.switchyard.validate.Validator} instance from the supplied {@link ValidateModel} instance.
+     * @param validateModel The ValidateModel instance.
+     * @return The Validator instance.
+     */
+    public Validator<?> newValidator(ValidateModel validateModel) {
+        return newValidators(validateModel).iterator().next();
+    }
+
+    /**
+     * Create a Collection of {@link Validator} instances from the supplied {@link ValidateModel} instance.
+     * @param validateModel The ValidateModel instance.
+     * @return The Validator instance.
+     */
+    public Collection<Validator<?>> newValidators(ValidateModel validateModel) {
+
+        Collection<Validator<?>> validators = null;
+
+        if (validateModel instanceof JavaValidateModel) {
+            JavaValidateModel javaValidateModel = JavaValidateModel.class.cast(validateModel);
+            String bean = javaValidateModel.getBean();
+            if (bean != null) {
+                BeanManager beanManager = CDIUtil.lookupBeanManager();
+                if (beanManager == null) {
+                    throw ValidateMessages.MESSAGES.cdiBeanManagerNotFound();
+                }
+                Object validator = null;
+                Set<Bean<?>> beans = beanManager.getBeans(bean);
+                if (beans != null && !beans.isEmpty()) {
+                    Bean<?> target = beans.iterator().next();
+                    CreationalContext<?> context = beanManager.createCreationalContext(target);
+                    validator = beanManager.getReference(target, Object.class, context);
+                    _cdiCreationalContexts.add(context);
+                }
+                if (validator == null) {
+                    throw ValidateMessages.MESSAGES.validatorBeanNotFound(bean);
+                }
+                validators = ValidatorUtil.newValidators(validator, validateModel.getName());
+
+            } else {
+                String className = ((JavaValidateModel) validateModel).getClazz();
+                if (className == null) {
+                    throw ValidateMessages.MESSAGES.beanOrClassRequired();
+                }
+                try {
+                    Class<?> validateClass = Classes.forName(className, ValidatorUtil.class);
+                    validators = ValidatorUtil.newValidators(validateClass, validateModel.getName());
+                } catch (Exception e) {
+                    throw ValidateMessages.MESSAGES.errorConstructingValidator(className, e);
+                }
+            }
+        } else {
+            ValidatorFactory factory = newValidatorFactory(validateModel);
+
+            validators = new ArrayList<Validator<?>>();
+            validators.add(factory.newValidator(validateModel));
+        }
+
+        if (validators == null || validators.isEmpty()) {
+            throw ValidateMessages.MESSAGES.unknownValidateModel(validateModel.getClass().getName());
+        }
+
+        return validators;
+    }
+
+    private static ValidatorFactory newValidatorFactory(ValidateModel validateModel) {
+        ValidatorFactoryClass validatorFactoryClass = validateModel.getClass().getAnnotation(ValidatorFactoryClass.class);
+
+        if (validatorFactoryClass == null) {
+            throw ValidateMessages.MESSAGES.validateModelNotAnnotated(validateModel.getClass().getName());
+        }
+
+        Class<?> factoryClass = validatorFactoryClass.value();
+
+        if (!org.switchyard.validate.internal.ValidatorFactory.class.isAssignableFrom(factoryClass)) {
+            throw ValidateMessages.MESSAGES.invalidValidatorFactoryImplementation(org.switchyard.validate.internal.ValidatorFactory.class.getName());
+        }
+
+        try {
+            return (ValidatorFactory) factoryClass.newInstance();
+        } catch (Exception e) {
+            throw ValidateMessages.MESSAGES.failedToInstantiateValidatorFactory(factoryClass.getName());
+        }
+    }
+
+    /**
      * Unregister all validators.
      */
     public void unregisterValidators() {
         for (Validator validator : _validators) {
             _validatorRegistry.removeValidator(validator);
         }
+        for (CreationalContext<?> context : _cdiCreationalContexts) {
+            context.release();
+        }
+        _cdiCreationalContexts.clear();
     }
 
     /**

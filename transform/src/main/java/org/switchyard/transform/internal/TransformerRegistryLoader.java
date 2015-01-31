@@ -23,6 +23,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
 
 import org.jboss.logging.Logger;
 import org.switchyard.ServiceDomain;
@@ -64,6 +69,8 @@ public class TransformerRegistryLoader {
             new HashMap<Class<?>, TransformerFactory<?>>();
 
     private ServiceDomain _serviceDomain;
+
+    private List<CreationalContext<?>> _cdiCreationalContexts = new LinkedList<CreationalContext<?>>();
 
     /**
      * Public constructor.
@@ -161,6 +168,10 @@ public class TransformerRegistryLoader {
         for (Transformer<?, ?> transformer : _transformers) {
             _transformerRegistry.removeTransformer(transformer);
         }
+        for (CreationalContext<?> context : _cdiCreationalContexts) {
+            context.release();
+        }
+        _cdiCreationalContexts.clear();
     }
 
     /**
@@ -211,12 +222,20 @@ public class TransformerRegistryLoader {
             JavaTransformModel javaTransformModel = JavaTransformModel.class.cast(transformModel);
             String bean = javaTransformModel.getBean();
             if (bean != null) {
-                if (CDIUtil.lookupBeanManager() == null) {
+                BeanManager beanManager = CDIUtil.lookupBeanManager();
+                if (beanManager == null) {
                     throw TransformMessages.MESSAGES.cdiBeanManagerNotFound();
                 }
-                Object transformer = CDIUtil.lookupBean(bean);
+                Object transformer = null;
+                Set<Bean<?>> beans = beanManager.getBeans(bean);
+                if (beans != null && !beans.isEmpty()) {
+                    Bean<?> target = beans.iterator().next();
+                    CreationalContext<?> context = beanManager.createCreationalContext(target);
+                    transformer = beanManager.getReference(target, Object.class, context);
+                    _cdiCreationalContexts.add(context);
+                }
                 if (transformer == null) {
-                    throw TransformMessages.MESSAGES.beanNotFoundInCDIRegistry(bean);                    
+                    throw TransformMessages.MESSAGES.beanNotFoundInCDIRegistry(bean);
                 }
                 transformers = TransformerUtil.newTransformers(transformer, transformModel.getFrom(), transformModel.getTo());
             } else {

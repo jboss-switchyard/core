@@ -27,15 +27,11 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
-import org.switchyard.common.cdi.CDIUtil;
-import org.switchyard.common.type.Classes;
 import org.switchyard.common.xml.QNameUtil;
-import org.switchyard.config.model.validate.ValidateModel;
 import org.switchyard.metadata.JavaTypes;
 import org.switchyard.validate.BaseValidator;
 import org.switchyard.validate.ValidationResult;
 import org.switchyard.validate.Validator;
-import org.switchyard.validate.config.model.JavaValidateModel;
 
 /**
  * Validator Utility methods.
@@ -49,63 +45,6 @@ public final class ValidatorUtil {
     private static final QName OBJECT_TYPE = JavaTypes.toMessageType(Object.class);
 
     private ValidatorUtil() {}
-
-    /**
-     * Create a new {@link org.switchyard.validate.Validator} instance from the supplied {@link ValidateModel} instance.
-     * @param validateModel The ValidateModel instance.
-     * @return The Validator instance.
-     */
-    public static Validator<?> newValidator(ValidateModel validateModel) {
-        return newValidators(validateModel).iterator().next();
-    }
-
-    /**
-     * Create a Collection of {@link Validator} instances from the supplied {@link ValidateModel} instance.
-     * @param validateModel The ValidateModel instance.
-     * @return The Validator instance.
-     */
-    public static Collection<Validator<?>> newValidators(ValidateModel validateModel) {
-
-        Collection<Validator<?>> validators = null;
-
-        if (validateModel instanceof JavaValidateModel) {
-            JavaValidateModel javaValidateModel = JavaValidateModel.class.cast(validateModel);
-            String bean = javaValidateModel.getBean();
-            if (bean != null) {
-                if (CDIUtil.lookupBeanManager() == null) {
-                    throw ValidateMessages.MESSAGES.cdiBeanManagerNotFound();
-                }
-                Object validator = CDIUtil.lookupBean(bean);
-                if (validator == null) {
-                    throw ValidateMessages.MESSAGES.validatorBeanNotFound(bean);
-                }
-                validators = newValidators(validator, validateModel.getName());
-
-            } else {
-                String className = ((JavaValidateModel) validateModel).getClazz();
-                if (className == null) {
-                    throw ValidateMessages.MESSAGES.beanOrClassRequired();
-                }
-                try {
-                    Class<?> validateClass = Classes.forName(className, ValidatorUtil.class);
-                    validators = newValidators(validateClass, validateModel.getName());
-                } catch (Exception e) {
-                    throw ValidateMessages.MESSAGES.errorConstructingValidator(className, e);
-                }
-            }
-        } else {
-            ValidatorFactory factory = newValidatorFactory(validateModel);
-
-            validators = new ArrayList<Validator<?>>();
-            validators.add(factory.newValidator(validateModel));
-        }
-
-        if (validators == null || validators.isEmpty()) {
-            throw ValidateMessages.MESSAGES.unknownValidateModel(validateModel.getClass().getName());
-        }
-
-        return validators;
-    }
 
     /**
      * Create a new {@link org.switchyard.validate.Validator} instance from the supplied
@@ -352,26 +291,6 @@ public final class ValidatorUtil {
         }
 
         return new ValidatorMethod(name, publicMethod);
-    }
-
-    private static ValidatorFactory newValidatorFactory(ValidateModel validateModel) {
-        ValidatorFactoryClass validatorFactoryClass = validateModel.getClass().getAnnotation(ValidatorFactoryClass.class);
-
-        if (validatorFactoryClass == null) {
-            throw ValidateMessages.MESSAGES.validateModelNotAnnotated(validateModel.getClass().getName());
-        }
-
-        Class<?> factoryClass = validatorFactoryClass.value();
-
-        if (!org.switchyard.validate.internal.ValidatorFactory.class.isAssignableFrom(factoryClass)) {
-            throw ValidateMessages.MESSAGES.invalidValidatorFactoryImplementation(org.switchyard.validate.internal.ValidatorFactory.class.getName());
-        }
-
-        try {
-            return (org.switchyard.validate.internal.ValidatorFactory) factoryClass.newInstance();
-        } catch (Exception e) {
-            throw ValidateMessages.MESSAGES.failedToInstantiateValidatorFactory(factoryClass.getName());
-        }
     }
 
     private static class ValidatorMethod extends ValidatorTypes {
