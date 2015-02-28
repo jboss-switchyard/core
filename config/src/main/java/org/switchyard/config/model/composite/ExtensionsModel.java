@@ -14,6 +14,7 @@
 package org.switchyard.config.model.composite;
 
 import org.switchyard.config.model.Model;
+import org.switchyard.config.model.switchyard.ManagementModel;
 import org.switchyard.config.model.switchyard.ThrottlingModel;
 
 /**
@@ -38,4 +39,20 @@ public interface ExtensionsModel extends Model {
      * @return this ExtensionsModel (useful for chaining)
      */
     public ExtensionsModel setThrottling(ThrottlingModel throttling);
+
+    /**
+     * Gets the child management model.
+     *
+     * @return the child management model.
+     */
+    public ManagementModel getManagement();
+
+    /**
+     * Sets the child management model.
+     *
+     * @param management child management model
+     * @return this ExtensionModel (useful for chaining)
+     */
+    public ExtensionsModel setManagement(ManagementModel management);
+
 }

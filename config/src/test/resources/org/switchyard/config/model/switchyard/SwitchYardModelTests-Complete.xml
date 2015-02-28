@@ -32,10 +32,13 @@
             name="m1app">
     <sca:composite name="m1app" targetNamespace="urn:m1app:example:1.0">
         <sca:service name="M1AppService" promote="SimpleService">
-            <soap:binding.soap>
+            <soap:binding.soap autoStartup="false">
                 <soap:port secure="true">${soapServiceName:SOAPService}/${soapPortName:SOAPPort}</soap:port>
                 <soap:wsdl description="foobar">${soapWsdlName}.wsdl</soap:wsdl>
             </soap:binding.soap>
+            <sca:extensions>
+                <management autoStartupBindings="false"/>
+            </sca:extensions>
         </sca:service>
         <sca:component name="SimpleService">
             <bean:implementation.bean class="org.switchyard.example.m1app.SimpleBean"/>
@@ -79,6 +82,7 @@
             <property name="smooksConfig" value="stuff"/>
             <property name="soapServiceName" value="MyWebService"/>
             <property name="soapWsdlName" value="service"/>
+            <property name="disableBindingsAutoStartup" value="true"/>
         </properties>
         <securities>
             <security callbackHandler="java.lang.Object" name="theSecurityName" rolesAllowed="administrator, user" runAs="leader" securityDomain="theSecurityDomain">

@@ -26,10 +26,7 @@ import org.switchyard.config.model.Descriptor;
 import org.switchyard.config.model.Model;
 import org.switchyard.config.model.composer.ContextMapperModel;
 import org.switchyard.config.model.composer.MessageComposerModel;
-import org.switchyard.config.model.composite.BindingModel;
-import org.switchyard.config.model.composite.CompositeReferenceModel;
-import org.switchyard.config.model.composite.CompositeServiceModel;
-import org.switchyard.config.model.composite.SCANamespace;
+import org.switchyard.config.model.composite.*;
 import org.switchyard.config.model.selector.OperationSelectorModel;
 
 /**
@@ -175,6 +172,57 @@ public class V1BindingModel extends BaseTypedModel implements BindingModel {
     public BindingModel setMessageComposer(MessageComposerModel model) {
         _messageComposer = model;
         setChildModel(model);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isAutoStartup() {
+        // In case of reference binding this attribute does not make sense
+        if (isReferenceBinding())
+            return true;
+
+        //First retrieve disableAutoStartupBindings domain property
+        boolean disableAutoStartupBindings = false;
+        try {
+            String domainProperty = ((CompositeServiceModel) getModelParent())
+                    .getComposite()
+                    .getSwitchYard()
+                    .getDomain()
+                    .getProperties()
+                    .getProperty(DISABLE_AUTO_STARTUP_BINDINGS)
+                    .getValue();
+
+            disableAutoStartupBindings = Boolean.valueOf(domainProperty);
+        } catch (NullPointerException ignored) { } // In case when some of models or domain property are not defined.
+
+        if (disableAutoStartupBindings)
+            return false;
+
+        // Next retrieve autoStartupBindings attribute from Management extension
+        boolean autoStartupBindings = true;
+        try {
+            autoStartupBindings = ((CompositeServiceModel) getModelParent())
+                    .getExtensions()
+                    .getManagement()
+                    .isAutoStartupBindings();
+        } catch (NullPointerException ignored) { } // In case when some of Extensions/Management models are not defined.
+
+        if (!autoStartupBindings)
+            return false;
+
+        String autoStartup = getModelAttribute(AUTO_STARTUP);
+        return autoStartup == null || "true".equals(autoStartup);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BindingModel setAutoStartup(boolean autoStartup) {
+        setModelAttribute(AUTO_STARTUP, String.valueOf(autoStartup));
         return this;
     }
 

@@ -50,7 +50,7 @@ public interface ThrottlingModel extends Model {
 
     /**
      * Sets the maxRequests attribute.
-     * @param maxRequests the timePeriod attribute
+     * @param maxRequests the maxRequests attribute
      * @return this ThrottlingModel (useful for chaining)
      */
     public ThrottlingModel setMaxRequests(int maxRequests);

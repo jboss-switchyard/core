@@ -36,7 +36,9 @@
     <element name="binding.switchyard" type="swyd:SwitchYardBindingType" substitutionGroup="sca:binding" abstract="true"/>
     <complexType name="SwitchYardBindingType" abstract="true">
         <complexContent>
-            <extension base="sca:Binding"/>
+            <extension base="sca:Binding">
+                <attribute name="autoStartup" type="boolean" default="true" use="optional"/>
+            </extension>
         </complexContent>
     </complexType>
 
@@ -260,17 +262,23 @@
           </annotation>
         </attribute>
     </complexType>
-    
+
+    <!-- additional service management extension -->
+    <element name="management" type="swyd:ManagementType"/>
+    <complexType name="ManagementType">
+        <attribute name="autoStartupBindings" type="boolean" default="true"/>
+    </complexType>
+
     <!-- binding.sca extensions -->
     <attribute name="target" type="string"/>
     <attribute name="targetNamespace" type="string"/>
     <attribute name="clustered" type="boolean"/>
     <attribute name="loadBalance" type="string"/>
     <attribute name="preferLocal" type="boolean" default="true"/>
-    
+
     <!-- service and reference extensions -->
     <attribute name="security" type="string"/>
-    
+
     <!-- Support for using ${property} values in non-string content -->
     <simpleType name="propInteger">
         <union memberTypes="integer swyd:propertyValue"/>
