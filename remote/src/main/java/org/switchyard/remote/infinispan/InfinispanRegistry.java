@@ -133,6 +133,29 @@ public class InfinispanRegistry implements RemoteRegistry {
         return services;
     }
     
+
+	@Override
+	public RemoteEndpoint getLocalEndpoint(QName serviceName) {
+		String nodeKey = createNodeKey(ROOT_DOMAIN, serviceName, _nodeName);
+		String epStr = _serviceCache.get(nodeKey);
+        // Catch a race condition where entry has been removed since keySet list was built
+        if (epStr != null) {
+            try {
+                RemoteEndpoint ep = _serializer.deserialize(epStr.getBytes(), RemoteEndpoint.class);
+                return ep;
+            } catch (java.io.IOException ioEx) {
+                _log.warn("Failed to deserialize remote endpoint: " + epStr, ioEx);
+            }
+        }
+		return null;
+	}
+	
+	@Override
+	public boolean hasLocalEndpoint(QName serviceName) {
+		String nodeKey = createNodeKey(ROOT_DOMAIN, serviceName, _nodeName);
+		return _serviceCache.containsKey(nodeKey);		
+	};
+	
     private String createServiceKey(QName domain, QName service) {
         return "/" + domain.toString() + "/" + service.toString();
     }
@@ -168,4 +191,5 @@ public class InfinispanRegistry implements RemoteRegistry {
             }
         }
     }
+
 }

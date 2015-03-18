@@ -26,7 +26,7 @@ import org.switchyard.config.model.composite.SCANamespace;
  */
 public class V1SCABindingModel extends V1BindingModel implements SCABindingModel {
 
-    private String _switchyardNamespace;
+    protected String _switchyardNamespace;
 
     /**
      * Create a new V1SCABindingModel.
@@ -58,6 +58,17 @@ public class V1SCABindingModel extends V1BindingModel implements SCABindingModel
         return this;
     }
 
+	@Override
+	public boolean isPreferLocal() {
+		return false;
+	}
+
+	@Override
+	public SCABindingModel setPreferLocal(boolean preferLocal) {
+		setModelAttribute(new QName(_switchyardNamespace, PREFER_LOCAL), String.valueOf(false));
+        return this;
+	}
+	
     @Override
     public boolean isPreferLocal() {
         return Boolean.valueOf(getModelAttribute(new QName(_switchyardNamespace, PREFER_LOCAL)));

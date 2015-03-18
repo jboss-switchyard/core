@@ -56,4 +56,14 @@ public class MockRegistry implements RemoteRegistry {
         return eps;
     }
 
+	@Override
+	public RemoteEndpoint getLocalEndpoint(QName serviceName) {
+		return getEndpoints(serviceName).get(0);
+	}
+
+	@Override
+	public boolean hasLocalEndpoint(QName serviceName) {
+		return false;
+	}
+
 }
