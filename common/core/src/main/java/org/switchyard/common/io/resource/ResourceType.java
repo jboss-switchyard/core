@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,  
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -14,6 +14,7 @@
 package org.switchyard.common.io.resource;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -40,14 +41,16 @@ public final class ResourceType implements Comparable<ResourceType> {
 
     private static final Map<String,ResourceType> TYPES = new ConcurrentHashMap<String,ResourceType>();
 
+    private static final String PACKAGE_RESOURCES = "/org/switchyard/common/io/resource/resourceType.properties";
+
     static {
-        install();
+        install(PACKAGE_RESOURCES);
     }
 
     private final String _name;
     private String _description;
     private Set<String> _extensions;
-    private Set<ResourceType> _inherited;
+    private final Set<ResourceType> _inherited;
 
     private ResourceType(String name, String description, Set<String> extensions, Set<ResourceType> inherited) {
         _name = name;
@@ -152,9 +155,10 @@ public final class ResourceType implements Comparable<ResourceType> {
      * Searches for any /org/switchyard/common/io/resource/resourceType.properties it can find on the classpath
      * and installs the configured ResourceTypes. This method is safe to invoke multiple times, and might be
      * necessary if new ClassLoaders become available.
+     * @param path the path to install the resources.
      */
-    public static synchronized void install() {
-        install(ResourceType.class);
+    public static synchronized void install(String path) {
+        install(ResourceType.class, path);
     }
 
     /**
@@ -162,9 +166,10 @@ public final class ResourceType implements Comparable<ResourceType> {
      * and installs the configured ResourceTypes. This method is safe to invoke multiple times, and might be
      * necessary if new ClassLoaders become available.
      * @param caller the calling Class so we can try it's ClassLoader
+     * @param path the path to install the resources.
      */
-    public static synchronized void install(Class<?> caller) {
-        install(caller != null ? caller.getClassLoader() : null);
+    public static synchronized void install(Class<?> caller, String path) {
+        install(caller != null ? caller.getClassLoader() : null, path);
     }
 
     /**
@@ -172,11 +177,12 @@ public final class ResourceType implements Comparable<ResourceType> {
      * and installs the configured ResourceTypes. This method is safe to invoke multiple times, and might be
      * necessary if new ClassLoaders become available.
      * @param loader a ClassLoader to try
+     * @param path the path to install the resources.
      */
-    public static synchronized void install(ClassLoader loader) {
-        List<URL> urls;
+    public static synchronized void install(ClassLoader loader, String path) {
+        List<URL> urls = new ArrayList<URL>();
         try {
-            urls = Classes.getResources("/org/switchyard/common/io/resource/resourceType.properties", loader);
+            urls.addAll(Classes.getResources(path, loader));
         } catch (Throwable t) {
             LOGGER.fatal(t.getMessage());
             urls = Collections.emptyList();
@@ -191,7 +197,7 @@ public final class ResourceType implements Comparable<ResourceType> {
                     String description = st.hasMoreTokens() ? Strings.trimToNull(st.nextToken()) : null;
                     Set<String> extensions = st.hasMoreTokens() ? Strings.uniqueSplitTrimToNull(st.nextToken(), ",") : null;
                     // we only want to resolve inheritance once (thus false below)
-                    install(name, description, extensions, false);
+                    installExtension(name, description, extensions, false);
                 }
             } catch (Throwable t) {
                 LOGGER.error(t.getMessage());
@@ -206,8 +212,8 @@ public final class ResourceType implements Comparable<ResourceType> {
      * @param name the name of the resource type
      * @return the installed resource type
      */
-    public static synchronized ResourceType install(String name) {
-        return install(name, null);
+    public static synchronized ResourceType installExtension(String name) {
+        return installExtension(name, null);
     }
 
     /**
@@ -217,7 +223,7 @@ public final class ResourceType implements Comparable<ResourceType> {
      * @param extensions the extensions of the resource type
      * @return the installed resource type
      */
-    public static synchronized ResourceType install(String name, String description, String... extensions) {
+    public static synchronized ResourceType installExtension(String name, String description, String... extensions) {
         Set<String> ext_set = null;
         if (extensions != null) {
             for (String ext : extensions) {
@@ -230,7 +236,7 @@ public final class ResourceType implements Comparable<ResourceType> {
                 }
             }
         }
-        return install(name, description, ext_set);
+        return installExtension(name, description, ext_set);
     }
 
     /**
@@ -240,11 +246,11 @@ public final class ResourceType implements Comparable<ResourceType> {
      * @param extensions the extensions of the resource type
      * @return the installed resource type
      */
-    public static synchronized ResourceType install(String name, String description, Set<String> extensions) {
-        return install(name, description, extensions, true);
+    public static synchronized ResourceType installExtension(String name, String description, Set<String> extensions) {
+        return installExtension(name, description, extensions, true);
     }
 
-    private static synchronized ResourceType install(String name, String description, Set<String> extensions, boolean resolveInheritance) {
+    private static synchronized ResourceType installExtension(String name, String description, Set<String> extensions, boolean resolveInheritance) {
         // name
         name = Strings.trimToNull(name);
         if (name == null) {
