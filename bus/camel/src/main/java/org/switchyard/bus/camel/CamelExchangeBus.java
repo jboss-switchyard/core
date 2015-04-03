@@ -120,7 +120,7 @@ public class CamelExchangeBus implements ExchangeBus {
             _camelContext.addRoutes(rb);
 
             if (_logger.isDebugEnabled()) {
-                _logger.debug("Created route for " + endpoint + ", definition is: " + ModelHelper.dumpModelAsXml(rb.getRouteCollection()));
+                _logger.debug("Created route for " + endpoint + ", definition is: " + ModelHelper.dumpModelAsXml(_camelContext, rb.getRouteCollection()));
             }
         } catch (Exception ex) {
             throw BusMessages.MESSAGES.failedToCreateRoute(reference.getName(), ex);

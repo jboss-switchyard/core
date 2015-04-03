@@ -42,7 +42,7 @@ public class ResourceTypeTests {
 
     @Test
     public void testMultipleExtensions() throws Exception {
-        ResourceType.install("JPG", null, ".jpg", ".jpeg");
+        ResourceType.installExtension("JPG", null, ".jpg", ".jpeg");
         ResourceType jpg = ResourceType.forExtension(".jpg");
         ResourceType jpeg = ResourceType.forExtension(".jpeg");
         Assert.assertSame(jpg, jpeg);
@@ -51,11 +51,11 @@ public class ResourceTypeTests {
     @Test
     @SuppressWarnings("unused")
     public void testCustomInheritance() throws Exception {
-        ResourceType a = ResourceType.install("A", null, ".a");
-        ResourceType b = ResourceType.install("B", null, ".b");
-        ResourceType ab = ResourceType.install("AB", null, "{A}", "{B}");
-        ResourceType c = ResourceType.install("C", null, ".c");
-        ResourceType abcd = ResourceType.install("ABCD", null, "{AB}", "{C}", ".d");
+        ResourceType a = ResourceType.installExtension("A", null, ".a");
+        ResourceType b = ResourceType.installExtension("B", null, ".b");
+        ResourceType ab = ResourceType.installExtension("AB", null, "{A}", "{B}");
+        ResourceType c = ResourceType.installExtension("C", null, ".c");
+        ResourceType abcd = ResourceType.installExtension("ABCD", null, "{AB}", "{C}", ".d");
         Assert.assertEquals(4, abcd.getExtensions().size());
         Assert.assertEquals(4, abcd.getExtensions(true).size());
         Assert.assertEquals(1, abcd.getExtensions(false).size());
