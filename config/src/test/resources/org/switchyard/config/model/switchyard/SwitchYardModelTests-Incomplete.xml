@@ -71,6 +71,7 @@
             <property name="smooksConfig" value="stuff"/>
             <property name="soapServiceName" value="MyWebService"/>
             <property name="soapWsdlName" value="service"/>
+            <property name="disableBindingsAutoStartup" value="true"/>
         </properties>
         <securities>
             <security callbackHandler="java.lang.Object" name="theSecurityName" rolesAllowed="administrator, user" runAs="leader" securityDomain="theSecurityDomain">

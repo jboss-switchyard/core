@@ -42,7 +42,7 @@ public class MockActivator extends BaseActivator {
     @Override
     public ServiceHandler activateBinding(QName serviceName, BindingModel config) {
         _activateBindingCalled = true;
-        return _handler;
+        return new MockServiceHandler();
     }
     
     @Override

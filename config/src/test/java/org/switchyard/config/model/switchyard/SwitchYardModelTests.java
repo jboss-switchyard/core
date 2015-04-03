@@ -40,6 +40,7 @@ import org.switchyard.config.model.domain.DomainModel;
 import org.switchyard.config.model.domain.SecuritiesModel;
 import org.switchyard.config.model.domain.SecurityModel;
 import org.switchyard.config.model.property.PropertiesModel;
+import org.switchyard.config.model.property.PropertyModel;
 import org.switchyard.config.model.switchyard.test.java.JavaTransformModel;
 import org.switchyard.config.model.switchyard.test.smooks.SmooksConfigModel;
 import org.switchyard.config.model.switchyard.test.smooks.SmooksTransformModel;
@@ -126,7 +127,7 @@ public class SwitchYardModelTests {
         Assert.assertEquals("TestDomain", domain.getName());
         // Verify property configuration
         PropertiesModel props = domain.getProperties();
-        Assert.assertEquals(8, props.getProperties().size());
+        Assert.assertEquals(9, props.getProperties().size());
         Assert.assertEquals("bar", props.getPropertyValue("foo"));
         Assert.assertEquals("fish", props.getPropertyValue("tuna"));
         Assert.assertEquals(System.getProperty("user.name"), props.getPropertyValue("userName"));

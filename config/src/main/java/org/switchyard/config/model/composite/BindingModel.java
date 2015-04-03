@@ -27,7 +27,13 @@ import org.switchyard.config.model.selector.OperationSelectorModel;
 public interface BindingModel extends TypedModel {
 
     /** The "binding" name. */
-    public static final String BINDING = "binding";
+    public static final String BINDING      = "binding";
+
+    /** The "autoStartup" name. */
+    public static final String AUTO_STARTUP = "autoStartup";
+
+    /** The "disableAutoStartupBindings" domain property */
+    public static final String DISABLE_AUTO_STARTUP_BINDINGS = "disableAutoStartupBindings";
 
     /**
      * Gets the name <b>attribute</b> of this Model (<i>not</i> the name of the wrapped Configuration).
@@ -106,4 +112,19 @@ public interface BindingModel extends TypedModel {
      * @return this BindingModel (useful for chaining)
      */
     public BindingModel setMessageComposer(MessageComposerModel model);
+
+    /**
+     * Should this binding startup automatically after deployment?
+     * @return true if should, false in other case
+     */
+    public boolean isAutoStartup();
+
+    /**
+     * Sets the autoStartup attribute
+     *
+     * @param autoStartup the autoStartup attribute
+     * @return this BindingModel (useful for chaining)
+     */
+    public BindingModel setAutoStartup(boolean autoStartup);
+
 }

@@ -37,8 +37,10 @@ import org.switchyard.common.camel.SwitchYardCamelContextImpl;
 import org.switchyard.common.type.Classes;
 import org.switchyard.config.model.composite.BindingModel;
 import org.switchyard.config.model.composite.ComponentImplementationModel;
+import org.switchyard.config.model.composite.CompositeServiceModel;
 import org.switchyard.config.model.switchyard.EsbInterfaceModel;
 import org.switchyard.deploy.ActivatorLoader;
+import org.switchyard.deploy.Lifecycle;
 import org.switchyard.deploy.ServiceDomainManager;
 import org.switchyard.deploy.components.MockActivator;
 import org.switchyard.deploy.components.config.MockBindingModel;
@@ -371,6 +373,25 @@ public class DeploymentTest {
         List<Service> testsvcs = deployment.getDomain().getServices(
                 new QName("urn:test:config-mock-binding:1.0", "TestService"));
         Assert.assertEquals(1, testsvcs.size());
+    }
+
+    /**
+     * Test checks binding state after deployment in case when it's marked with autoStartup=false
+     * @throws Exception
+     */
+    @Test
+    public void testAutoStartupBindings() throws Exception {
+        InputStream swConfigStream = Classes.getResourceAsStream("/switchyard-config-autostartup-01.xml", getClass());
+        Deployment deployment = new Deployment(swConfigStream);
+        swConfigStream.close();
+
+        MockDomain serviceDomain = new MockDomain();
+        deployment.init(serviceDomain, ActivatorLoader.createActivators(serviceDomain));
+        deployment.start();
+
+        Lifecycle.State bindingState = deployment.getGatwayLifecycle(new QName("urn:test:config-autostartup:1.0", "TestService"), "binding1")
+                .getState();
+        Assert.assertEquals(Lifecycle.State.NONE, bindingState);
     }
 
     @Test

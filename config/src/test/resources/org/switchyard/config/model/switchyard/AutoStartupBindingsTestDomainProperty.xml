@@ -1,0 +1,30 @@
+<switchyard xmlns="urn:switchyard-config:switchyard:1.0"
+            xmlns:sy="urn:switchyard-config:switchyard:1.0"
+            xmlns:sca="http://docs.oasis-open.org/ns/opencsa/sca/200912"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:bean="urn:switchyard-config:test-bean:1.0"
+            xmlns:soap="urn:switchyard-config:test-soap:1.0"
+            xsi:schemaLocation="
+                                urn:switchyard-config:test-bean:1.0 ../composite/test/bean/bean.xsd
+                                urn:switchyard-config:test-soap:1.0 ../composite/test/soap/soap.xsd"
+            name="m1app">
+    <sca:composite name="m1app" targetNamespace="urn:m1app:example:1.0">
+        <sca:service name="M1AppService" promote="SimpleService">
+            <soap:binding.soap>
+                <soap:port secure="true">${soapServiceName:SOAPService}/${soapPortName:SOAPPort}</soap:port>
+                <soap:wsdl description="foobar">${soapWsdlName}.wsdl</soap:wsdl>
+            </soap:binding.soap>
+        </sca:service>
+        <sca:component name="SimpleService">
+            <bean:implementation.bean class="org.switchyard.example.m1app.SimpleBean"/>
+            <sca:service name="SimpleService">
+                <sca:interface.java interface="org.switchyard.example.m1app.SimpleService"/>
+            </sca:service>
+        </sca:component>
+    </sca:composite>
+    <domain>
+        <properties>
+            <property name="disableAutoStartupBindings" value="true"/>
+        </properties>
+    </domain>
+</switchyard>

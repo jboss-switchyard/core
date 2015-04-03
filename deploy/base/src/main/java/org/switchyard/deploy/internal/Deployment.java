@@ -630,8 +630,11 @@ public class Deployment extends AbstractDeployment {
                 Activation activation = new Activation(activator, service.getQName(), binding, handler);
                 activation.addReference(reference);
                 _serviceBindings.add(activation);
-                
-                handler.start();
+
+                _log.debug("Binding " + binding.getName() + " autoStartup is " + binding.isAutoStartup());
+
+                if (binding.isAutoStartup())
+                    handler.start();
             }
         }
     }

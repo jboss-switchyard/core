@@ -21,6 +21,7 @@ import org.switchyard.config.model.BaseModel;
 import org.switchyard.config.model.Descriptor;
 import org.switchyard.config.model.composite.ExtensionsModel;
 import org.switchyard.config.model.composite.SCANamespace;
+import org.switchyard.config.model.switchyard.ManagementModel;
 import org.switchyard.config.model.switchyard.ThrottlingModel;
 
 /**
@@ -29,6 +30,7 @@ import org.switchyard.config.model.switchyard.ThrottlingModel;
 public class V1ExtensionsModel extends BaseModel implements ExtensionsModel {
 
     private ThrottlingModel _throttling;
+    private ManagementModel _management;
 
     /**
      * Constructs a new V1ExtensionsModel.
@@ -58,6 +60,21 @@ public class V1ExtensionsModel extends BaseModel implements ExtensionsModel {
     public ExtensionsModel setThrottling(ThrottlingModel throttling) {
         setChildModel(throttling);
         _throttling = throttling;
+        return this;
+    }
+
+    @Override
+    public ManagementModel getManagement() {
+        if (_management == null) {
+            _management = (ManagementModel) getFirstChildModel(ManagementModel.MANAGEMENT);
+        }
+        return _management;
+    }
+
+    @Override
+    public ExtensionsModel setManagement(ManagementModel management) {
+        setChildModel(management);
+        _management = management;
         return this;
     }
 

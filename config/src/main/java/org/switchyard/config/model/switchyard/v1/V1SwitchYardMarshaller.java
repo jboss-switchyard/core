@@ -42,11 +42,7 @@ import org.switchyard.config.model.selector.v1.V1JavaOperationSelectorModel;
 import org.switchyard.config.model.selector.v1.V1RegexOperationSelectorModel;
 import org.switchyard.config.model.selector.v1.V1StaticOperationSelectorModel;
 import org.switchyard.config.model.selector.v1.V1XPathOperationSelectorModel;
-import org.switchyard.config.model.switchyard.ArtifactModel;
-import org.switchyard.config.model.switchyard.ArtifactsModel;
-import org.switchyard.config.model.switchyard.EsbInterfaceModel;
-import org.switchyard.config.model.switchyard.SwitchYardModel;
-import org.switchyard.config.model.switchyard.ThrottlingModel;
+import org.switchyard.config.model.switchyard.*;
 import org.switchyard.config.model.transform.TransformsModel;
 import org.switchyard.config.model.transform.v1.V1TransformsModel;
 import org.switchyard.config.model.validate.ValidatesModel;
@@ -107,6 +103,8 @@ public class V1SwitchYardMarshaller extends BaseMarshaller {
             return new V1ResourceDetailModel(config, desc);
         } else if (name.equals(ThrottlingModel.THROTTLING)) {
             return new V1ThrottlingModel(config, desc);
+        } else if (name.equals(ManagementModel.MANAGEMENT)) {
+            return new V1ManagementModel(config, desc);
         } else if (name.equals(INTERFACE_ESB)) {
             return new V1EsbInterfaceModel(config, desc);
         } else if (name.startsWith(OperationSelectorModel.OPERATION_SELECTOR)) {
