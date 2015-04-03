@@ -20,7 +20,8 @@ import org.switchyard.config.model.ModelPuller;
 import org.switchyard.config.model.switchyard.SwitchYardModel;
 import org.switchyard.config.model.validate.ValidateModel;
 import org.switchyard.config.model.validate.ValidatesModel;
-import org.switchyard.validate.internal.ValidatorUtil;
+import org.switchyard.internal.validate.BaseValidatorRegistry;
+import org.switchyard.validate.internal.ValidatorRegistryLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +53,7 @@ public abstract class AbstractValidatorTestCase {
             Assert.fail("No validate config.");
         }
 
-        return ValidatorUtil.newValidator(validateModel);
+        ValidatorRegistryLoader vrl = new ValidatorRegistryLoader(new BaseValidatorRegistry());
+        return vrl.newValidator(validateModel);
     }
 }
