@@ -44,6 +44,14 @@ public abstract class AbstractDeployment {
             "org.switchyard.deployment.DeploymentClassLoader";
 
     /**
+     * Disable auto startup property name.
+     * If you set this true, then service bindings are not automatically
+     * started on deployment.
+     */
+    public static final String DISABLE_AUTO_STARTUP_PROPERTY = 
+            "org.switchyard.deployment.disableAutoStartup";
+
+    /**
      * Parent deployment.
      */
     private AbstractDeployment _parentDeployment;

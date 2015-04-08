@@ -88,4 +88,14 @@ public interface BaseDeployLogger {
     @LogMessage(level = INFO)
     @Message(id = 10907, value="Enforcing %s implementation policy as a dependency of %s")
     void enforcingImplementationPolicyDependency(String dependency, String subject);
+
+    /**
+     * autoStartupIsDisabled method definition.
+     * @param binding binding
+     * @param service service
+     * @param deploy deployment
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 10908, value="Auto startup is disabled - start the service bindings manually: [Binding=%s, Service=%s, Deployment=%s]")
+    void autoStartupIsDisabled(String binding, String service, String deploy);
 }

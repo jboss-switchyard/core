@@ -631,7 +631,12 @@ public class Deployment extends AbstractDeployment {
                 activation.addReference(reference);
                 _serviceBindings.add(activation);
                 
-                handler.start();
+                Object disable = getDomain().getProperty(DISABLE_AUTO_STARTUP_PROPERTY);
+                if (disable != null && Boolean.parseBoolean((String)disable)) {
+                    BaseDeployLogger.ROOT_LOGGER.autoStartupIsDisabled(binding.getName(), service.getQName().toString(), getName().toString());
+                } else {
+                    handler.start();
+                }
             }
         }
     }
