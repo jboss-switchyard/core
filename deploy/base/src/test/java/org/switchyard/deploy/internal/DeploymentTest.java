@@ -31,9 +31,7 @@ import org.switchyard.Service;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceReference;
 import org.switchyard.SwitchYardException;
-import org.switchyard.bus.camel.CamelExchangeBus;
 import org.switchyard.common.camel.CamelContextConfigurator;
-import org.switchyard.common.camel.SwitchYardCamelContextImpl;
 import org.switchyard.common.type.Classes;
 import org.switchyard.config.model.composite.BindingModel;
 import org.switchyard.config.model.composite.ComponentImplementationModel;
@@ -189,10 +187,51 @@ public class DeploymentTest {
         // Verify the activators were poked
         Assert.assertTrue(activator.activateServiceCalled());
         Assert.assertTrue(activator.activateBindingCalled());
-        Assert.assertTrue(activator.startCalled());
-        Assert.assertTrue(activator.stopCalled());
-        Assert.assertTrue(activator.deactivateServiceCalled());
-        Assert.assertTrue(activator.deactivateBindingCalled());
+        Assert.assertTrue(activator.startCalled("{urn:test:config-mock-binding:1.0}PromotedTestService_binding1"));
+        Assert.assertTrue(activator.startCalled("{urn:test:config-mock-binding:1.0}PromotedTestService_binding2"));
+        Assert.assertTrue(activator.startCalled("{urn:test:config-mock-binding:1.0}TestService_TestService"));
+        Assert.assertTrue(activator.startCalled("{urn:test:config-mock-binding:1.0}TestReference__TestReference_mock_1"));
+        Assert.assertTrue(activator.stopCalled("{urn:test:config-mock-binding:1.0}PromotedTestService_binding1"));
+        Assert.assertTrue(activator.stopCalled("{urn:test:config-mock-binding:1.0}PromotedTestService_binding2"));
+        Assert.assertTrue(activator.stopCalled("{urn:test:config-mock-binding:1.0}TestService_TestService"));
+        Assert.assertTrue(activator.stopCalled("{urn:test:config-mock-binding:1.0}TestReference__TestReference_mock_1"));
+        Assert.assertTrue(activator.deactivateBindingCalled("{urn:test:config-mock-binding:1.0}PromotedTestService_binding1"));
+        Assert.assertTrue(activator.deactivateBindingCalled("{urn:test:config-mock-binding:1.0}PromotedTestService_binding2"));
+        Assert.assertTrue(activator.deactivateServiceCalled("{urn:test:config-mock-binding:1.0}TestService_TestService"));
+        Assert.assertTrue(activator.deactivateBindingCalled("{urn:test:config-mock-binding:1.0}TestReference__TestReference_mock_1"));
+    }
+    
+    @Test
+    public void testDisableAutoStartup() throws Exception {
+        InputStream swConfigStream = Classes.getResourceAsStream("/switchyard-config-mock-01.xml", getClass());
+        Deployment deployment = new Deployment(swConfigStream);
+        swConfigStream.close();
+
+        MockDomain serviceDomain = new MockDomain();
+        serviceDomain.setProperty(Deployment.DISABLE_AUTO_STARTUP_PROPERTY, "true");
+        deployment.init(serviceDomain, ActivatorLoader.createActivators(serviceDomain));
+        
+        // Grab a reference to our activators
+        MockActivator activator = (MockActivator)
+            deployment.findActivator(MockBindingModel.TYPE);
+        deployment.start();
+        deployment.stop();
+        deployment.destroy();
+
+        // Verify the activators were poked
+        Assert.assertTrue(activator.activateBindingCalled());
+        Assert.assertFalse(activator.startCalled("{urn:test:config-mock-binding:1.0}PromotedTestService_binding1"));
+        Assert.assertFalse(activator.startCalled("{urn:test:config-mock-binding:1.0}PromotedTestService_binding2"));
+        Assert.assertTrue(activator.startCalled("{urn:test:config-mock-binding:1.0}TestService_TestService"));
+        Assert.assertTrue(activator.startCalled("{urn:test:config-mock-binding:1.0}TestReference__TestReference_mock_1"));
+        Assert.assertFalse(activator.stopCalled("{urn:test:config-mock-binding:1.0}PromotedTestService_binding1"));
+        Assert.assertFalse(activator.stopCalled("{urn:test:config-mock-binding:1.0}PromotedTestService_binding2"));
+        Assert.assertTrue(activator.stopCalled("{urn:test:config-mock-binding:1.0}TestService_TestService"));
+        Assert.assertTrue(activator.stopCalled("{urn:test:config-mock-binding:1.0}TestReference__TestReference_mock_1"));
+        Assert.assertTrue(activator.deactivateBindingCalled("{urn:test:config-mock-binding:1.0}PromotedTestService_binding1"));
+        Assert.assertTrue(activator.deactivateBindingCalled("{urn:test:config-mock-binding:1.0}PromotedTestService_binding2"));
+        Assert.assertTrue(activator.deactivateServiceCalled("{urn:test:config-mock-binding:1.0}TestService_TestService"));
+        Assert.assertTrue(activator.deactivateBindingCalled("{urn:test:config-mock-binding:1.0}TestReference__TestReference_mock_1"));
     }
     
     @Test
