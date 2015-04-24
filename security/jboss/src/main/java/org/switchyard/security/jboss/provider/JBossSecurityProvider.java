@@ -43,6 +43,7 @@ import org.picketlink.identity.federation.core.wstrust.auth.AbstractSTSLoginModu
 import org.switchyard.ServiceSecurity;
 import org.switchyard.security.context.SecurityContext;
 import org.switchyard.security.credential.AssertionCredential;
+import org.switchyard.security.credential.PrincipalCredential;
 import org.switchyard.security.jboss.JBossSecurityLogger;
 import org.switchyard.security.principal.GroupPrincipal;
 import org.switchyard.security.principal.RolePrincipal;
@@ -74,18 +75,48 @@ public class JBossSecurityProvider extends DefaultSecurityProvider {
      * {@inheritDoc}
      */
     @Override
-    public void populate(ServiceSecurity serviceSecurity, SecurityContext securityContext) {
-        String sy_securityDomain = serviceSecurity.getSecurityDomain();
-        Subject sy_subject = securityContext.getSubject(sy_securityDomain);
+    public boolean authenticate(ServiceSecurity serviceSecurity, SecurityContext securityContext) {        
         org.jboss.security.SecurityContext jb_securityContext = SecurityContextAssociation.getSecurityContext();
         if (jb_securityContext != null) {
+            String sy_securityDomain = serviceSecurity.getSecurityDomain();
+            Subject sy_subject = securityContext.getSubject(sy_securityDomain);
+        
             // populate from pre-authenticated container context
             String jb_securityDomain = jb_securityContext.getSecurityDomain();
             if (!sy_securityDomain.equals(jb_securityDomain)) {
                     pushSubjectContext(sy_securityDomain);
-            }
-            Subject jb_subject = jb_securityContext.getUtil().getSubject();
-            transfer(jb_subject, sy_subject);
+            }            
+            Subject jb_subject = jb_securityContext.getUtil().getSubject();            
+            transfer(jb_subject, sy_subject);            
+            
+            Principal jb_principal = jb_securityContext.getUtil().getUserPrincipal();
+            securityContext.getCredentials().add(new PrincipalCredential(jb_principal, true));
+            
+            return true;
+        }
+
+        return super.authenticate(serviceSecurity, securityContext);
+    }   
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void populate(ServiceSecurity serviceSecurity, SecurityContext securityContext) {        
+        String sy_securityDomain = serviceSecurity.getSecurityDomain();
+        Subject sy_subject = securityContext.getSubject(sy_securityDomain);
+        org.jboss.security.SecurityContext jb_securityContext = SecurityContextAssociation.getSecurityContext();
+        if (jb_securityContext != null) {                    
+            // populate from pre-authenticated container context
+            String jb_securityDomain = jb_securityContext.getSecurityDomain();
+            if (!sy_securityDomain.equals(jb_securityDomain)) {
+                    pushSubjectContext(sy_securityDomain);
+            }            
+            Subject jb_subject = jb_securityContext.getUtil().getSubject();            
+            transfer(jb_subject, sy_subject);            
+            
+            Principal jb_principal = jb_securityContext.getUtil().getUserPrincipal();
+            securityContext.getCredentials().add(new PrincipalCredential(jb_principal, true));
         } else {
             // populate from pre-verified federated assertion
             Set<AssertionCredential> assertionCredentials = securityContext.getCredentials(AssertionCredential.class);
