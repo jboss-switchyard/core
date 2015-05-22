@@ -27,6 +27,10 @@ public interface Lifecycle {
         /** No state. */
         NONE,
         /**
+         * The object is stopped.
+         */
+        STOPPED,
+        /**
          * In the process of starting, i.e. start() has been invoked, but has
          * not yet completed.
          */
