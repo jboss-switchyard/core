@@ -56,12 +56,21 @@ public class SwitchYardRunner extends BlockJUnit4ClassRunner {
             set(mixIn, PropertyMatchResolution.EQUALS);
         }
 
+        boolean exceptionFlag = false;
         try {
             _testKit.start();
         } catch (Throwable t) {
+            exceptionFlag = true;
             LOG.error("Error while test kit startup", t);
-            _testKit.cleanup();
             throw new Exception(t);
+        } finally {
+            if (exceptionFlag) {
+                try {
+                    _testKit.cleanup();
+                } catch (Exception e) {
+                    LOG.error("Could not cleanup testkit", e);
+                }
+            }
         }
 
         set(_testKit, PropertyMatchResolution.EQUALS);
