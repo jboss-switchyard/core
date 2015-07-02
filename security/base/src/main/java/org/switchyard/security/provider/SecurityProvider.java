@@ -53,19 +53,12 @@ public interface SecurityProvider {
     */
    public <T> T runAs(ServiceSecurity serviceSecurity, SecurityContext securityContext, PrivilegedExceptionAction<T> action) throws Exception;
 
-   /**
-    * Gets the singleton instance of the SecurityProvider.
-    * @return the singleton instance of the SecurityProvider
-    */
-   public static final SecurityProvider instance() {
-       return INSTANCE;
-   }
     
-    /**
-     * Clears the SecurityContext and any (possibly container-specific) association.
-     * @param serviceSecurity the ServiceSecurity
-     * @param securityContext the SecurityContext
-     */
+   /**
+    * Clears the SecurityContext and any (possibly container-specific) association.
+    * @param serviceSecurity the ServiceSecurity
+    * @param securityContext the SecurityContext
+    */
    public void clear(ServiceSecurity serviceSecurity, SecurityContext securityContext);
 
 }
