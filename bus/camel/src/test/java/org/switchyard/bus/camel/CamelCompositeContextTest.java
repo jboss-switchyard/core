@@ -2,15 +2,17 @@ package org.switchyard.bus.camel;
 
 import javax.xml.namespace.QName;
 
-import junit.framework.Assert;
-
+import org.apache.camel.impl.DefaultExchange;
+import org.apache.camel.impl.DefaultMessage;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.switchyard.Context;
 import org.switchyard.Exchange;
 import org.switchyard.ExchangePattern;
 import org.switchyard.MockDomain;
+import org.switchyard.Property;
 import org.switchyard.Scope;
 import org.switchyard.ServiceReference;
 import org.switchyard.common.camel.SwitchYardCamelContextImpl;
@@ -59,5 +61,66 @@ public class CamelCompositeContextTest {
         ctx.mergeInto(ctx2);
         Assert.assertNotNull(ctx2.getProperty("message-prop", Scope.MESSAGE));
         Assert.assertNull(ctx2.getProperty("exchange-prop", Scope.EXCHANGE));
+    }
+
+    @Test
+    public void testHeaderCaseSensitivityFromExchange() throws Exception {
+        String lowerCaseHeaderKey = "lowercase_header";
+        String lowerCaseHeaderValue = "lowercase_value";
+
+        String mixedCaseHeaderKey = "mixedCASE_HEADER";
+        String mixedCaseHeaderValue = "mixedCASE_VALUE";
+
+        String upperCaseHeaderKey = "UPPERCASE_HEADER";
+        String upperCaseHeaderValue = "UPPERCASE_VALUE";
+
+        DefaultMessage message = new DefaultMessage();
+        message.setHeader(lowerCaseHeaderKey, lowerCaseHeaderValue);
+        message.setHeader(mixedCaseHeaderKey, mixedCaseHeaderValue);
+        message.setHeader(upperCaseHeaderKey, upperCaseHeaderValue);
+
+        CamelCompositeContext ctx = new CamelCompositeContext(new DefaultExchange(new SwitchYardCamelContextImpl(false)), message);
+
+        boolean foundLowerCaseValue = false;
+        boolean foundMixedCaseValue = false;
+        boolean foundUpperCaseValue = false;
+
+        for (Property p : ctx.getProperties(Scope.MESSAGE)) {
+            if (lowerCaseHeaderKey.equals(p.getName())) {
+                foundLowerCaseValue = true;
+            }
+
+            if (mixedCaseHeaderKey.equals(p.getName())) {
+                foundMixedCaseValue = true;
+            }
+
+            if (upperCaseHeaderKey.equals(p.getName())) {
+                foundUpperCaseValue = true;
+            }
+        }
+
+        if (!foundLowerCaseValue || !foundMixedCaseValue || !foundUpperCaseValue) {
+            StringBuilder failMessage = new StringBuilder();
+            failMessage.append("Could not find MESSAGE-scoped properties: ");
+
+            if (!foundLowerCaseValue) {
+                failMessage.append(lowerCaseHeaderKey);
+                failMessage.append(", ");
+            }
+
+            if (!foundMixedCaseValue) {
+                failMessage.append(mixedCaseHeaderKey);
+                failMessage.append(", ");
+            }
+
+            if (!foundUpperCaseValue) {
+                failMessage.append(upperCaseHeaderKey);
+                failMessage.append(", ");
+            }
+
+            failMessage.delete(failMessage.length() - 2, failMessage.length() - 1);
+
+            Assert.fail(failMessage.toString());
+        }
     }
 }

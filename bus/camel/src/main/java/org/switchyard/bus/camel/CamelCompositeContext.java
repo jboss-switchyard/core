@@ -14,6 +14,8 @@
 package org.switchyard.bus.camel;
 
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.camel.Exchange;
@@ -127,7 +129,10 @@ public class CamelCompositeContext implements Context {
             break;
         default:
             if (_message.hasHeaders()) {
-                for (String prop : _message.getHeaders().keySet()) {
+                Set<Map.Entry<String, Object>> entrySet = _message.getHeaders().entrySet();
+                Iterator<Map.Entry<String, Object>> iter = entrySet.iterator();
+                while (iter.hasNext()) {
+                    String prop = iter.next().getKey();
                     properties.add(new CamelMessageProperty(_message, prop));
                 }
             }
