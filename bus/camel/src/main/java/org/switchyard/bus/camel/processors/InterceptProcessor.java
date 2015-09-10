@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,  
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -25,25 +25,36 @@ import org.switchyard.HandlerException;
 import org.switchyard.ServiceDomain;
 import org.switchyard.bus.camel.BusLogger;
 import org.switchyard.bus.camel.CamelExchange;
+import org.switchyard.common.camel.SwitchYardCamelContext;
 import org.switchyard.handlers.MessageTraceHandler;
 
 /**
- * Invokes a SwitchYard ExchangeInterceptor around a given processor identified by 
- * target.  The provider and consumer targets happen to correspond to message trace points 
+ * Invokes a SwitchYard ExchangeInterceptor around a given processor identified by
+ * target.  The provider and consumer targets happen to correspond to message trace points
  * as well, so we have a big old hack here to invoke that handler directly.
  */
 public class InterceptProcessor implements Processor {
-    
+
     private static final String INTERCEPT_PREFIX = "org.switchyard.bus.camel.intercept.";
     private static final String BEFORE = "before";
     private static final String AFTER = "after";
-        
-    private String _target;
-    private String _property;
-    private ServiceDomain _domain;
-    private MessageTraceHandler _trace;
+
+    private final String _target;
+    private final String _property;
+    private final ServiceDomain _domain;
+    private final MessageTraceHandler _trace;
     private static Logger _log = Logger.getLogger(InterceptProcessor.class);
-    
+
+    private final Map<String, ExchangeInterceptor> interceptors;
+
+    /*
+     * public Map<String, ExchangeInterceptor> getInterceptors() { return
+     * interceptors; }
+     * 
+     * public void setInterceptors(Map<String, ExchangeInterceptor>
+     * interceptors) { this.interceptors = interceptors; }
+     */
+
     /**
      * Create a new InterceptorProcessor.
      * @param target the interception target
@@ -54,6 +65,9 @@ public class InterceptProcessor implements Processor {
         _target = target;
         _property = INTERCEPT_PREFIX + _target;
         _trace = new MessageTraceHandler();
+        SwitchYardCamelContext camelContext = (SwitchYardCamelContext)domain
+            .getProperty(SwitchYardCamelContext.CAMEL_CONTEXT_PROPERTY);
+        interceptors = camelContext.getRegistry().lookupByType(ExchangeInterceptor.class);
     }
 
     @Override
@@ -66,13 +80,13 @@ public class InterceptProcessor implements Processor {
     public String toString() {
         return "InterceptProcessor@" + System.identityHashCode(this);
     }
-    
+
     private void traceMessage(Exchange exchange) {
         // bail if tracing is not enabled
         if (!traceEnabled(exchange)) {
             return;
         }
-        
+
         try {
             CamelExchange syEx = new CamelExchange(exchange);
             if (ExchangeState.FAULT.equals(syEx.getState())) {
@@ -86,24 +100,21 @@ public class InterceptProcessor implements Processor {
             _log.warn("Failed while generating message trace.", ex);
         }
     }
-    
+
     private void fireInterceptors(Exchange ex) throws HandlerException {
-        Map<String, ExchangeInterceptor> interceptors = 
-                ex.getContext().getRegistry().lookupByType(ExchangeInterceptor.class);
-        
         if (interceptors != null && interceptors.size() > 0) {
             CamelExchange syEx = new CamelExchange(ex);
             try {
                 // Seed these values up front so that interceptors don't mess with them
                 boolean callBefore = isBefore(ex);
                 boolean callAfter = isAfter(ex);
-                
+
                 for (ExchangeInterceptor interceptor : interceptors.values()) {
                     // Is the interceptor targeting this processor?
                     if (!matchesTarget(interceptor)) {
                         continue;
                     }
-                    
+
                     if (callBefore) {
                         interceptor.before(_target, syEx);
                     } else if (callAfter) {
@@ -136,8 +147,8 @@ public class InterceptProcessor implements Processor {
             }
         }
     }
-    
-    
+
+
     boolean traceEnabled(Exchange ex) {
         // if message tracing is explicitly enabled/disabled on the domain, then go with that
         Object traceProp = _domain.getProperty(MessageTraceHandler.TRACE_ENABLED);
@@ -152,23 +163,23 @@ public class InterceptProcessor implements Processor {
             }
             return enabled;
         }
-        
+
         // no setting for the domain, check the exchange
         return ex.getProperty(MessageTraceHandler.TRACE_ENABLED, false, Boolean.class);
     }
-        
+
     private void setBefore(Exchange ex) {
         ex.setProperty(_property, BEFORE);
     }
-    
+
     private void setAfter(Exchange ex) {
         ex.setProperty(_property, AFTER);
     }
-    
+
     private boolean isBefore(Exchange ex) {
         return ex.getProperty(_property) == null;
     }
-    
+
     /**
      * Check to make sure before has been called - if it hasn't, then don't
      * call after.  Also verify that after is not called twice in situations
@@ -177,7 +188,7 @@ public class InterceptProcessor implements Processor {
     private boolean isAfter(Exchange ex) {
         return BEFORE.equals(ex.getProperty(_property));
     }
-    
+
     private boolean matchesTarget(ExchangeInterceptor interceptor) {
         List<String> targets = interceptor.getTargets();
         return targets != null && targets.contains(_target);
