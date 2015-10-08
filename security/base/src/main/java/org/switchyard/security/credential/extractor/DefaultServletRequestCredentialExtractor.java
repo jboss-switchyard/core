@@ -14,12 +14,14 @@
 package org.switchyard.security.credential.extractor;
 
 import java.security.Principal;
+import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
+import org.switchyard.security.credential.CertificateCredential;
 import org.switchyard.security.credential.ConfidentialityCredential;
 import org.switchyard.security.credential.Credential;
 import org.switchyard.security.credential.PrincipalCredential;
@@ -65,6 +67,10 @@ public class DefaultServletRequestCredentialExtractor implements ServletRequestC
                     ahce = new AuthorizationHeaderCredentialExtractor();
                 }
                 credentials.addAll(ahce.extract(request.getHeader("Authorization")));
+                X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+                if (certs != null) {
+                    credentials.add(new CertificateCredential(certs[0]));
+                }
             }
         }
         return credentials;
