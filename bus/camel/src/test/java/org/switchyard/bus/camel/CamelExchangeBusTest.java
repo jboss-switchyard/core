@@ -129,6 +129,8 @@ public class CamelExchangeBusTest {
         ErrorInterceptor interceptor = new ErrorInterceptor(false, ExchangeInterceptor.PROVIDER);
         _camelContext.getWritebleRegistry().put("interceptor", interceptor);
 
+        _provider.init(_domain);
+
         ServiceReference ref = registerInOutService("inOut");
         Exchange exchange = sendMessage(ref, TEST_CONTENT);
 
@@ -143,7 +145,8 @@ public class CamelExchangeBusTest {
     public void testAfterProviderErrorInOut() {
         ErrorInterceptor interceptor = new ErrorInterceptor(true, ExchangeInterceptor.PROVIDER);
         _camelContext.getWritebleRegistry().put("interceptor", interceptor);
-        
+       
+        _provider.init(_domain);  
         ServiceReference ref = registerInOutService("inOut");
         Exchange exchange = sendMessage(ref, TEST_CONTENT);
 
@@ -159,6 +162,9 @@ public class CamelExchangeBusTest {
         ErrorInterceptor interceptor = new ErrorInterceptor(false, ExchangeInterceptor.PROVIDER);
         _camelContext.getWritebleRegistry().put("interceptor", interceptor);
 
+
+        _provider.init(_domain);
+
         ServiceReference ref = registerInOnlyService("inOnly", new MockHandler());
         Exchange exchange = sendMessage(ref, TEST_CONTENT);
 
@@ -173,6 +179,8 @@ public class CamelExchangeBusTest {
     public void testAfterProviderErrorInOnly() {
         ErrorInterceptor interceptor = new ErrorInterceptor(true, ExchangeInterceptor.PROVIDER);
         _camelContext.getWritebleRegistry().put("interceptor", interceptor);
+
+        _provider.init(_domain);
 
         ServiceReference ref = registerInOnlyService("inOnly", new MockHandler());
         Exchange exchange = sendMessage(ref, TEST_CONTENT);
@@ -190,6 +198,8 @@ public class CamelExchangeBusTest {
                 false, ExchangeInterceptor.PROVIDER);
         _camelContext.getWritebleRegistry().put("interceptor", interceptor);
 
+        _provider.init(_domain);
+
         ServiceReference ref = registerInOutService("inOut");
         Exchange exchange = sendMessage(ref, TEST_CONTENT);
 
@@ -205,6 +215,8 @@ public class CamelExchangeBusTest {
         RuntimeErrorInterceptor interceptor = new RuntimeErrorInterceptor(
                 true, ExchangeInterceptor.PROVIDER);
         _camelContext.getWritebleRegistry().put("interceptor", interceptor);
+
+        _provider.init(_domain);
 
         ServiceReference ref = registerInOutService("inOut");
         Exchange exchange = sendMessage(ref, TEST_CONTENT);
@@ -222,6 +234,9 @@ public class CamelExchangeBusTest {
         ErrorInterceptor afterFault = new ErrorInterceptor(true, ExchangeInterceptor.PROVIDER);
         _camelContext.getWritebleRegistry().put("beforeFault", beforeFault);
         _camelContext.getWritebleRegistry().put("afterFault", afterFault);
+ 
+        _provider.init(_domain);
+
         ServiceReference ref = registerInOutService("inOut");
         Exchange exchange = sendMessage(ref, TEST_CONTENT);
 
@@ -251,7 +266,9 @@ public class CamelExchangeBusTest {
     public void testContentTypes() throws Exception {
         TypeInterceptor types = new TypeInterceptor();
         _camelContext.getWritebleRegistry().put("types", types);
-        
+       
+        _provider.init(_domain);
+ 
         QName inType = new QName("urn:foo", "in");
         QName outType = new QName("urn:bar", "out");
 

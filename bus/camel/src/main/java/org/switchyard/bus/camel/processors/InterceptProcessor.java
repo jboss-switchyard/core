@@ -24,6 +24,7 @@ import org.switchyard.ExchangeState;
 import org.switchyard.HandlerException;
 import org.switchyard.ServiceDomain;
 import org.switchyard.bus.camel.BusLogger;
+import org.switchyard.common.camel.SwitchYardCamelContext;
 import org.switchyard.bus.camel.CamelExchange;
 import org.switchyard.handlers.MessageTraceHandler;
 
@@ -38,12 +39,14 @@ public class InterceptProcessor implements Processor {
     private static final String BEFORE = "before";
     private static final String AFTER = "after";
         
-    private String _target;
-    private String _property;
-    private ServiceDomain _domain;
-    private MessageTraceHandler _trace;
+    private final String _target;
+    private final String _property;
+    private final ServiceDomain _domain;
+    private final MessageTraceHandler _trace;
     private static Logger _log = Logger.getLogger(InterceptProcessor.class);
-    
+   
+    private final Map<String, ExchangeInterceptor> interceptors;
+ 
     /**
      * Create a new InterceptorProcessor.
      * @param target the interception target
@@ -54,6 +57,9 @@ public class InterceptProcessor implements Processor {
         _target = target;
         _property = INTERCEPT_PREFIX + _target;
         _trace = new MessageTraceHandler();
+        SwitchYardCamelContext camelContext = (SwitchYardCamelContext)domain
+            .getProperty(SwitchYardCamelContext.CAMEL_CONTEXT_PROPERTY);
+        interceptors = camelContext.getRegistry().lookupByType(ExchangeInterceptor.class);
     }
 
     @Override
@@ -88,9 +94,6 @@ public class InterceptProcessor implements Processor {
     }
     
     private void fireInterceptors(Exchange ex) throws HandlerException {
-        Map<String, ExchangeInterceptor> interceptors = 
-                ex.getContext().getRegistry().lookupByType(ExchangeInterceptor.class);
-        
         if (interceptors != null && interceptors.size() > 0) {
             CamelExchange syEx = new CamelExchange(ex);
             try {
