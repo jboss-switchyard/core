@@ -150,7 +150,11 @@ public final class ThrowableNode implements Node {
         Throwable throwable = newThrowable(clazz, getMessage());
         Throwable cause = (Throwable)graph.decomposeReference(getCause());
         if (cause != null) {
-            throwable.initCause(cause);
+            try {
+                throwable.initCause(cause);
+            } catch (IllegalStateException e) {
+                throwable = new RuntimeException(clazz.getName() + ": " + getMessage(), cause);
+            }
         }
         Object[] array = (Object[])graph.decomposeReference(getStackTrace());
         if (array != null) {
