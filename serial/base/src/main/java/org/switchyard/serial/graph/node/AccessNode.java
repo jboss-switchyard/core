@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,15 +139,26 @@ public final class AccessNode implements Node {
                                 Class<?> accessType = access.getType();
                                 if (access instanceof FieldAccess) {
                                     if (NodeBuilder.isCollection(accessType) && value instanceof Collection) {
-                                        ((Collection)access.read(obj)).addAll((Collection)value);
+                                        Collection list = (Collection)access.read(obj);
+                                        if (list == null) {
+                                            access.write(obj, new ArrayList((Collection)value));
+                                        } else {
+                                            list.addAll((Collection)value);
+                                        }
                                         skip = true;
                                     } else if (NodeBuilder.isMap(accessType) && value instanceof Map) {
-                                        ((Map)access.read(obj)).putAll((Map)value);
+                                        Map map = (Map)access.read(obj);
+                                        if (map == null) {
+                                            access.write(obj, new HashMap((Map)value));
+                                        } else {
+                                            map.putAll((Map)value);
+                                        }
                                         skip = true;
                                     }
                                 }
                                 if (!skip) {
-                                    if (NodeBuilder.isArray(accessType) && value.getClass().isArray()) {
+                                    if (NodeBuilder.isArray(accessType) && value.getClass().isArray() &&
+                                            !accessType.getComponentType().isPrimitive()) {
                                         Object[] old_array = (Object[])value;
                                         Object[] new_array = (Object[])Array.newInstance(accessType.getComponentType(), old_array.length);
                                         System.arraycopy(old_array, 0, new_array, 0, old_array.length);
