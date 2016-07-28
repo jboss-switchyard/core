@@ -54,7 +54,11 @@ public final class NodeBuilder {
             return id;
         }
         Class<?> clazz = obj.getClass();
-        if (isSimple(clazz)) {
+        if (clazz.isEnum()) {
+            Node node = new EnumNode();
+            graph.putReference(id, node);
+            node.compose(obj, graph);
+        } else if (isSimple(clazz)) {
             graph.putReference(id, obj);
         } else if (isArray(clazz)) {
             if (isSimple(clazz.getComponentType())) {
@@ -147,7 +151,7 @@ public final class NodeBuilder {
     }
 
     static boolean isSimple(Class<?> clazz) {
-        if (clazz.isPrimitive() || clazz.isEnum()) {
+        if (clazz.isPrimitive()) {
             return true;
         }
         for (Class<?> st : SIMPLE_TYPES) {
