@@ -15,6 +15,7 @@ package org.switchyard.common.io;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.Files;
 
 import junit.framework.Assert;
 
@@ -31,12 +32,12 @@ public class FilesTests {
     @Test
     public void testCopy() throws Exception {
         final String expected = "test";
-        File testFile1 = File.createTempFile("test-1", ".txt");
+        File testFile1 = Files.createTempFile("test-1", ".txt").toFile();
         FileWriter testFileWriter1 = new FileWriter(testFile1);
         testFileWriter1.write(expected);
         testFileWriter1.flush();
         testFileWriter1.close();
-        File testFile2 = File.createTempFile("test-2", ".txt");
+        File testFile2 = Files.createTempFile("test-2", ".txt").toFile();
         Files.copy(testFile1, testFile2);
         final String actual = new StringPuller().pull(testFile2);
         testFile1.delete();
